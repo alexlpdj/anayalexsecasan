@@ -25,7 +25,7 @@ export default function GuestLogin() {
                         A <span className="text-5xl">&</span> A
                     </h1>
                     <p className="text-sm uppercase tracking-[0.3em] text-[#a89584]">
-                        22 • Junio • 2026
+                        20 • Junio • 2026
                     </p>
                 </div>
 
@@ -93,7 +93,7 @@ export default function GuestLogin() {
                                         setData('code', e.target.value.toUpperCase())
                                     }
                                     className="mt-2 border-2 border-[#d4c5b9] text-center font-mono text-2xl uppercase tracking-widest focus:border-[#8b7355] focus:ring-2 focus:ring-[#8b7355]/20"
-                                    placeholder="ABC123"
+                                    placeholder=""
                                     maxLength={6}
                                     autoComplete="off"
                                     autoFocus

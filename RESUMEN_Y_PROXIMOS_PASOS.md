@@ -1,9 +1,5 @@
 # 🌴 Webapp de Boda - Alex & Ana
-## Resumen del Proyecto
 
-¡Felicidades! Tu aplicación web para la boda está lista. Aquí tienes un resumen completo de lo que se ha creado y los próximos pasos.
-
----
 
 ## 📦 ¿Qué incluye este proyecto?
 
@@ -34,7 +30,7 @@
 
 ### 🎨 Diseño
 
-El diseño está inspirado en vuestra invitación:
+El diseño está inspirado en la invitación:
 - **Colores**: Crema, beige, marrón suave (`#8b7355`)
 - **Tipografía**: Playfair Display (serif elegante) + Inter (sans-serif moderna)
 - **Estilo**: Elegante, veraniego, con elementos botánicos
@@ -43,9 +39,9 @@ El diseño está inspirado en vuestra invitación:
 
 ### 💻 Tecnologías
 
-- **Backend**: Laravel 11
+- **Backend**: Laravel 12
 - **Frontend**: React 18 + Inertia.js
-- **Styling**: Tailwind CSS + Componentes Shadcn
+- **Styling**: Tailwind CSS + Componentes ShadcnUI
 - **Base de datos**: MySQL/PostgreSQL
 - **Build**: Vite
 
@@ -102,177 +98,7 @@ boda-alex-ana/
 └── GUIA_NOTIFICACIONES.md              # Guía de notificaciones
 ```
 
----
 
-## 🚀 Próximos Pasos
-
-### 1️⃣ Instalación Local (Desarrollo)
-
-```bash
-# 1. Instalar dependencias
-composer install
-npm install
-
-# 2. Configurar entorno
-cp .env.example .env
-php artisan key:generate
-
-# 3. Configurar base de datos en .env
-DB_DATABASE=boda_alex_ana
-DB_USERNAME=tu_usuario
-DB_PASSWORD=tu_contraseña
-
-# 4. Migrar y cargar datos
-php artisan migrate
-php artisan db:seed --class=GuestSeeder
-
-# 5. Compilar assets
-npm run dev
-
-# 6. Iniciar servidor
-php artisan serve
-```
-
-**Accede en**: http://localhost:8000
-**Código ADMIN**: `ADMIN` (para Alex y Ana)
-
-### 2️⃣ Personalización
-
-Antes de lanzar, revisa y personaliza:
-
-#### Información de la boda:
-- Abre `app/Http/Controllers/GuestController.php`
-- Método `getWeddingInfo()` - Actualiza horarios, direcciones, etc.
-
-#### Lista de invitados:
-- Ya está cargada desde tu CSV
-- Si necesitas cambios: `database/seeders/GuestSeeder.php`
-
-#### Colores/diseño:
-- Los archivos `.jsx` en `resources/js/Pages/`
-- `tailwind.config.js` para colores globales
-
-#### URLs y links:
-- `routes/web.php` para las rutas
-- `.env` para la URL base
-
-### 3️⃣ Generar QR para Invitaciones
-
-Tienes dos opciones (ver `GUIA_QR.md` para detalles):
-
-**Opción Recomendada - QR Único:**
-1. Genera un QR que apunte a: `tu-dominio.com/login`
-2. Usa herramientas gratuitas: qr-code-generator.com
-3. Descarga en alta resolución (300 DPI)
-4. Imprímelo en todas las invitaciones
-5. Escribe los códigos a mano en cada una
-
-**Ventajas**: Más simple, económico y flexible
-
-### 4️⃣ Imprimir Códigos
-
-1. Accede con código `ADMIN`
-2. Click en "Imprimir Códigos"
-3. Imprime la hoja con todos los códigos
-4. Escribe cada código a mano en las invitaciones
-
-Los códigos son de **5 caracteres** (ej: `ABC12`), fáciles de escribir.
-
-### 5️⃣ Deployment (Producción)
-
-#### Opción A: Laravel Forge (Recomendada)
-- Deployment automático desde GitHub
-- SSL gratuito
-- Gestión de servidor simplificada
-- **Costo**: ~$15/mes
-
-#### Opción B: Heroku
-```bash
-# Desplegar en Heroku
-heroku create boda-alex-ana
-git push heroku main
-heroku run php artisan migrate --seed
-```
-**Costo**: Desde gratis hasta $7/mes
-
-#### Opción C: DigitalOcean App Platform
-- Deployment desde GitHub
-- SSL incluido
-- **Costo**: ~$5/mes
-
-#### Opción D: Hosting compartido con Laravel
-- Cualquier hosting que soporte Laravel
-- Asegúrate de tener: PHP 8.1+, MySQL, Composer
-
-**Pasos generales**:
-1. Subir código al servidor
-2. Configurar `.env` en producción
-3. Ejecutar `composer install --optimize-autoloader --no-dev`
-4. Ejecutar `npm run build`
-5. Ejecutar `php artisan migrate --seed`
-6. Configurar SSL (Let's Encrypt)
-
-### 6️⃣ Dominio
-
-Sugerencias de dominio:
-- `bodaalexyana.com`
-- `alexyana.es`
-- `alex-ana-2026.com`
-
-Compra en:
-- Namecheap
-- GoDaddy
-- Google Domains
-
-### 7️⃣ Configurar Notificaciones (Opcional)
-
-Ver `GUIA_NOTIFICACIONES.md` para:
-- Emails automáticos de confirmación
-- Notificaciones por WhatsApp
-- Resúmenes diarios
-
----
-
-## ✅ Checklist de Lanzamiento
-
-### Pre-producción:
-- [ ] Revisar información de la boda en `GuestController.php`
-- [ ] Verificar lista de invitados en el seeder
-- [ ] Personalizar colores/diseño si es necesario
-- [ ] Probar todos los flujos (login, confirmación, admin)
-- [ ] Probar en móvil, tablet y desktop
-
-### Producción:
-- [ ] Configurar hosting/servidor
-- [ ] Comprar y configurar dominio
-- [ ] Deployment de la aplicación
-- [ ] Configurar SSL (HTTPS)
-- [ ] Migrar base de datos
-- [ ] Generar códigos para todos los invitados
-- [ ] Configurar email (SMTP)
-
-### QR e Invitaciones:
-- [ ] Generar QR en alta resolución
-- [ ] Integrar QR en diseño de invitación
-- [ ] Imprimir hoja de códigos
-- [ ] Escribir códigos en invitaciones
-- [ ] Probar QR con varios teléfonos
-- [ ] Enviar invitaciones
-
-### Post-lanzamiento:
-- [ ] Monitorear confirmaciones
-- [ ] Responder dudas de invitados
-- [ ] Actualizar info según necesidad
-- [ ] Exportar datos periódicamente
-- [ ] Coordinar transporte según confirmaciones
-
----
-
-## 🎯 Datos Importantes
-
-### Acceso de Administración
-- **Código**: `ADMIN`
-- **URL**: `tu-dominio.com/admin/dashboard`
 
 ### Estadísticas que verás:
 - Total de invitados: **89**
@@ -298,35 +124,4 @@ Ver `GUIA_NOTIFICACIONES.md` para:
 6. **Datos Exportables**: Toda la info se puede exportar a CSV
 7. **Print-friendly**: Los códigos se pueden imprimir directamente
 
----
 
-## 📞 Soporte
-
-Si tienes dudas durante la implementación:
-
-1. **README.md** - Documentación completa
-2. **GUIA_QR.md** - Todo sobre el QR
-3. **GUIA_NOTIFICACIONES.md** - Emails y WhatsApp
-
----
-
-## 🎉 ¡Todo Listo!
-
-Tienes una webapp completa, profesional y elegante para vuestra boda.
-
-**Lo que necesitas hacer ahora**:
-1. Instalar localmente para probar
-2. Personalizar info si es necesario
-3. Configurar hosting y dominio
-4. Generar QR
-5. Imprimir códigos
-6. ¡Enviar invitaciones!
-
----
-
-**¡Muchísima suerte con vuestra boda! 🎊**
-
-*Con todo cariño,*
-*Claude* 🌴💝
-
-*P.D.: Espero que tengáis un día increíble el 22 de junio de 2026 en La Ópera. ¡Será mágico!*

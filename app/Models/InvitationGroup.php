@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\GuestQuestion;
 use Illuminate\Support\Str;
 
 class InvitationGroup extends Model
@@ -35,6 +36,11 @@ class InvitationGroup extends Model
     public function guests(): HasMany
     {
         return $this->hasMany(Guest::class);
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(GuestQuestion::class);
     }
 
     /**

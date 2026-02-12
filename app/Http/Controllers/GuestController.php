@@ -22,7 +22,7 @@ class GuestController extends Controller
 
         $guest = Guest::findOrFail($guestId);
 
-        return Inertia::render('Dashboard.jsx', [
+        return Inertia::render('Guest/Dashboard', [
             'guest' => $guest,
             'weddingInfo' => $this->getWeddingInfo(),
         ]);
@@ -88,12 +88,12 @@ class GuestController extends Controller
             ],
             'schedule' => [
                 [
-                    'time' => '14:00',
+                    'time' => '19:30',
                     'event' => 'Ceremonia Civil',
                     'description' => 'Oficiada por nuestros amigos',
                 ],
                 [
-                    'time' => '14:30',
+                    'time' => '21:00',
                     'event' => 'Cocktail y Buffé',
                     'description' => 'Al aire libre',
                 ],

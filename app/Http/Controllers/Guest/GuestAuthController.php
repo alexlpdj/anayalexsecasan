@@ -20,7 +20,7 @@ class GuestAuthController extends Controller
             return redirect()->route('guest.dashboard');
         }
 
-        return Inertia::render('Login.jsx');
+        return Inertia::render('Guest/Login');
     }
 
     /**
@@ -29,10 +29,10 @@ class GuestAuthController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|size:6',
+            'code' => 'required|string|size:5',
         ], [
             'code.required' => 'Por favor, introduce tu código de invitación',
-            'code.size' => 'El código debe tener 6 caracteres',
+            'code.size' => 'El código debe tener 5 carácteres',
         ]);
 
         // Buscar grupo por código

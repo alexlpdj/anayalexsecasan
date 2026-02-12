@@ -26,7 +26,7 @@ export default function PrintableCodes({ guests }) {
                     <h1 className="mb-2 font-serif text-3xl italic text-[#8b7355]">
                         Códigos de Invitados
                     </h1>
-                    <p className="text-[#a89584]">Alex & Ana - 22.06.2026</p>
+                    <p className="text-[#a89584]">Alex & Ana - 20.06.2026</p>
                 </div>
 
                 {/* Grid of codes - 3 columns */}

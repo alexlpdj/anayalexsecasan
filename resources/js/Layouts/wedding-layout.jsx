@@ -9,7 +9,7 @@ export default function WeddingLayout({ children }) {
                         A <span className="text-4xl">&</span> A
                     </h1>
                     <p className="text-sm uppercase tracking-[0.3em] text-[#a89584]">
-                        22.06.26
+                        20.06.26
                     </p>
                 </div>
 

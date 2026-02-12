@@ -69,7 +69,7 @@ class AdminController extends Controller
             'own_car' => Guest::where('type', '!=', 'NOVIOS')->where('transport', 'COCHE')->count(),
         ];
 
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('admin/dashboard', [
             'stats' => $stats,
             'guests' => $guests,
             'allergies' => $allergies,
@@ -139,7 +139,7 @@ class AdminController extends Controller
             ->select('name', 'code')
             ->get();
 
-        return Inertia::render('Admin/PrintableCodes', [
+        return Inertia::render('admin/printable-codes', [
             'guests' => $guests,
         ]);
     }

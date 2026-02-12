@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
 use App\Models\Guest;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class InvitationGroupController extends Controller
             'attending_guests' => Guest::attending()->count(),
         ];
 
-        return Inertia::render('Admin/Groups/Index', [
+        return Inertia::render('admin/groups/index', [
             'groups' => $groups,
             'stats' => $stats,
         ]);
@@ -51,7 +52,7 @@ class InvitationGroupController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Groups/Create');
+        return Inertia::render('admin/groups/create');
     }
 
     /**
@@ -95,7 +96,7 @@ class InvitationGroupController extends Controller
     {
         $group->load('guests');
 
-        return Inertia::render('Admin/Groups/Show', [
+        return Inertia::render('admin/groups/show', [
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -129,7 +130,7 @@ class InvitationGroupController extends Controller
     {
         $group->load('guests');
 
-        return Inertia::render('Admin/Groups/Edit', [
+        return Inertia::render('admin/groups/edit', [
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -206,6 +207,26 @@ class InvitationGroupController extends Controller
         return redirect()
             ->route('admin.groups.index')
             ->with('success', "Grupo '{$name}' eliminado correctamente");
+    }
+
+    /**
+     * Listar preguntas de invitados
+     */
+    public function questions()
+    {
+        $questions = GuestQuestion::with('invitationGroup')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($q) => [
+                'id' => $q->id,
+                'group_name' => $q->invitationGroup->name,
+                'message' => $q->message,
+                'created_at' => $q->created_at->format('d/m/Y H:i'),
+            ]);
+
+        return Inertia::render('admin/questions/index', [
+            'questions' => $questions,
+        ]);
     }
 
     /**

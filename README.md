@@ -1,447 +1,99 @@
-# 🌴 Webapp de Boda - Alex & Ana (TypeScript Edition)
+# Boda Alex & Ana - Web de Invitaciones
 
-Aplicación web elegante para gestionar invitaciones de boda, construida sobre el **Laravel React Starter Kit oficial** con TypeScript.
+¡Hola, futura esposa! Esta es la web para gestionar las invitaciones y confirmaciones de nuestra boda. Aquí te explico cómo funciona todo para que no tengas que preguntarme cada dos minutos (aunque sabes que no me importa).
 
-## ✨ Características
-
-### 🎯 Stack Tecnológico
-
-- **Backend:** Laravel 11
-- **Frontend:** React 19 + **TypeScript**
-- **Routing:** Inertia.js
-- **UI Components:** Shadcn/UI + Radix UI
-- **Styling:** Tailwind CSS
-- **Build:** Vite
-
-### 💎 Por qué TypeScript
-
-Esta versión usa TypeScript en lugar de JavaScript porque:
-
-✅ **Type Safety** - Errores detectados en tiempo de compilación
-✅ **IntelliSense** - Autocompletado y sugerencias en el editor
-✅ **Refactoring** - Cambios seguros y confiables
-✅ **Documentación** - Los tipos son documentación viva
-✅ **Mantenibilidad** - Código más fácil de mantener a largo plazo
-✅ **Compatibilidad** - 100% compatible con el starter kit oficial
-
-### 🎨 Para Invitados
-
-- 🔐 Login con código único de 5 caracteres
-- 📋 Información completa de la boda
-- ✅ Confirmación de asistencia (Sí/No)
-- 🍽️ Gestión de alergias y restricciones
-- 🚌 Selección de transporte (autobús/coche)
-- 📧 Formulario de contacto opcional
-- 📱 100% responsive
-
-### 👑 Para Administradores (Alex & Ana)
-
-- 📊 Dashboard con estadísticas en tiempo real
-- 👥 Lista completa de invitados con filtros
-- 🔍 Búsqueda por nombre
-- 📥 Exportación a CSV
-- 🖨️ Códigos imprimibles para invitaciones
-- 🚌 Resumen de necesidades de transporte
-- ⚠️ Vista de alergias y restricciones
+Tiene dos partes: el **panel de admin** (para nosotros, los jefes) y la **vista de invitados** (para el resto de mortales).
 
 ---
 
-## 🚀 Instalación Rápida
+## Panel de Administración (tu nuevo juguete)
 
-```bash
-# 1. Clonar el starter kit oficial
-git clone https://github.com/laravel/react-starter-kit.git boda-alex-ana
-cd boda-alex-ana
+### Cómo entrar
 
-# 2. Instalar dependencias
-composer install
-npm install
+1. Abre el navegador y ve a la dirección de la web seguida de `/admin/dashboard`
+2. Inicia sesión con tu email y contraseña
 
-# 3. Configurar entorno
-cp .env.example .env
-php artisan key:generate
+¡Y ya estás dentro! Más fácil que elegir el menú de la boda.
 
-# 4. Configurar base de datos en .env
-# DB_DATABASE=boda_alex_ana
-# DB_USERNAME=tu_usuario
-# DB_PASSWORD=tu_contraseña
+### Qué puedes hacer
 
-# 5. Copiar archivos personalizados (del paquete)
-# Ver INSTALACION_TYPESCRIPT.md para detalles
+#### Ver el estado general (Dashboard)
 
-# 6. Migrar y cargar datos
-php artisan migrate
-php artisan db:seed --class=GuestSeeder
+En el dashboard vas a ver un resumen con:
 
-# 7. Compilar y ejecutar
-npm run dev
-php artisan serve
-```
+- Cuántos invitados hay en total
+- Cuántos han confirmado, cuántos han dicho que no y cuántos todavía no han respondido (a estos habrá que perseguirlos)
+- Cuántos necesitan autobús (desde Onda ida, Onda vuelta, o desde Castellón) y cuántos vienen en coche
+- Si algún invitado tiene alergias o restricciones alimentarias
 
-**Accede a:** http://localhost:8000
+También hay una lista completa de todos los invitados donde puedes buscar por nombre y filtrar por estado. Ideal para cuando mi madre pregunte "¿ha confirmado ya la prima Vero?".
 
----
+#### Gestionar grupos de invitación
 
-## 📚 Documentación
+Desde el menú de **Grupos** (`/admin/groups`) puedes:
 
-Lee en este orden:
+- **Crear un grupo nuevo**: Dale un nombre (ej: "Familia X", "Noe y Edu"), elige si es tipo FAMILIAR o AMIGO, y añade los nombres de los invitados que forman parte de ese grupo.
+- **Ver un grupo**: Haz clic en cualquier grupo para ver sus detalles y si cada invitado ha confirmado o no.
+- **Editar un grupo**: Cambiar el nombre, añadir o quitar invitados del grupo.
+- **Eliminar un grupo**: Si te equivocas puedes borrarlo (se borran también todos los invitados de ese grupo). Tranquila, no se entera nadie.
+- **Regenerar código**: Si un invitado pierde su código, le generamos uno nuevo (aunque no deberia pasar ya que van escritos en la invitación)
 
-1. **INSTALACION_TYPESCRIPT.md** - Guía paso a paso completa
-2. **GUIA_QR.md** - Cómo generar el QR para invitaciones
-3. **GUIA_NOTIFICACIONES.md** - Configurar emails y WhatsApp
-4. **RESUMEN_Y_PROXIMOS_PASOS.md** - Plan de deployment
+Cada grupo tiene un **código único de 6 caracteres** (ej: K7HM2P). Ese código es lo que los invitados usan para entrar a la web y confirmar asistencia.
 
----
+#### Exportar datos a Excel
 
-## 📁 Estructura de Archivos TypeScript
+Hay tres opciones de descarga en CSV (se abre con Excel o Google Sheets):
 
-```typescript
-// Types compartidos
-resources/js/types/wedding.ts
+- **Todos los invitados** - `/admin/export/all`
+- **Solo los confirmados** - `/admin/export/confirmed`
+- **Lista de códigos** - `/admin/export/codes`
 
-// Interfaces principales
-export interface Guest {
-    id: number;
-    name: string;
-    code: string;
-    type: 'FAMILIAR' | 'AMIGO' | 'NOVIOS';
-    confirmed: boolean | null;
-    // ... más campos
-}
+Perfecto para cuando necesites hacer cuentas con el catering o imprimir listados.
 
-// Componentes tipados
-resources/js/pages/guest/login.tsx
-resources/js/pages/guest/dashboard.tsx
-resources/js/pages/admin/dashboard.tsx
-```
+#### Imprimir códigos
+
+En `/admin/print/codes` puedes ver todos los códigos en un formato listo para imprimir (en 3 columnas con los nombres). Útil para tener la referencia a mano cuando escribas los códigos en las invitaciones físicas.
 
 ---
 
-## 🎨 Componentes Shadcn/UI
+## Cómo funciona para los invitados
 
-El starter kit incluye componentes profesionales listos para usar:
+Los invitados no necesitan saber nada técnico. Solo necesitan el **código de invitación** que viene en su invitación física.
 
-```typescript
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup } from '@/components/ui/radio-group';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-```
+1. Entran a la web en `/invitacion/login`
+2. Escriben su código de 6 caracteres
+3. Ven una página donde pueden:
+   - Marcar quién del grupo va y quién no
+   - Indicar alergias o restricciones alimentarias de cada persona
+   - Elegir cómo llegan: autobús gratuito (desde Onda o Castellón) o coche propio
+   - Dejar un email o teléfono de contacto (opcional)
+4. Si cambian de planes, pueden volver a entrar con su código y **modificar su respuesta** (porque siempre hay alguien que cambia de opinión tres veces)
 
-**No necesitas crear componentes desde cero** - ya vienen con el starter kit.
+En esa misma página los invitados ven toda la info del evento:
 
----
-
-## 🔐 Acceso
-
-- **Administración:** Código `ADMIN`
-- **Invitados:** Códigos únicos de 5 caracteres
-
-Total de invitados cargados: **89**
+- **Fecha**: 20 de junio de 2026
+- **Lugar**: La Ópera, Benicàssim (Castellón)
+- **Ceremonia civil**: a las 19:30
+- **Cóctel y buffet**: a las 21:00 en los jardines
+- **Fiesta con DJ**: a medianoche (00h)
+- **Parking**: gratuito en el subterráneo del recinto
+- **Autobuses**: disponibles desde Onda y Castellón (gratis)
 
 ---
 
-## ⚙️ Configuración
+## Resumen rápido
 
-### Colores de la Boda
-
-Los colores están definidos en `tailwind.config.ts`:
-
-```typescript
-colors: {
-    wedding: {
-        primary: '#8b7355',    // Marrón suave
-        secondary: '#a89584',  // Beige
-        cream: '#faf8f5',      // Crema
-        // ...
-    }
-}
-```
-
-### TypeScript Config
-
-El `tsconfig.json` del starter kit incluye:
-
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "paths": {
-      "@/*": ["./resources/js/*"]
-    }
-  }
-}
-```
+| Qué quieres hacer                     | Dónde ir                  |
+| ------------------------------------- | ------------------------- |
+| Ver dashboard con estadísticas        | `/admin/dashboard`        |
+| Gestionar grupos e invitaciones       | `/admin/groups`           |
+| Exportar lista de invitados           | `/admin/export/all`       |
+| Exportar solo confirmados             | `/admin/export/confirmed` |
+| Imprimir códigos                      | `/admin/print/codes`      |
+| Probar la vista que ven los invitados | `/invitacion/login`       |
 
 ---
 
-## 🎯 Ventajas sobre JavaScript
+## ¿Dudas?
 
-### Type Safety
-
-```typescript
-// ❌ JavaScript - Error en runtime
-const guest = guests.find(g => g.id === 'abc'); // Oops! id es number
-
-// ✅ TypeScript - Error en compilación
-const guest = guests.find(g => g.id === 'abc');
-//                                  ^^^ Type error!
-```
-
-### IntelliSense
-
-TypeScript proporciona autocompletado inteligente en tu editor:
-
-```typescript
-const { data, setData } = useForm<RsvpFormData>({
-    confirmed: true,
-    allergies: '',
-    // Tu editor te sugiere todos los campos disponibles
-});
-
-data. // <- Autocompletado con todos los campos
-```
-
-### Refactoring Seguro
-
-Si cambias la estructura de `Guest`, TypeScript te avisa en todos los lugares donde lo usas.
-
----
-
-## 🔧 Desarrollo
-
-```bash
-# Desarrollo con hot reload
-npm run dev
-
-# Type checking
-npx tsc --noEmit
-
-# Linting
-npm run lint
-
-# Build para producción
-npm run build
-```
-
----
-
-## 📦 Lo que incluye este paquete
-
-### Backend (PHP)
-
-- `Guest.php` - Modelo con tipado de propiedades
-- `GuestController.php` - Login y dashboard de invitados
-- `AdminController.php` - Panel de administración
-- `GuestAuthentication.php` - Middleware de autenticación
-- `AdminMiddleware.php` - Middleware de admin
-- `GuestSeeder.php` - 89 invitados con códigos únicos
-- Migración de tabla `guests`
-
-### Frontend (TypeScript)
-
-- `wedding.ts` - Interfaces y tipos compartidos
-- `wedding-layout.tsx` - Layout con diseño elegante
-- `guest/login.tsx` - Login con componentes Shadcn
-- `guest/dashboard.tsx` - Dashboard tipado
-- `admin/dashboard.tsx` - Panel de administración
-- `admin/printable-codes.tsx` - Códigos para imprimir
-
-### Configuración
-
-- `tailwind.config.ts` - Colores de la boda
-- `routes/web.php` - Rutas personalizadas
-- `tsconfig.json` - Ya viene con el starter kit
-
----
-
-## 🌐 Deployment
-
-### Compilación para Producción
-
-```bash
-# 1. Instalar dependencias optimizadas
-composer install --optimize-autoloader --no-dev
-
-# 2. Build de TypeScript
-npm run build
-
-# 3. Cachear configuración
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
-
-### Opciones de Hosting
-
-1. **Laravel Forge** - Deployment automático desde Git
-2. **Heroku** - Plataforma como servicio
-3. **DigitalOcean** - VPS o App Platform
-4. **Vercel/Netlify** - Frontend + API separado
-
-Ver **RESUMEN_Y_PROXIMOS_PASOS.md** para instrucciones detalladas.
-
----
-
-## ✅ Checklist de Implementación
-
-### Instalación
-- [ ] Clonar React Starter Kit
-- [ ] Copiar archivos personalizados
-- [ ] Configurar `.env`
-- [ ] Migrar base de datos
-- [ ] Cargar invitados (seeder)
-- [ ] Compilar assets TypeScript
-
-### Pruebas
-- [ ] Login con código ADMIN funciona
-- [ ] Login con código de invitado funciona
-- [ ] Formulario de confirmación guarda datos
-- [ ] Panel admin muestra estadísticas
-- [ ] Exportar CSV funciona
-- [ ] Imprimir códigos funciona
-- [ ] TypeScript compila sin errores
-
-### Deployment
-- [ ] Configurar hosting
-- [ ] Comprar dominio
-- [ ] SSL configurado
-- [ ] Base de datos en producción
-- [ ] Build de producción
-- [ ] Variables de entorno configuradas
-
-### QR e Invitaciones
-- [ ] Generar QR en alta resolución
-- [ ] Imprimir hoja de códigos
-- [ ] Integrar QR en invitaciones
-- [ ] Escribir códigos a mano
-- [ ] Probar con varios teléfonos
-
----
-
-## 🆘 Troubleshooting
-
-### Errores de TypeScript
-
-```bash
-# Verificar configuración
-cat tsconfig.json
-
-# Limpiar y recompilar
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
-```
-
-### "Cannot find module '@/components/ui/...'"
-
-Asegúrate de que tienes los paths configurados en `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./resources/js/*"]
-    }
-  }
-}
-```
-
-### Errores de Inertia Types
-
-```bash
-# Instalar tipos
-npm install -D @inertiajs/react @types/react @types/react-dom
-```
-
----
-
-## 📊 Estadísticas del Proyecto
-
-- **Total invitados:** 89
-- **Archivos TypeScript:** 7
-- **Componentes reutilizados:** 7+ (Shadcn/UI)
-- **Type safety:** 100%
-- **Lines of code:** ~2,000 (TypeScript + PHP)
-
----
-
-## 💡 Tips de TypeScript
-
-### Usa los tipos proporcionados
-
-```typescript
-import { Guest, WeddingInfo, RsvpFormData } from '@/types/wedding';
-
-// Typesafe props
-interface DashboardProps {
-    guest: Guest;
-    weddingInfo: WeddingInfo;
-}
-```
-
-### Aprovecha el IntelliSense
-
-Los componentes están completamente tipados:
-
-```typescript
-<Button
-    onClick={handleClick}
-    disabled={processing}
-    className="..."
->
-    {/* Tu editor sabe qué props acepta Button */}
-</Button>
-```
-
-### Refactoring seguro
-
-Si cambias un tipo, TypeScript te avisa en todos los lugares afectados.
-
----
-
-## 🎉 ¡Todo Listo!
-
-Tienes una webapp moderna, profesional y type-safe para vuestra boda:
-
-✅ **TypeScript** - Código seguro y mantenible
-✅ **React 19** - Última versión
-✅ **Inertia.js** - SPA sin complejidad
-✅ **Shadcn/UI** - Componentes profesionales
-✅ **Tailwind CSS** - Estilos modernos
-✅ **Laravel 11** - Backend robusto
-
----
-
-## 📞 Soporte
-
-Para dudas durante la implementación, consulta:
-
-- `INSTALACION_TYPESCRIPT.md` - Guía completa
-- `GUIA_QR.md` - Generación de QR
-- `GUIA_NOTIFICACIONES.md` - Emails y WhatsApp
-
----
-
-## 💝 Créditos
-
-Desarrollado con amor para Alex & Ana.
-
-**Basado en:**
-- [Laravel React Starter Kit](https://github.com/laravel/react-starter-kit)
-- Laravel 11
-- React 19
-- TypeScript 5
-- Inertia.js
-- Shadcn/UI
-
----
-
-**¡Que tengáis una boda increíble! 🌴💝🎉**
-
-*20 de Junio de 2026 - La Ópera, Benicàssim*
+Si algo no funciona o no sabes cómo hacer algo, pregúntale a Alex. Para eso está (aparte de para casarse contigo).

@@ -116,7 +116,7 @@ class RsvpConfirmation extends Mailable
     <div class="container">
         <div class="header">
             <div class="monogram">A & A</div>
-            <p style="color: #a89584; letter-spacing: 2px;">22.06.26</p>
+            <p style="color: #a89584; letter-spacing: 2px;">20.06.26</p>
         </div>
 
         <div class="content">

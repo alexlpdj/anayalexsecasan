@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Mail\GuestQuestionMail;
+use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class GuestDashboardController extends Controller
 {
-    /**
-     * Obtener grupo autenticado
-     */
     private function getAuthenticatedGroup()
     {
         $groupId = Session::get('invitation_group_id');
@@ -31,23 +32,25 @@ class GuestDashboardController extends Controller
         return $group;
     }
 
-    /**
-     * Mostrar dashboard
-     */
     public function index()
     {
         $group = $this->getAuthenticatedGroup();
 
-        // Información de la boda
         $weddingInfo = $this->getWeddingInfo();
 
-        return Inertia::render('Dashboard.jsx', [
+        $questions = $group->questions()->orderBy('created_at', 'desc')->get()->map(fn($q) => [
+            'id' => $q->id,
+            'message' => $q->message,
+            'created_at' => $q->created_at->format('d/m/Y H:i'),
+        ]);
+
+        return Inertia::render('Guest/Dashboard', [
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
                 'code' => $group->code,
                 'type' => $group->type,
-                'confirmed_at' => $group->confirmed_at,
+                'submitted_at' => $group->submitted_at,
                 'transport' => $group->transport,
                 'bus_onda_ida' => $group->bus_onda_ida,
                 'bus_onda_vuelta' => $group->bus_onda_vuelta,
@@ -62,23 +65,21 @@ class GuestDashboardController extends Controller
                     'allergies' => $g->allergies,
                 ]),
             ],
+            'questions' => $questions,
             'weddingInfo' => $weddingInfo,
         ]);
     }
 
-    /**
-     * Guardar confirmación
-     */
     public function confirm(Request $request)
     {
         $group = $this->getAuthenticatedGroup();
 
         $validated = $request->validate([
-            'guests' => 'required|array',
+            'attending' => 'required|boolean',
+            'guests' => 'nullable|array',
             'guests.*.id' => 'required|exists:guests,id',
-            'guests.*.attending' => 'required|boolean',
             'guests.*.allergies' => 'nullable|string|max:500',
-            'transport' => 'required|in:AUTOBUS,COCHE,NO_CONFIRMADO',
+            'transport' => 'nullable|in:AUTOBUS,COCHE,NO_CONFIRMADO',
             'bus_onda_ida' => 'boolean',
             'bus_onda_vuelta' => 'boolean',
             'bus_cs' => 'boolean',
@@ -86,37 +87,80 @@ class GuestDashboardController extends Controller
             'contact_phone' => 'nullable|string|max:20',
         ]);
 
-        DB::transaction(function () use ($group, $validated) {
-            // Actualizar invitados individuales
-            foreach ($validated['guests'] as $guestData) {
-                $guest = $group->guests()->find($guestData['id']);
+        $attending = $validated['attending'];
 
-                if ($guest) {
+        DB::transaction(function () use ($group, $validated, $attending) {
+            if ($attending) {
+                // Mark all guests as attending, update allergies individually
+                foreach ($group->guests as $guest) {
+                    $allergies = null;
+                    if (!empty($validated['guests'])) {
+                        $guestData = collect($validated['guests'])->firstWhere('id', $guest->id);
+                        $allergies = $guestData['allergies'] ?? null;
+                    }
                     $guest->update([
-                        'attending' => $guestData['attending'],
-                        'allergies' => $guestData['allergies'] ?? null,
+                        'attending' => true,
+                        'allergies' => $allergies,
                     ]);
                 }
-            }
 
-            // Actualizar información del grupo
-            $group->update([
-                'confirmed_at' => now(),
-                'transport' => $validated['transport'],
-                'bus_onda_ida' => $validated['bus_onda_ida'] ?? false,
-                'bus_onda_vuelta' => $validated['bus_onda_vuelta'] ?? false,
-                'bus_cs' => $validated['bus_cs'] ?? false,
-                'contact_email' => $validated['contact_email'] ?? null,
-                'contact_phone' => $validated['contact_phone'] ?? null,
-            ]);
+                $group->update([
+                    'submitted_at' => now(),
+                    'transport' => $validated['transport'] ?? 'NO_CONFIRMADO',
+                    'bus_onda_ida' => $validated['bus_onda_ida'] ?? false,
+                    'bus_onda_vuelta' => $validated['bus_onda_vuelta'] ?? false,
+                    'bus_cs' => $validated['bus_cs'] ?? false,
+                    'contact_email' => $validated['contact_email'] ?? null,
+                    'contact_phone' => $validated['contact_phone'] ?? null,
+                ]);
+            } else {
+                // Mark all guests as not attending
+                $group->guests()->update([
+                    'attending' => false,
+                    'allergies' => null,
+                ]);
+
+                $group->update([
+                    'submitted_at' => now(),
+                    'transport' => 'NO_CONFIRMADO',
+                    'bus_onda_ida' => false,
+                    'bus_onda_vuelta' => false,
+                    'bus_cs' => false,
+                    'contact_email' => null,
+                    'contact_phone' => null,
+                ]);
+            }
         });
 
-        return back()->with('success', '¡Gracias por confirmar! Nos vemos el 20 de junio 🌴💝');
+        $message = $attending
+            ? '¡Gracias por confirmar! Nos vemos el 20 de junio.'
+            : 'Lamentamos que no podáis acompañarnos. ¡Gracias por responder!';
+
+        return back()->with('success', $message);
     }
 
-    /**
-     * Información de la boda
-     */
+    public function askQuestion(Request $request)
+    {
+        $group = $this->getAuthenticatedGroup();
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        GuestQuestion::create([
+            'invitation_group_id' => $group->id,
+            'message' => $validated['message'],
+        ]);
+
+        // Send email to all admin users
+        $admins = User::all();
+        foreach ($admins as $admin) {
+            Mail::to($admin->email)->send(new GuestQuestionMail($group->name, $validated['message']));
+        }
+
+        return back()->with('success', '¡Pregunta enviada! Os responderemos lo antes posible.');
+    }
+
     private function getWeddingInfo(): array
     {
         return [
@@ -132,12 +176,12 @@ class GuestDashboardController extends Controller
             ],
             'schedule' => [
                 [
-                    'time' => '14:00',
+                    'time' => '19:30',
                     'event' => 'Ceremonia Civil',
                     'description' => 'Ceremonia oficiada por nuestros amigos',
                 ],
                 [
-                    'time' => '14:30',
+                    'time' => '21:30',
                     'event' => 'Cocktail & Buffet',
                     'description' => 'Al aire libre en los jardines',
                 ],
