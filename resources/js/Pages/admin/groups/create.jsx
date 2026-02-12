@@ -79,7 +79,7 @@ export default function CreateGroup() {
                                     type="text"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    placeholder='Ej: "Familia García", "Carlos y María"'
+                                    placeholder='Ej: "Familia Vicent", "Carlos y Arancha"'
                                     className="mt-2"
                                     autoFocus
                                 />

@@ -7,29 +7,55 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
+// ── Layout components (defined outside to avoid remount on every render) ──
+
+function Section({ children, className = '' }) {
+    return (
+        <div className={`rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}>
+            {children}
+        </div>
+    );
+}
+
+function SectionTitle({ children }) {
+    return (
+        <h3 className="mb-5 text-center font-serif text-xl italic text-[#8b7355]">{children}</h3>
+    );
+}
+
+function Divider() {
+    return (
+        <div className="flex items-center justify-center gap-3 py-1">
+            <span className="h-px w-10 bg-[#d4c5b9]/50" />
+            <span className="text-[10px] text-[#d4c5b9]">&#10047;</span>
+            <span className="h-px w-10 bg-[#d4c5b9]/50" />
+        </div>
+    );
+}
+
+// ── Main component ──
+
 export default function GuestDashboard({ group, questions, weddingInfo }) {
     const { flash } = usePage().props;
-    const [step, setStep] = useState('initial'); // initial | form | declined | confirmed
+    const [step, setStep] = useState('initial');
     const [showFlash, setShowFlash] = useState(false);
 
     const isSubmitted = !!group.submitted_at;
     const allAttending = group.guests.every((g) => g.attending);
+    const isSingle = group.guests.length === 1;
 
     useEffect(() => {
-        if (isSubmitted) {
-            setStep('confirmed');
-        }
+        if (isSubmitted) setStep('confirmed');
     }, [isSubmitted]);
 
     useEffect(() => {
         if (flash?.success) {
             setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 4000);
-            return () => clearTimeout(timer);
+            const t = setTimeout(() => setShowFlash(false), 4000);
+            return () => clearTimeout(t);
         }
     }, [flash?.success]);
 
-    // Confirm form (attending)
     const confirmForm = useForm({
         attending: true,
         guests: group.guests.map((g) => ({
@@ -44,25 +70,20 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
         contact_phone: group.contact_phone || '',
     });
 
-    // Decline form
-    const declineForm = useForm({
-        attending: false,
-    });
-
-    // Question form
-    const questionForm = useForm({
-        message: '',
-    });
+    const declineForm = useForm({ attending: false });
+    const questionForm = useForm({ message: '' });
 
     const submitAttending = (e) => {
         e.preventDefault();
         confirmForm.post(route('guest.confirm'), {
+            preserveScroll: true,
             onSuccess: () => setStep('confirmed'),
         });
     };
 
     const submitDecline = () => {
         declineForm.post(route('guest.confirm'), {
+            preserveScroll: true,
             onSuccess: () => setStep('confirmed'),
         });
     };
@@ -70,125 +91,185 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
     const submitQuestion = (e) => {
         e.preventDefault();
         questionForm.post(route('guest.question'), {
+            preserveScroll: true,
             onSuccess: () => questionForm.reset('message'),
         });
     };
 
     const updateGuestAllergies = (index, allergies) => {
-        const newGuests = [...confirmForm.data.guests];
-        newGuests[index].allergies = allergies;
-        confirmForm.setData('guests', newGuests);
+        const g = [...confirmForm.data.guests];
+        g[index].allergies = allergies;
+        confirmForm.setData('guests', g);
     };
 
-    const logout = () => {
-        router.post(route('guest.logout'));
-    };
+    const logout = () => router.post(route('guest.logout'));
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f5f1ed] via-[#faf8f5] to-[#ede8e3]">
+        <div className="min-h-screen bg-gradient-to-b from-[#f5f1ed] via-[#faf8f5] to-[#f0ebe5]">
             <Head title={`Bienvenido/a ${group.name}`} />
 
-            {/* Flash message */}
-            {showFlash && flash?.success && (
-                <div className="fixed left-0 right-0 top-0 z-50 flex justify-center px-4 pt-4">
-                    <div className="rounded-lg bg-[#8b7355] px-6 py-3 text-sm text-white shadow-lg transition-all">
-                        {flash.success}
-                    </div>
+            {/* ── Flash toast ── */}
+            <div
+                className={`fixed left-0 right-0 top-0 z-50 flex justify-center px-4 transition-all duration-500 ${
+                    showFlash && flash?.success
+                        ? 'translate-y-4 opacity-100'
+                        : '-translate-y-full opacity-0'
+                }`}
+            >
+                <div className="rounded-full bg-[#8b7355] px-6 py-2.5 text-sm font-medium text-white shadow-lg">
+                    {flash?.success}
                 </div>
-            )}
+            </div>
 
-            {/* Header */}
-            <header className="pb-2 pt-10 text-center">
-                <h1 className="font-serif text-5xl italic text-[#8b7355]">
-                    A <span className="text-4xl">&</span> A
-                </h1>
-                <p className="mt-2 text-xs uppercase tracking-[0.3em] text-[#a89584]">
-                    20 de junio de 2026
+            {/* ── Header ── */}
+            <header className="pb-4 pt-12 text-center">
+                <p className="mb-3 text-[10px] uppercase tracking-[0.4em] text-[#c4b5a4]">
+                    os invitamos a nuestra boda
                 </p>
+                <h1 className="font-serif text-6xl italic leading-none text-[#8b7355]">
+                    A <span className="mx-1 text-5xl font-light">&</span> A
+                </h1>
+                <div className="mx-auto mt-4 flex items-center justify-center gap-3">
+                    <span className="h-px w-8 bg-[#d4c5b9]" />
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-[#a89584]">
+                        20 de junio de 2026
+                    </p>
+                    <span className="h-px w-8 bg-[#d4c5b9]" />
+                </div>
             </header>
 
-            <main className="mx-auto max-w-lg space-y-8 px-5 pb-16 pt-6">
-                {/* Saludo */}
+            <main className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4">
+                {/* ── Saludo ── */}
                 <div className="text-center">
-                    <h2 className="font-serif text-3xl italic text-[#8b7355]">
+                    <h2 className="font-serif text-2xl italic text-[#8b7355]">
                         ¡Hola, {group.name}!
                     </h2>
-                    <p className="mt-2 text-[#a89584]">
+                    <p className="mt-1.5 text-sm text-[#a89584]">
                         Nos encantaría que nos acompañaseis en este día tan especial
                     </p>
                 </div>
 
-                {/* ─── STEP: Initial choice ─── */}
+                {/* ══════════════════════════════════════════
+                     1. DETALLES DEL EVENTO
+                     ══════════════════════════════════════════ */}
+                <Section>
+                    <SectionTitle>Detalles del evento</SectionTitle>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center">
+                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
+                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Fecha</p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
+                                Sábado, 20 de junio
+                            </p>
+                        </div>
+                        <div className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center">
+                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
+                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                </svg>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Lugar</p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
+                                {weddingInfo.venue.name}
+                            </p>
+                            <p className="text-[11px] text-[#b5a594]">{weddingInfo.venue.address}</p>
+                            <a
+                                href={weddingInfo.venue.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8b7355] underline underline-offset-2"
+                            >
+                                Ver ubicación
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Schedule timeline */}
+                    <div className="relative mt-6">
+                        <h4 className="mb-3 text-center text-[10px] uppercase tracking-[0.2em] text-[#b5a594]">
+                            Programa del día
+                        </h4>
+                        <div className="space-y-0">
+                            {weddingInfo.schedule.map((item, i) => (
+                                <div key={i} className="flex items-stretch gap-4">
+                                    <div className="flex w-12 flex-shrink-0 flex-col items-center">
+                                        <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#d4c5b9] bg-white">
+                                            <div className="h-2 w-2 rounded-full bg-[#8b7355]" />
+                                        </div>
+                                        {i < weddingInfo.schedule.length - 1 && (
+                                            <div className="w-px flex-1 bg-[#e2dbd3]" />
+                                        )}
+                                    </div>
+                                    <div className="pb-5">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-[#8b7355]">
+                                            {item.time}h
+                                        </p>
+                                        <p className="text-sm font-medium text-[#8b7355]">{item.event}</p>
+                                        <p className="text-xs text-[#b5a594]">{item.description}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Section>
+
+                <Divider />
+
+                {/* ══════════════════════════════════════════
+                     2. CONFIRMACIÓN
+                     ══════════════════════════════════════════ */}
+
+                {/* ── Initial choice ── */}
                 {step === 'initial' && (
-                    <div className="space-y-4 text-center">
-                        <p className="text-sm text-[#a89584]">
-                            {group.guests.length === 1
+                    <Section>
+                        <SectionTitle>Confirma tu asistencia</SectionTitle>
+                        <p className="mb-5 text-center text-sm text-[#a89584]">
+                            {isSingle
                                 ? '¿Podrás venir?'
                                 : `Sois ${group.guests.length} invitados. ¿Podréis venir?`}
                         </p>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                        <div className="flex flex-col gap-3">
                             <button
                                 onClick={() => setStep('form')}
-                                className="group flex items-center justify-center gap-3 rounded-xl border-2 border-[#8b7355] bg-[#8b7355] px-8 py-4 text-lg font-medium text-white shadow-sm transition-all hover:bg-[#7a6448] hover:shadow-md"
+                                className="flex items-center justify-center gap-3 rounded-xl border-2 border-[#8b7355] bg-[#8b7355] px-6 py-4 text-lg font-medium text-white transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
                             >
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
-                                {group.guests.length === 1 ? 'Asistiré' : 'Asistiremos'}
+                                {isSingle ? 'Asistiré' : 'Asistiremos'}
                             </button>
                             <button
-                                onClick={() => setStep('declined')}
-                                className="flex items-center justify-center gap-3 rounded-xl border-2 border-[#d4c5b9] bg-white px-8 py-4 text-lg font-medium text-[#a89584] transition-all hover:border-[#a89584] hover:shadow-md"
-                            >
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                No podremos asistir
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* ─── STEP: Decline confirmation ─── */}
-                {step === 'declined' && (
-                    <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-8 text-center shadow-sm backdrop-blur-sm">
-                        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f5f1ed]">
-                            <svg className="h-7 w-7 text-[#a89584]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                            </svg>
-                        </div>
-                        <h3 className="mb-2 font-serif text-xl italic text-[#8b7355]">
-                            Sentimos que no podáis venir
-                        </h3>
-                        <p className="mb-6 text-sm text-[#a89584]">
-                            Os echaremos de menos. ¡Gracias por hacérnoslo saber!
-                        </p>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                            <Button
                                 onClick={submitDecline}
                                 disabled={declineForm.processing}
-                                className="bg-[#a89584] text-white hover:bg-[#8b7355]"
+                                className="flex items-center justify-center gap-3 rounded-xl border-2 border-[#d4c5b9] bg-white py-3.5 text-base text-[#a89584] transition-all duration-200 hover:border-[#a89584] hover:shadow-md active:scale-[0.98] disabled:opacity-50"
                             >
-                                {declineForm.processing ? 'Enviando...' : 'Confirmar que no asistiremos'}
-                            </Button>
-                            <Button
-                                onClick={() => setStep('initial')}
-                                variant="ghost"
-                                className="text-[#a89584]"
-                            >
-                                Volver
-                            </Button>
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                {declineForm.processing ? 'Enviando...' : 'No podremos asistir'}
+                            </button>
                         </div>
-                    </div>
+                        <p className="mt-4 text-center text-xs text-[#b5a594]">
+                            Podéis modificar vuestra respuesta hasta el 1 de mayo
+                        </p>
+                    </Section>
                 )}
 
-                {/* ─── STEP: Attending form ─── */}
+                {/* ── Attending form ── */}
                 {step === 'form' && (
-                    <form onSubmit={submitAttending} className="space-y-6">
-                        <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-                            <h3 className="mb-4 text-center font-serif text-lg italic text-[#8b7355]">
-                                Alergias o restricciones alimentarias
-                            </h3>
+                    <form onSubmit={submitAttending} className="space-y-5">
+                        {/* Allergies */}
+                        <Section>
+                            <SectionTitle>Alergias alimentarias</SectionTitle>
                             <div className="space-y-4">
                                 {group.guests.map((guest, index) => (
                                     <div key={guest.id}>
@@ -198,99 +279,81 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                         <Input
                                             value={confirmForm.data.guests[index].allergies}
                                             onChange={(e) => updateGuestAllergies(index, e.target.value)}
-                                            className="mt-1 border-[#d4c5b9] bg-[#faf8f5] focus:border-[#8b7355] focus:ring-[#8b7355]"
+                                            className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
                                             placeholder="Ninguna"
                                         />
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </Section>
 
                         {/* Transport */}
-                        <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-                            <h3 className="mb-4 text-center font-serif text-lg italic text-[#8b7355]">
-                                Transporte
-                            </h3>
+                        <Section>
+                            <SectionTitle>Transporte</SectionTitle>
                             <RadioGroup
                                 value={confirmForm.data.transport}
-                                onValueChange={(value) => confirmForm.setData('transport', value)}
+                                onValueChange={(v) => confirmForm.setData('transport', v)}
                                 className="space-y-3"
                             >
                                 <label
                                     htmlFor="t-autobus"
-                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
                                         confirmForm.data.transport === 'AUTOBUS'
-                                            ? 'border-[#8b7355] bg-[#faf8f5]'
-                                            : 'border-[#d4c5b9]/50 hover:border-[#a89584]'
+                                            ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
+                                            : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
                                     }`}
                                 >
                                     <RadioGroupItem value="AUTOBUS" id="t-autobus" className="text-[#8b7355]" />
                                     <div>
-                                        <span className="font-medium text-[#8b7355]">Autobús gratuito</span>
-                                        <p className="text-xs text-[#a89584]">Horarios por confirmar</p>
+                                        <span className="text-sm font-medium text-[#8b7355]">Autobús gratuito</span>
+                                        <p className="text-xs text-[#b5a594]">Horarios por confirmar</p>
                                     </div>
                                 </label>
 
                                 {confirmForm.data.transport === 'AUTOBUS' && (
-                                    <div className="ml-4 space-y-2 rounded-lg bg-[#faf8f5] p-4">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="bus_onda_ida"
-                                                checked={confirmForm.data.bus_onda_ida}
-                                                onCheckedChange={(c) => confirmForm.setData('bus_onda_ida', c)}
-                                                className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
-                                            />
-                                            <Label htmlFor="bus_onda_ida" className="text-sm text-[#8b7355]">
-                                                Bus desde Onda (ida)
-                                            </Label>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="bus_onda_vuelta"
-                                                checked={confirmForm.data.bus_onda_vuelta}
-                                                onCheckedChange={(c) => confirmForm.setData('bus_onda_vuelta', c)}
-                                                className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
-                                            />
-                                            <Label htmlFor="bus_onda_vuelta" className="text-sm text-[#8b7355]">
-                                                Bus desde Onda (vuelta)
-                                            </Label>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                id="bus_cs"
-                                                checked={confirmForm.data.bus_cs}
-                                                onCheckedChange={(c) => confirmForm.setData('bus_cs', c)}
-                                                className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
-                                            />
-                                            <Label htmlFor="bus_cs" className="text-sm text-[#8b7355]">
-                                                Bus desde Castellón
-                                            </Label>
-                                        </div>
+                                    <div className="ml-4 space-y-2.5 rounded-xl bg-[#faf8f5] p-4">
+                                        {[
+                                            { id: 'bus_onda_ida', label: 'Bus desde Onda (ida)', key: 'bus_onda_ida' },
+                                            { id: 'bus_onda_vuelta', label: 'Bus desde Onda (vuelta)', key: 'bus_onda_vuelta' },
+                                            { id: 'bus_cs', label: 'Bus desde Castellón', key: 'bus_cs' },
+                                        ].map((bus) => (
+                                            <div key={bus.id} className="flex items-center gap-2.5">
+                                                <Checkbox
+                                                    id={bus.id}
+                                                    checked={confirmForm.data[bus.key]}
+                                                    onCheckedChange={(c) => confirmForm.setData(bus.key, c)}
+                                                    className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
+                                                />
+                                                <Label htmlFor={bus.id} className="text-sm text-[#8b7355]">
+                                                    {bus.label}
+                                                </Label>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
 
                                 <label
                                     htmlFor="t-coche"
-                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all ${
+                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
                                         confirmForm.data.transport === 'COCHE'
-                                            ? 'border-[#8b7355] bg-[#faf8f5]'
-                                            : 'border-[#d4c5b9]/50 hover:border-[#a89584]'
+                                            ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
+                                            : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
                                     }`}
                                 >
                                     <RadioGroupItem value="COCHE" id="t-coche" className="text-[#8b7355]" />
                                     <div>
-                                        <span className="font-medium text-[#8b7355]">Coche propio</span>
-                                        <p className="text-xs text-[#a89584]">Parking gratuito disponible</p>
+                                        <span className="text-sm font-medium text-[#8b7355]">Coche propio</span>
+                                        <p className="text-xs text-[#b5a594]">Parking gratuito disponible</p>
                                     </div>
                                 </label>
                             </RadioGroup>
-                        </div>
+                        </Section>
 
                         {/* Contact */}
-                        <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-                            <h3 className="mb-4 text-center font-serif text-lg italic text-[#8b7355]">
-                                Contacto <span className="text-sm font-normal text-[#a89584]">(opcional)</span>
-                            </h3>
+                        <Section>
+                            <SectionTitle>
+                                Contacto <span className="text-sm font-normal not-italic text-[#b5a594]">(opcional)</span>
+                            </SectionTitle>
                             <div className="space-y-3">
                                 <div>
                                     <Label htmlFor="contact_email" className="text-sm text-[#8b7355]">Email</Label>
@@ -299,7 +362,7 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                         type="email"
                                         value={confirmForm.data.contact_email}
                                         onChange={(e) => confirmForm.setData('contact_email', e.target.value)}
-                                        className="mt-1 border-[#d4c5b9] bg-[#faf8f5] focus:border-[#8b7355]"
+                                        className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
                                         placeholder="tu@email.com"
                                     />
                                 </div>
@@ -310,26 +373,26 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                         type="tel"
                                         value={confirmForm.data.contact_phone}
                                         onChange={(e) => confirmForm.setData('contact_phone', e.target.value)}
-                                        className="mt-1 border-[#d4c5b9] bg-[#faf8f5] focus:border-[#8b7355]"
+                                        className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
                                         placeholder="+34 600 000 000"
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </Section>
 
                         {/* Submit */}
-                        <div className="flex flex-col gap-3">
+                        <div className="space-y-2.5 pt-1">
                             <Button
                                 type="submit"
                                 disabled={confirmForm.processing}
-                                className="w-full rounded-xl bg-[#8b7355] py-6 text-base font-medium text-white shadow-sm transition-all hover:bg-[#7a6448] hover:shadow-md"
+                                className="w-full rounded-xl bg-[#8b7355] py-6 text-base font-medium text-white shadow-sm transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
                             >
                                 {confirmForm.processing ? 'Guardando...' : 'Confirmar asistencia'}
                             </Button>
                             <button
                                 type="button"
                                 onClick={() => setStep('initial')}
-                                className="text-sm text-[#a89584] underline hover:text-[#8b7355]"
+                                className="block w-full py-2 text-center text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                             >
                                 Volver
                             </button>
@@ -337,25 +400,23 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                     </form>
                 )}
 
-                {/* ─── STEP: Confirmed summary ─── */}
+                {/* ── Confirmed summary ── */}
                 {step === 'confirmed' && (
-                    <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-8 text-center shadow-sm backdrop-blur-sm">
+                    <Section className="text-center">
                         {allAttending ? (
                             <>
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-green-200">
-                                    <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100">
+                                    <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                     </svg>
                                 </div>
-                                <h3 className="mb-2 font-serif text-2xl italic text-[#8b7355]">
+                                <h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]">
                                     ¡Confirmación recibida!
                                 </h3>
-                                <p className="mb-1 text-[#a89584]">
-                                    {group.guests.length === 1
-                                        ? '1 persona asistirá'
-                                        : `${group.guests.length} personas asistirán`}
+                                <p className="text-sm text-[#a89584]">
+                                    {isSingle ? '1 persona asistirá' : `${group.guests.length} personas asistirán`}
                                 </p>
-                                <p className="mb-6 text-sm text-[#a89584]">
+                                <p className="mt-1 text-sm text-[#a89584]">
                                     ¡Nos vemos el 20 de junio!
                                 </p>
                             </>
@@ -366,116 +427,78 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                     </svg>
                                 </div>
-                                <h3 className="mb-2 font-serif text-2xl italic text-[#8b7355]">
+                                <h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]">
                                     Respuesta registrada
                                 </h3>
-                                <p className="mb-6 text-sm text-[#a89584]">
+                                <p className="text-sm text-[#a89584]">
                                     Lamentamos que no podáis acompañarnos. ¡Os echaremos de menos!
                                 </p>
                             </>
                         )}
                         <button
                             onClick={() => setStep('initial')}
-                            className="text-sm text-[#a89584] underline transition-colors hover:text-[#8b7355]"
+                            className="mt-5 inline-block text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                         >
                             Modificar respuesta
                         </button>
-                    </div>
+                        <p className="mt-2 text-xs text-[#b5a594]">
+                            Podéis modificar vuestra respuesta hasta el 1 de mayo
+                        </p>
+                    </Section>
                 )}
 
-                {/* ─── Questions section (always visible when confirmed or initial) ─── */}
-                {(step === 'confirmed' || step === 'initial') && (
-                    <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-                        <h3 className="mb-4 text-center font-serif text-lg italic text-[#8b7355]">
-                            ¿Tenéis alguna duda?
-                        </h3>
-                        <form onSubmit={submitQuestion} className="space-y-3">
-                            <Textarea
-                                value={questionForm.data.message}
-                                onChange={(e) => questionForm.setData('message', e.target.value)}
-                                rows={3}
-                                className="border-[#d4c5b9] bg-[#faf8f5] focus:border-[#8b7355] focus:ring-[#8b7355]"
-                                placeholder="Escribe tu pregunta aquí..."
-                            />
-                            {questionForm.errors.message && (
-                                <p className="text-xs text-red-500">{questionForm.errors.message}</p>
-                            )}
-                            <Button
-                                type="submit"
-                                disabled={questionForm.processing || !questionForm.data.message.trim()}
-                                className="w-full bg-[#a89584] text-white hover:bg-[#8b7355]"
-                            >
-                                {questionForm.processing ? 'Enviando...' : 'Enviar pregunta'}
-                            </Button>
-                        </form>
+                <Divider />
 
-                        {questions.length > 0 && (
-                            <div className="mt-6 border-t border-[#d4c5b9]/30 pt-4">
-                                <h4 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#a89584]">
-                                    Preguntas anteriores
-                                </h4>
-                                <div className="space-y-3">
-                                    {questions.map((q) => (
-                                        <div key={q.id} className="rounded-lg bg-[#faf8f5] p-3">
-                                            <p className="text-sm text-[#8b7355]">{q.message}</p>
-                                            <p className="mt-1 text-xs text-[#a89584]">{q.created_at}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                {/* ══════════════════════════════════════════
+                     3. PREGUNTAS / DUDAS  (always visible)
+                     ══════════════════════════════════════════ */}
+                <Section>
+                    <SectionTitle>¿Tenéis alguna duda?</SectionTitle>
+                    <p className="mb-4 text-center text-sm text-[#a89584]">
+                        Escríbenos y os contestaremos lo antes posible
+                    </p>
+                    <form onSubmit={submitQuestion} className="space-y-3">
+                        <Textarea
+                            value={questionForm.data.message}
+                            onChange={(e) => questionForm.setData('message', e.target.value)}
+                            rows={3}
+                            className="border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
+                            placeholder="Escribe tu pregunta aquí..."
+                        />
+                        {questionForm.errors.message && (
+                            <p className="text-xs text-red-500">{questionForm.errors.message}</p>
                         )}
-                    </div>
-                )}
+                        <Button
+                            type="submit"
+                            disabled={questionForm.processing || !questionForm.data.message.trim()}
+                            className="w-full bg-[#a89584] text-white transition-all hover:bg-[#8b7355]"
+                        >
+                            {questionForm.processing ? 'Enviando...' : 'Enviar pregunta'}
+                        </Button>
+                    </form>
 
-                {/* ─── Event details ─── */}
-                <div className="rounded-2xl border border-[#d4c5b9]/40 bg-white/80 p-6 shadow-sm backdrop-blur-sm">
-                    <h3 className="mb-5 text-center font-serif text-lg italic text-[#8b7355]">
-                        Detalles del evento
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="rounded-xl bg-[#faf8f5] p-4 text-center">
-                            <p className="text-xs uppercase tracking-wide text-[#a89584]">Fecha</p>
-                            <p className="mt-1 font-serif text-sm font-medium text-[#8b7355]">
-                                Sábado 20 de junio
-                            </p>
-                        </div>
-                        <div className="rounded-xl bg-[#faf8f5] p-4 text-center">
-                            <p className="text-xs uppercase tracking-wide text-[#a89584]">Lugar</p>
-                            <p className="mt-1 font-serif text-sm font-medium text-[#8b7355]">
-                                {weddingInfo.venue.name}
-                            </p>
-                            <a
-                                href={weddingInfo.venue.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-1 inline-block text-xs text-[#a89584] underline"
-                            >
-                                Ver ubicación
-                            </a>
-                        </div>
-                    </div>
-
-                    <div className="mt-5 space-y-2">
-                        {weddingInfo.schedule.map((item, index) => (
-                            <div key={index} className="flex items-center gap-4 rounded-lg bg-[#faf8f5] px-4 py-3">
-                                <span className="w-12 flex-shrink-0 text-center font-serif text-sm font-medium text-[#8b7355]">
-                                    {item.time}
-                                </span>
-                                <div className="h-4 w-px bg-[#d4c5b9]" />
-                                <div>
-                                    <p className="text-sm font-medium text-[#8b7355]">{item.event}</p>
-                                    <p className="text-xs text-[#a89584]">{item.description}</p>
-                                </div>
+                    {questions.length > 0 && (
+                        <div className="mt-6 border-t border-[#e2dbd3]/60 pt-4">
+                            <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">
+                                Preguntas anteriores
+                            </h4>
+                            <div className="space-y-2.5">
+                                {questions.map((q) => (
+                                    <div key={q.id} className="rounded-lg bg-[#faf8f5] p-3">
+                                        <p className="text-sm text-[#8b7355]">{q.message}</p>
+                                        <p className="mt-1 text-[11px] text-[#b5a594]">{q.created_at}</p>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        </div>
+                    )}
+                </Section>
 
-                {/* Logout */}
-                <div className="text-center">
+                {/* ── Logout ── */}
+                <div className="pt-4 text-center">
                     <button
                         onClick={logout}
-                        className="text-xs text-[#a89584] underline hover:text-[#8b7355]"
+                        className="text-xs text-[#b5a594] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                     >
                         Cerrar sesión
                     </button>
