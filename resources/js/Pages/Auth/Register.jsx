@@ -1,4 +1,4 @@
-import InputError from '@/Components/InputError';
+import InputError from '@/components/InputError';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
