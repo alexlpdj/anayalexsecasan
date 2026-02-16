@@ -8,8 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import LoadingScreen from '@/components/LoadingScreen';
-import MusicPlayer from '@/components/MusicPlayer';
 import CountdownTimer from '@/components/CountdownTimer';
 import AnimatedTimeline from '@/components/AnimatedTimeline';
 import RippleButton from '@/components/RippleButton';
@@ -19,6 +17,8 @@ import ScrollToTop from '@/components/ScrollToTop';
 import AnimatedHero from '@/components/AnimatedHero';
 import FaqAccordion from '@/components/FaqAccordion';
 import ProgramaDestacado from '@/components/ProgramaDestacado';
+import {CardDescription, CardHeader, CardTitle} from "@/components/ui/card.jsx";
+import Lottie from "lottie-react";
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
@@ -26,10 +26,10 @@ function Section({ children, className = '', delay = 0 }) {
     return (
         <motion.div
             className={`rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7, delay, ease: "easeOut" }}
         >
             {children}
         </motion.div>
@@ -44,11 +44,17 @@ function SectionTitle({ children }) {
 
 function Divider() {
     return (
-        <div className="flex items-center justify-center gap-3 py-1">
+        <motion.div
+            className="flex items-center justify-center gap-3 py-1"
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+        >
             <span className="h-px w-10 bg-[#d4c5b9]/50" />
             <span className="text-[10px] text-[#d4c5b9]">&#10047;</span>
             <span className="h-px w-10 bg-[#d4c5b9]/50" />
-        </div>
+        </motion.div>
     );
 }
 
@@ -58,11 +64,13 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
     const { flash } = usePage().props;
     const [step, setStep] = useState('initial');
     const [showFlash, setShowFlash] = useState(false);
-    const [showLoading, setShowLoading] = useState(true);
 
     const isSubmitted = !!group.submitted_at;
     const allAttending = group.guests.every((g) => g.attending);
     const isSingle = group.guests.length === 1;
+
+    const [noviosAnimation, setNoviosAnimation] = useState(null);
+
 
     // Función para disparar confetti
     const triggerConfetti = () => {
@@ -97,6 +105,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             });
         }, 400);
     };
+
+    useEffect(() => {
+        // Cargar la animación de novios
+        fetch('/animations/noviosoutlined.json')
+            .then(response => response.json())
+            .then(data => setNoviosAnimation(data))
+            .catch(err => console.log('Error cargando animación:', err));
+    }, []);
 
     useEffect(() => {
         if (isSubmitted) setStep('confirmed');
@@ -164,26 +180,28 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
 
     return (
         <>
-            {/* Loading Screen */}
-            <AnimatePresence>
-                {showLoading && (
-                    <LoadingScreen onComplete={() => setTimeout(() => setShowLoading(false), 2000)} />
-                )}
-            </AnimatePresence>
-
             {/* Scroll Progress Bar */}
-            {!showLoading && <ScrollProgress />}
+            <ScrollProgress />
 
             {/* Scroll to Top Button */}
-            {!showLoading && <ScrollToTop />}
+            <ScrollToTop />
 
-            {/* Music Player - solo se muestra cuando termina el loading */}
-            {!showLoading && (
-                <MusicPlayer audioUrl="/audio/wedding-music.mp3" />
-            )}
+            {/* Fondo con ilustración de palmeras */}
+            <div
+                className="fixed inset-0 -z-10"
+                style={{
+                    backgroundImage: 'url(/illustrations/palmeras_1.jpg)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                }}
+            >
+                {/* Capa dorada semitransparente */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#f5f1ed]/95 via-[#faf8f5]/92 to-[#f0ebe5]/95" />
+            </div>
 
-            <div className="min-h-screen bg-gradient-to-b from-[#f5f1ed] via-[#faf8f5] to-[#f0ebe5]">
-                <Head title={`Bienvenido/a ${group.name}`} />
+            <div className="min-h-screen">
+                <Head title={`Hola ${group.name}`} />
 
             {/* ── Flash toast ── */}
             <div
@@ -199,38 +217,72 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             </div>
 
             {/* ── Header with Typewriter Animation ── */}
-            <AnimatedHero showLoading={showLoading} />
+            <AnimatedHero />
 
             <motion.main
                 className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: showLoading ? 0 : 1 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
             >
                 {/* ── Saludo ── */}
                 <motion.div
-                    className="text-center"
+                    className="text-center space-y-4"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    <h2 className="font-serif text-2xl italic text-[#8b7355]">
-                        ¡Hola, {group.name}!
-                    </h2>
-                    <p className="mt-1.5 text-sm text-[#a89584]">
-                        Nos encantaría que nos acompañaseis en este día tan especial
-                    </p>
+                    <div>
+                        <h2 className="font-serif text-2xl italic text-[#8b7355]">
+                            ¡Hola, {group.name}!
+                        </h2>
+                        <p className="mt-1.5 text-sm text-[#a89584]">
+                            Nos encantaría que nos acompañaseis en este día tan especial
+                        </p>
+                    </div>
+
+                    {/* Countdown Timer */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+                    >
+                        <CountdownTimer targetDate="2026-06-20T00:00:00" />
+                    </motion.div>
                 </motion.div>
 
                 {/* ══════════════════════════════════════════
                      1. DETALLES DEL EVENTO
                      ══════════════════════════════════════════ */}
                 <Section>
+
+                    {/* Animación de novios */}
+                    <motion.div
+                        className="flex justify-center pb-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                    >
+                        {noviosAnimation && (
+                            <Lottie
+                                animationData={noviosAnimation}
+                                loop={false}
+                                style={{ width: 220, height: 220 }}
+                            />
+                        )}
+                    </motion.div>
                     <SectionTitle>Detalles del evento</SectionTitle>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center">
+                        <motion.div
+                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
+                            initial={{ opacity: 0, y: 15 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+                        >
                             <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
                                 <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -240,8 +292,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
                                 Sábado, 20 de junio
                             </p>
-                        </div>
-                        <div className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center">
+                        </motion.div>
+                        <motion.div
+                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
+                            initial={{ opacity: 0, y: 15 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                        >
                             <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
                                 <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -264,7 +322,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                                 </svg>
                             </a>
-                        </div>
+                        </motion.div>
                     </div>
 
                 </Section>
@@ -292,12 +350,24 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 {step === 'initial' && (
                     <Section>
                         <SectionTitle>Confirma tu asistencia</SectionTitle>
-                        <p className="mb-5 text-center text-sm text-[#a89584]">
+                        <motion.p
+                            className="mb-5 text-center text-sm text-[#a89584]"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
                             {isSingle
                                 ? '¿Podrás venir?'
                                 : `Sois ${group.guests.length} invitados. ¿Podréis venir?`}
-                        </p>
-                        <div className="flex flex-col gap-3">
+                        </motion.p>
+                        <motion.div
+                            className="flex flex-col gap-3"
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                        >
                             <RippleButton
                                 onClick={() => setStep('form')}
                                 className="flex items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-medium shadow-lg"
@@ -319,10 +389,16 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 </svg>
                                 {declineForm.processing ? 'Enviando...' : 'No podremos asistir'}
                             </RippleButton>
-                        </div>
-                        <p className="mt-4 text-center text-xs text-[#b5a594]">
+                        </motion.div>
+                        <motion.p
+                            className="mt-4 text-center text-xs text-[#b5a594]"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: 0.5 }}
+                        >
                             Podéis modificar vuestra respuesta hasta el 1 de mayo
-                        </p>
+                        </motion.p>
                     </Section>
                 )}
 
@@ -467,45 +543,92 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     <Section className="text-center">
                         {allAttending ? (
                             <>
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100">
+                                <motion.div
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100"
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    whileInView={{ scale: 1, rotate: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut", type: "spring" }}
+                                >
                                     <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                     </svg>
-                                </div>
-                                <h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]">
+                                </motion.div>
+                                <motion.h3
+                                    className="mb-1 font-serif text-2xl italic text-[#8b7355]"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.4 }}
+                                >
                                     ¡Confirmación recibida!
-                                </h3>
-                                <p className="text-sm text-[#a89584]">
-                                    {isSingle ? '1 persona asistirá' : `${group.guests.length} personas asistirán`}
-                                </p>
-                                <p className="mt-1 text-sm text-[#a89584]">
-                                    ¡Nos vemos el 20 de junio!
-                                </p>
+                                </motion.h3>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    whileInView={{ opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                >
+                                    <p className="text-sm text-[#a89584]">
+                                        {isSingle ? '1 persona asistirá' : `${group.guests.length} personas asistirán`}
+                                    </p>
+                                    <p className="mt-1 text-sm text-[#a89584]">
+                                        ¡Nos vemos el 20 de junio!
+                                    </p>
+                                </motion.div>
                             </>
                         ) : (
                             <>
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f1ed]">
+                                <motion.div
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f1ed]"
+                                    initial={{ scale: 0 }}
+                                    whileInView={{ scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                                >
                                     <svg className="h-8 w-8 text-[#a89584]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                     </svg>
-                                </div>
-                                <h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]">
+                                </motion.div>
+                                <motion.h3
+                                    className="mb-1 font-serif text-2xl italic text-[#8b7355]"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.4 }}
+                                >
                                     Respuesta registrada
-                                </h3>
-                                <p className="text-sm text-[#a89584]">
+                                </motion.h3>
+                                <motion.p
+                                    className="text-sm text-[#a89584]"
+                                    initial={{ opacity: 0 }}
+                                    whileInView={{ opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                >
                                     Lamentamos que no podáis acompañarnos. ¡Os echaremos de menos!
-                                </p>
+                                </motion.p>
                             </>
                         )}
-                        <button
+                        <motion.button
                             onClick={() => setStep('initial')}
                             className="mt-5 inline-block text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: 0.6 }}
                         >
                             Modificar respuesta
-                        </button>
-                        <p className="mt-2 text-xs text-[#b5a594]">
+                        </motion.button>
+                        <motion.p
+                            className="mt-2 text-xs text-[#b5a594]"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: 0.7 }}
+                        >
                             Podéis modificar vuestra respuesta hasta el 1 de mayo
-                        </p>
+                        </motion.p>
                     </Section>
                 )}
 
@@ -573,14 +696,20 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 )}
 
                 {/* ── Logout ── */}
-                <div className="pt-4 text-center">
+                <motion.div
+                    className="pt-4 text-center"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                >
                     <button
                         onClick={logout}
                         className="text-xs text-[#b5a594] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                     >
                         Cerrar sesión
                     </button>
-                </div>
+                </motion.div>
             </motion.main>
         </div>
         </>

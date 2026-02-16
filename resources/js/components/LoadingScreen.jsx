@@ -1,13 +1,25 @@
 import { motion } from 'framer-motion';
+import Lottie from 'lottie-react';
+import { useState, useEffect } from 'react';
 
 export default function LoadingScreen({ onComplete }) {
+    const [animationData, setAnimationData] = useState(null);
+
+    useEffect(() => {
+        // Cargar la animación Lottie
+        //fetch('/animations/noviosoutlined.json')
+        fetch('/animations/anillos.json')
+            .then(response => response.json())
+            .then(data => setAnimationData(data))
+            .catch(err => console.log('No se pudo cargar la animación Lottie:', err));
+    }, []);
     return (
         <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#f5f1ed] via-[#faf8f5] to-[#f0ebe5]"
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            transition={{ duration: 0.9, ease: "easeInOut" }}
             onAnimationComplete={onComplete}
         >
             <div className="relative text-center">
@@ -44,28 +56,39 @@ export default function LoadingScreen({ onComplete }) {
                     20 de junio de 2026
                 </motion.p>
 
-                {/* Loading indicator */}
+                {/* Animación Lottie de anillos */}
                 <motion.div
-                    className="mx-auto mt-8 flex gap-1.5"
+                    className="mx-auto mt-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.4, delay: 1.2 }}
                 >
-                    {[0, 1, 2].map((i) => (
-                        <motion.div
-                            key={i}
-                            className="h-2 w-2 rounded-full bg-[#8b7355]"
-                            animate={{
-                                scale: [1, 1.2, 1],
-                                opacity: [0.5, 1, 0.5],
-                            }}
-                            transition={{
-                                duration: 1,
-                                repeat: Infinity,
-                                delay: i * 0.2,
-                            }}
+                    {animationData ? (
+                        <Lottie
+                            animationData={animationData}
+                            loop={true}
+                            style={{ width: 120, height: 120, margin: '0 auto' }}
                         />
-                    ))}
+                    ) : (
+                        // Fallback: puntos mientras carga la animación
+                        <div className="flex gap-1.5 justify-center">
+                            {[0, 1, 2].map((i) => (
+                                <motion.div
+                                    key={i}
+                                    className="h-2 w-2 rounded-full bg-[#8b7355]"
+                                    animate={{
+                                        scale: [1, 1.2, 1],
+                                        opacity: [0.5, 1, 0.5],
+                                    }}
+                                    transition={{
+                                        duration: 1,
+                                        repeat: Infinity,
+                                        delay: i * 0.2,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </motion.div>
             </div>
         </motion.div>

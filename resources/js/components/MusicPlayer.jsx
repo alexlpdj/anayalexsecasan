@@ -2,39 +2,71 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Howl } from 'howler';
 
-export default function MusicPlayer({ audioUrl }) {
+export default function MusicPlayer({ playlist = [], autoplay = false }) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(0.5);
     const [showControls, setShowControls] = useState(false);
     const [audioError, setAudioError] = useState(false);
+    const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const soundRef = useRef(null);
 
-    useEffect(() => {
-        if (!audioUrl) {
+    // Función para cargar y reproducir una canción
+    const loadAndPlayTrack = (index) => {
+        // Limpiar la canción anterior
+        if (soundRef.current) {
+            soundRef.current.unload();
+        }
+
+        if (!playlist || playlist.length === 0 || !playlist[index]) {
             setAudioError(true);
             return;
         }
 
-        // Inicializar Howler
+        // Cargar nueva canción
         soundRef.current = new Howl({
-            src: [audioUrl],
+            src: [playlist[index]],
             html5: true,
-            loop: true,
+            loop: false, // No hacer loop de la misma canción
             volume: volume,
             onplay: () => setIsPlaying(true),
             onpause: () => setIsPlaying(false),
+            onend: () => {
+                // Cuando termina, pasar a la siguiente canción
+                const nextIndex = (index + 1) % playlist.length;
+                setCurrentTrackIndex(nextIndex);
+            },
             onloaderror: () => {
-                console.warn('No se pudo cargar el archivo de audio. Añade wedding-music.mp3 en public/audio/');
-                setAudioError(true);
+                console.warn(`No se pudo cargar el archivo de audio: ${playlist[index]}`);
+                // Intentar con la siguiente canción
+                const nextIndex = (index + 1) % playlist.length;
+                if (nextIndex !== index) {
+                    setCurrentTrackIndex(nextIndex);
+                } else {
+                    setAudioError(true);
+                }
             },
         });
+
+        // Reproducir automáticamente
+        if (autoplay || isPlaying) {
+            setTimeout(() => {
+                if (soundRef.current) {
+                    soundRef.current.play();
+                    soundRef.current.fade(0, volume, 1000);
+                }
+            }, 300);
+        }
+    };
+
+    useEffect(() => {
+        loadAndPlayTrack(currentTrackIndex);
 
         return () => {
             if (soundRef.current) {
                 soundRef.current.unload();
             }
         };
-    }, [audioUrl]);
+    }, [currentTrackIndex]);
 
     useEffect(() => {
         if (soundRef.current) {

@@ -22,6 +22,20 @@ export default function Login({ status, canResetPassword }) {
 
             {/* Lado izquierdo - Decorativo */}
             <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-gradient-to-br from-[#8b7355] via-[#a89584] to-[#8b7355] p-12 text-white relative overflow-hidden">
+                {/* Fondo con ilustración de palmeras */}
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        backgroundImage: 'url(/illustrations/palmeras_1.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                    }}
+                >
+                    {/* Capa de color encima */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#8b7355]/85 via-[#a89584]/80 to-[#8b7355]/85" />
+                </div>
+
                 {/* Patrón decorativo de fondo */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-10 left-10 w-64 h-64 rounded-full border border-white/30" />
@@ -71,8 +85,20 @@ export default function Login({ status, canResetPassword }) {
             </div>
 
             {/* Lado derecho - Formulario */}
-            <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed]">
-                <div className="mx-auto w-full max-w-md">
+            <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] relative">
+                {/* Fondo sutil de palmeras en móvil */}
+                <div
+                    className="absolute inset-0 lg:hidden"
+                    style={{
+                        backgroundImage: 'url(/illustrations/palmeras_1.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                    }}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#faf8f5]/95 to-[#f5f1ed]/95" />
+                </div>
+                <div className="relative z-10 mx-auto w-full max-w-md">
                     {/* Logo para móvil */}
                     <div className="mb-8 text-center lg:hidden">
                         <h1 className="font-serif text-5xl italic text-[#8b7355]">

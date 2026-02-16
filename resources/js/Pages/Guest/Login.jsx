@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,12 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
+import Lottie from 'lottie-react';
 
 export default function GuestLogin() {
     const [showLoading, setShowLoading] = useState(true);
     const { data, setData, post, processing, errors } = useForm({
         code: '',
     });
+
+
 
     const submit = (e) => {
         e.preventDefault();
@@ -27,8 +30,22 @@ export default function GuestLogin() {
                 )}
             </AnimatePresence>
 
-            <div className="min-h-screen bg-gradient-to-br from-[#f5f1ed] via-[#faf8f5] to-[#ede8e3]">
-                <Head title="Bienvenido" />
+            {/* Fondo con ilustración de palmeras */}
+            <div
+                className="fixed inset-0 -z-10"
+                style={{
+                    backgroundImage: 'url(/illustrations/palmeras_1.jpg)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                }}
+            >
+                {/* Capa dorada semitransparente */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#f5f1ed]/95 via-[#faf8f5]/92 to-[#ede8e3]/95" />
+            </div>
+
+            <div className="min-h-screen">
+                <Head title="Acceso invitados" />
 
                 {/* Header decorativo */}
                 <motion.header
@@ -85,9 +102,11 @@ export default function GuestLogin() {
                 transition={{ duration: 0.8, delay: 0.4 }}
             >
                 <Card className="border-[#d4c5b9]/30 bg-white/70 shadow-2xl backdrop-blur-sm">
+
+
                     <CardHeader className="text-center">
                         <CardTitle className="font-serif text-3xl italic text-[#8b7355]">
-                            ¡Bienvenido!
+                            ¡Bienvenido/s!
                         </CardTitle>
                         <CardDescription className="text-base leading-relaxed text-[#a89584]">
                             Nos hace mucha ilusión compartir este día contigo.
@@ -180,22 +199,13 @@ export default function GuestLogin() {
                 </Card>
 
                 {/* Info adicional */}
-                <div className="mt-8 text-center">
-                    <div className="inline-block rounded-lg border border-[#d4c5b9]/20 bg-white/50 px-6 py-4 backdrop-blur-sm">
-                        <p className="text-sm text-[#a89584]">
-                            <span className="font-serif italic text-[#8b7355]">La Ópera</span>
-                            <br />
-                            Benicàssim, Castellón
-                            <br />
-                            20 de Junio de 2026
-                        </p>
-                    </div>
-                </div>
             </motion.main>
+
+
 
             {/* Footer */}
             <motion.footer
-                className="py-8 text-center"
+                className="py-2 text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showLoading ? 0 : 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
