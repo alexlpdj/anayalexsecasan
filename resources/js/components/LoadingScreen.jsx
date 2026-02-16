@@ -19,7 +19,7 @@ export default function LoadingScreen({ onComplete }) {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, ease: "easeInOut" }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
             onAnimationComplete={onComplete}
         >
             <div className="relative text-center">
@@ -32,6 +32,7 @@ export default function LoadingScreen({ onComplete }) {
                     <h1 className="font-serif text-8xl italic leading-none text-[#8b7355]">
                         A <span className="mx-2 text-7xl font-light">&</span> A
                     </h1>
+
                 </motion.div>
 
                 {/* Línea decorativa */}

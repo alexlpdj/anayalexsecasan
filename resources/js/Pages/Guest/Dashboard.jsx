@@ -71,6 +71,13 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
 
     const [noviosAnimation, setNoviosAnimation] = useState(null);
 
+    useEffect(() => {
+        // Cargar la animación de novios
+        fetch('/animations/noviosoutlined.json')
+            .then(response => response.json())
+            .then(data => setNoviosAnimation(data))
+            .catch(err => console.log('Error cargando animación:', err));
+    }, []);
 
     // Función para disparar confetti
     const triggerConfetti = () => {
@@ -227,7 +234,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             >
                 {/* ── Saludo ── */}
                 <motion.div
-                    className="text-center space-y-4"
+                    className="text-center space-y-3"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -242,7 +249,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                         </p>
                     </div>
 
-                    {/* Countdown Timer */}
+                    {/* Countdown Timer - más compacto */}
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -253,97 +260,27 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     </motion.div>
                 </motion.div>
 
-                {/* ══════════════════════════════════════════
-                     1. DETALLES DEL EVENTO
-                     ══════════════════════════════════════════ */}
-                <Section>
-
-                    {/* Animación de novios */}
+                {/* ── Banner de recordatorio si no ha confirmado ── */}
+                {!isSubmitted && (
                     <motion.div
-                        className="flex justify-center pb-4"
-                        initial={{ opacity: 0, y: 20 }}
+                        className="rounded-xl bg-gradient-to-r from-[#8b7355] to-[#a89584] p-4 text-center shadow-lg"
+                        initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.5 }}
+                        transition={{ duration: 0.6, delay: 0.5 }}
                     >
-                        {noviosAnimation && (
-                            <Lottie
-                                animationData={noviosAnimation}
-                                loop={false}
-                                style={{ width: 220, height: 220 }}
-                            />
-                        )}
+                        <div className="flex items-center justify-center gap-2">
+                            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                            <p className="text-sm font-medium text-white">
+                                ¡No olvides confirmar tu asistencia! 👇
+                            </p>
+                        </div>
                     </motion.div>
-                    <SectionTitle>Detalles del evento</SectionTitle>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <motion.div
-                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-                        >
-                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
-                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                </svg>
-                            </div>
-                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Fecha</p>
-                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
-                                Sábado, 20 de junio
-                            </p>
-                        </motion.div>
-                        <motion.div
-                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
-                            initial={{ opacity: 0, y: 15 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                        >
-                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
-                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                                </svg>
-                            </div>
-                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Lugar</p>
-                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
-                                {weddingInfo.venue.name}
-                            </p>
-                            <p className="text-[11px] text-[#b5a594]">{weddingInfo.venue.address}</p>
-                            <a
-                                href={weddingInfo.venue.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8b7355] underline underline-offset-2"
-                            >
-                                Ver ubicación
-                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                                </svg>
-                            </a>
-                        </motion.div>
-                    </div>
-
-                </Section>
-
-                <Divider />
+                )}
 
                 {/* ══════════════════════════════════════════
-                     PROGRAMA DEL DÍA - SECCIÓN DESTACADA
-                     ══════════════════════════════════════════ */}
-                <Section delay={0.1}>
-                    <SectionTitle>Programa del Día</SectionTitle>
-                    <p className="mb-6 text-center text-sm text-[#a89584]">
-                        El orden del día para que no os perdáis nada
-                    </p>
-                    <ProgramaDestacado schedule={weddingInfo.schedule} />
-                </Section>
-
-                <Divider />
-
-                {/* ══════════════════════════════════════════
-                     2. CONFIRMACIÓN
+                     1. CONFIRMACIÓN DE ASISTENCIA - PRIORIDAD #1
                      ══════════════════════════════════════════ */}
 
                 {/* ── Initial choice ── */}
@@ -635,6 +572,78 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 <Divider />
 
                 {/* ══════════════════════════════════════════
+                     2. DETALLES DEL EVENTO
+                     ══════════════════════════════════════════ */}
+                <Section>
+                    <SectionTitle>Detalles del evento</SectionTitle>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <motion.div
+                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
+                            initial={{ opacity: 0, y: 15 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+                        >
+                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
+                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Fecha</p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
+                                Sábado, 20 de junio
+                            </p>
+                        </motion.div>
+                        <motion.div
+                            className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
+                            initial={{ opacity: 0, y: 15 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                        >
+                            <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80">
+                                <svg className="h-4 w-4 text-[#8b7355]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                </svg>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Lugar</p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
+                                {weddingInfo.venue.name}
+                            </p>
+                            <p className="text-[11px] text-[#b5a594]">{weddingInfo.venue.address}</p>
+                            <a
+                                href={weddingInfo.venue.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8b7355] underline underline-offset-2"
+                            >
+                                Ver ubicación
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                </svg>
+                            </a>
+                        </motion.div>
+                    </div>
+
+                </Section>
+
+                <Divider />
+
+                {/* ══════════════════════════════════════════
+                     PROGRAMA DEL DÍA - SECCIÓN DESTACADA
+                     ══════════════════════════════════════════ */}
+                <Section delay={0.1}>
+                    <SectionTitle>Programa del Día</SectionTitle>
+                    <p className="mb-6 text-center text-sm text-[#a89584]">
+                        El orden del día para que no os perdáis nada
+                    </p>
+                    <ProgramaDestacado schedule={weddingInfo.schedule} />
+                </Section>
+
+
+                {/* ══════════════════════════════════════════
                      3. PREGUNTAS / DUDAS  (always visible)
                      ══════════════════════════════════════════ */}
                 <Section>
@@ -695,9 +704,26 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     </>
                 )}
 
+                {/* ── Animación decorativa de novios ── */}
+                {noviosAnimation && (
+                    <motion.div
+                        className="flex justify-center py-8"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                        <Lottie
+                            animationData={noviosAnimation}
+                            loop={true}
+                            style={{ width: 350, height: 350 }}
+                        />
+                    </motion.div>
+                )}
+
                 {/* ── Logout ── */}
                 <motion.div
-                    className="pt-4 text-center"
+                    className="pt-2 text-center"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}

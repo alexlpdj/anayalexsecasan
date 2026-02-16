@@ -8,6 +8,7 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
     const [showControls, setShowControls] = useState(false);
     const [audioError, setAudioError] = useState(false);
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+    const [hasStarted, setHasStarted] = useState(false);
     const soundRef = useRef(null);
 
     // Función para cargar y reproducir una canción
@@ -48,7 +49,15 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
         });
 
         // Reproducir automáticamente
-        if (autoplay || isPlaying) {
+        if (autoplay && !hasStarted) {
+            setTimeout(() => {
+                if (soundRef.current) {
+                    soundRef.current.play();
+                    soundRef.current.fade(0, volume, 1000);
+                    setHasStarted(true);
+                }
+            }, 500);
+        } else if (isPlaying && hasStarted) {
             setTimeout(() => {
                 if (soundRef.current) {
                     soundRef.current.play();
@@ -66,7 +75,7 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
                 soundRef.current.unload();
             }
         };
-    }, [currentTrackIndex]);
+    }, [currentTrackIndex, autoplay, volume]);
 
     useEffect(() => {
         if (soundRef.current) {
