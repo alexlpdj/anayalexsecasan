@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Mail\GuestQuestionMail;
+use App\Models\Faq;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
 use App\Models\User;
+use App\Models\WeddingSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -44,6 +46,8 @@ class GuestDashboardController extends Controller
             'created_at' => $q->created_at->format('d/m/Y H:i'),
         ]);
 
+        $faqs = Faq::active()->ordered()->get();
+
         return Inertia::render('Guest/Dashboard', [
             'group' => [
                 'id' => $group->id,
@@ -66,6 +70,7 @@ class GuestDashboardController extends Controller
                 ]),
             ],
             'questions' => $questions,
+            'faqs' => $faqs,
             'weddingInfo' => $weddingInfo,
         ]);
     }
@@ -163,38 +168,46 @@ class GuestDashboardController extends Controller
 
     private function getWeddingInfo(): array
     {
+        $settings = WeddingSetting::current();
+
+        if (!$settings) {
+            // Fallback to default values if no settings exist
+            return [
+                'bride' => 'Ana',
+                'groom' => 'Alex',
+                'date' => '2026-06-20',
+                'civil_ceremony_date' => '2026-06-19',
+                'venue' => [
+                    'name' => 'La Ópera',
+                    'address' => 'Benicàssim, Castellón',
+                    'url' => 'https://laoperabenicassim.com/',
+                    'parking' => 'Parking subterráneo gratuito disponible',
+                ],
+                'schedule' => [],
+                'transport' => [
+                    'buses_available' => true,
+                    'buses_info' => 'Autobuses gratuitos desde Onda y Castellón',
+                    'parking_available' => true,
+                ],
+            ];
+        }
+
         return [
-            'bride' => 'Ana',
-            'groom' => 'Alex',
-            'date' => '2026-06-20',
-            'civil_ceremony_date' => '2026-06-19',
+            'bride' => $settings->bride,
+            'groom' => $settings->groom,
+            'date' => $settings->wedding_date?->format('Y-m-d'),
+            'civil_ceremony_date' => $settings->civil_ceremony_date?->format('Y-m-d'),
             'venue' => [
-                'name' => 'La Ópera',
-                'address' => 'Benicàssim, Castellón',
-                'url' => 'https://laoperabenicassim.com/',
-                'parking' => 'Parking subterráneo gratuito disponible',
+                'name' => $settings->venue_name,
+                'address' => $settings->venue_address,
+                'url' => $settings->venue_url,
+                'parking' => $settings->venue_parking_info,
             ],
-            'schedule' => [
-                [
-                    'time' => '19:30',
-                    'event' => 'Ceremonia Civil',
-                    'description' => 'Ceremonia oficiada por nuestros amigos',
-                ],
-                [
-                    'time' => '21:30',
-                    'event' => 'Cocktail & Buffet',
-                    'description' => 'Al aire libre en los jardines',
-                ],
-                [
-                    'time' => '00:00',
-                    'event' => 'Fiesta DJ',
-                    'description' => 'En el salón principal',
-                ],
-            ],
+            'schedule' => $settings->schedule ?? [],
             'transport' => [
-                'buses_available' => true,
-                'buses_info' => 'Autobuses gratuitos desde Onda y Castellón (horarios por confirmar)',
-                'parking_available' => true,
+                'buses_available' => $settings->buses_available,
+                'buses_info' => $settings->buses_info,
+                'parking_available' => $settings->parking_available,
             ],
         ];
     }

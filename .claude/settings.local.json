@@ -8,7 +8,8 @@
       "WebSearch",
       "WebFetch(domain:www.thedigitalyes.com)",
       "Bash(npm install:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

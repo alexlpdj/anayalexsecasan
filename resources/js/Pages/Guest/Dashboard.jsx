@@ -11,6 +11,14 @@ import confetti from 'canvas-confetti';
 import LoadingScreen from '@/components/LoadingScreen';
 import MusicPlayer from '@/components/MusicPlayer';
 import CountdownTimer from '@/components/CountdownTimer';
+import AnimatedTimeline from '@/components/AnimatedTimeline';
+import RippleButton from '@/components/RippleButton';
+import AnimatedCheckbox from '@/components/AnimatedCheckbox';
+import ScrollProgress from '@/components/ScrollProgress';
+import ScrollToTop from '@/components/ScrollToTop';
+import AnimatedHero from '@/components/AnimatedHero';
+import FaqAccordion from '@/components/FaqAccordion';
+import ProgramaDestacado from '@/components/ProgramaDestacado';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
@@ -46,7 +54,7 @@ function Divider() {
 
 // ── Main component ──
 
-export default function GuestDashboard({ group, questions, weddingInfo }) {
+export default function GuestDashboard({ group, questions, faqs, weddingInfo }) {
     const { flash } = usePage().props;
     const [step, setStep] = useState('initial');
     const [showFlash, setShowFlash] = useState(false);
@@ -163,6 +171,12 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                 )}
             </AnimatePresence>
 
+            {/* Scroll Progress Bar */}
+            {!showLoading && <ScrollProgress />}
+
+            {/* Scroll to Top Button */}
+            {!showLoading && <ScrollToTop />}
+
             {/* Music Player - solo se muestra cuando termina el loading */}
             {!showLoading && (
                 <MusicPlayer audioUrl="/audio/wedding-music.mp3" />
@@ -184,32 +198,8 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                 </div>
             </div>
 
-            {/* ── Header ── */}
-            <motion.header
-                className="pb-4 pt-12 text-center"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: showLoading ? 0 : 1, y: showLoading ? -20 : 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-            >
-                <p className="mb-3 text-[10px] uppercase tracking-[0.4em] text-[#c4b5a4]">
-                    os invitamos a nuestra boda
-                </p>
-                <h1 className="font-serif text-6xl italic leading-none text-[#8b7355]">
-                    A <span className="mx-1 text-5xl font-light">&</span> A
-                </h1>
-                <div className="mx-auto mt-4 flex items-center justify-center gap-3">
-                    <span className="h-px w-8 bg-[#d4c5b9]" />
-                    <p className="text-[11px] uppercase tracking-[0.25em] text-[#a89584]">
-                        20 de junio de 2026
-                    </p>
-                    <span className="h-px w-8 bg-[#d4c5b9]" />
-                </div>
-
-                {/* Countdown Timer */}
-                <div className="mt-8">
-                    <CountdownTimer targetDate="2026-06-20T00:00:00" />
-                </div>
-            </motion.header>
+            {/* ── Header with Typewriter Animation ── */}
+            <AnimatedHero showLoading={showLoading} />
 
             <motion.main
                 className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4"
@@ -277,33 +267,19 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                         </div>
                     </div>
 
-                    {/* Schedule timeline */}
-                    <div className="relative mt-6">
-                        <h4 className="mb-3 text-center text-[10px] uppercase tracking-[0.2em] text-[#b5a594]">
-                            Programa del día
-                        </h4>
-                        <div className="space-y-0">
-                            {weddingInfo.schedule.map((item, i) => (
-                                <div key={i} className="flex items-stretch gap-4">
-                                    <div className="flex w-12 flex-shrink-0 flex-col items-center">
-                                        <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#d4c5b9] bg-white">
-                                            <div className="h-2 w-2 rounded-full bg-[#8b7355]" />
-                                        </div>
-                                        {i < weddingInfo.schedule.length - 1 && (
-                                            <div className="w-px flex-1 bg-[#e2dbd3]" />
-                                        )}
-                                    </div>
-                                    <div className="pb-5">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-[#8b7355]">
-                                            {item.time}h
-                                        </p>
-                                        <p className="text-sm font-medium text-[#8b7355]">{item.event}</p>
-                                        <p className="text-xs text-[#b5a594]">{item.description}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                </Section>
+
+                <Divider />
+
+                {/* ══════════════════════════════════════════
+                     PROGRAMA DEL DÍA - SECCIÓN DESTACADA
+                     ══════════════════════════════════════════ */}
+                <Section delay={0.1}>
+                    <SectionTitle>Programa del Día</SectionTitle>
+                    <p className="mb-6 text-center text-sm text-[#a89584]">
+                        El orden del día para que no os perdáis nada
+                    </p>
+                    <ProgramaDestacado schedule={weddingInfo.schedule} />
                 </Section>
 
                 <Divider />
@@ -322,25 +298,27 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                 : `Sois ${group.guests.length} invitados. ¿Podréis venir?`}
                         </p>
                         <div className="flex flex-col gap-3">
-                            <button
+                            <RippleButton
                                 onClick={() => setStep('form')}
-                                className="flex items-center justify-center gap-3 rounded-xl border-2 border-[#8b7355] bg-[#8b7355] px-6 py-4 text-lg font-medium text-white transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
+                                className="flex items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-medium shadow-lg"
+                                variant="primary"
                             >
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
                                 {isSingle ? 'Asistiré' : 'Asistiremos'}
-                            </button>
-                            <button
+                            </RippleButton>
+                            <RippleButton
                                 onClick={submitDecline}
                                 disabled={declineForm.processing}
-                                className="flex items-center justify-center gap-3 rounded-xl border-2 border-[#d4c5b9] bg-white py-3.5 text-base text-[#a89584] transition-all duration-200 hover:border-[#a89584] hover:shadow-md active:scale-[0.98] disabled:opacity-50"
+                                className="flex items-center justify-center gap-3 rounded-xl py-3.5 text-base"
+                                variant="secondary"
                             >
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                                 {declineForm.processing ? 'Enviando...' : 'No podremos asistir'}
-                            </button>
+                            </RippleButton>
                         </div>
                         <p className="mt-4 text-center text-xs text-[#b5a594]">
                             Podéis modificar vuestra respuesta hasta el 1 de mayo
@@ -402,7 +380,7 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                                             { id: 'bus_cs', label: 'Bus desde Castellón', key: 'bus_cs' },
                                         ].map((bus) => (
                                             <div key={bus.id} className="flex items-center gap-2.5">
-                                                <Checkbox
+                                                <AnimatedCheckbox
                                                     id={bus.id}
                                                     checked={confirmForm.data[bus.key]}
                                                     onCheckedChange={(c) => confirmForm.setData(bus.key, c)}
@@ -577,6 +555,22 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                         </div>
                     )}
                 </Section>
+
+                {/* ══════════════════════════════════════════
+                     4. PREGUNTAS FRECUENTES (FAQ)
+                     ══════════════════════════════════════════ */}
+                {faqs && faqs.length > 0 && (
+                    <>
+                        <Divider />
+                        <Section delay={0.1}>
+                            <SectionTitle>Preguntas Frecuentes</SectionTitle>
+                            <p className="mb-4 text-center text-sm text-[#a89584]">
+                                Respuestas a las dudas más comunes
+                            </p>
+                            <FaqAccordion faqs={faqs} />
+                        </Section>
+                    </>
+                )}
 
                 {/* ── Logout ── */}
                 <div className="pt-4 text-center">

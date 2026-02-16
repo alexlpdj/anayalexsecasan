@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,12 @@ export default function GroupsIndex({ groups, stats }) {
         <AuthenticatedLayout>
             <Head title="Gestión de Grupos" />
 
-            <div className="mx-auto max-w-7xl space-y-6 p-6">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mx-auto max-w-7xl space-y-6 p-6"
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -54,7 +60,7 @@ export default function GroupsIndex({ groups, stats }) {
                         </p>
                     </div>
                     <Link href={route('admin.groups.create')}>
-                        <Button className="bg-gradient-to-r from-[#8b7355] to-[#a89584]">
+                        <Button className="bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105">
                             ✨ Crear Grupo Nuevo
                         </Button>
                     </Link>
@@ -62,87 +68,66 @@ export default function GroupsIndex({ groups, stats }) {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">
-                                Total Grupos
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-[#8b7355]">
-                                {stats.total_groups}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">
-                                Confirmados
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-green-600">
-                                {stats.confirmed_groups}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">
-                                Pendientes
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-gray-600">
-                                {stats.pending_groups}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">
-                                Total Personas
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-[#8b7355]">
-                                {stats.total_guests}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600">
-                                Asistirán
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold text-green-600">
-                                {stats.attending_guests}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {[
+                        { label: 'Total Grupos', value: stats.total_groups, color: 'text-[#8b7355]' },
+                        { label: 'Confirmados', value: stats.confirmed_groups, color: 'text-green-600' },
+                        { label: 'Pendientes', value: stats.pending_groups, color: 'text-gray-600' },
+                        { label: 'Total Personas', value: stats.total_guests, color: 'text-[#8b7355]' },
+                        { label: 'Asistirán', value: stats.attending_guests, color: 'text-green-600' }
+                    ].map((stat, index) => (
+                        <motion.div
+                            key={stat.label}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+                        >
+                            <Card className="transition-all hover:scale-105 hover:shadow-lg">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm font-medium text-gray-600">
+                                        {stat.label}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ type: "spring", delay: 0.2 + index * 0.05 }}
+                                        className={`text-3xl font-bold ${stat.color}`}
+                                    >
+                                        {stat.value}
+                                    </motion.div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
                 </div>
 
                 {/* Search */}
-                <Card>
-                    <CardContent className="pt-6">
-                        <Input
-                            type="text"
-                            placeholder="🔍 Buscar por nombre o código..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="max-w-md"
-                        />
-                    </CardContent>
-                </Card>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
+                >
+                    <Card className="transition-shadow hover:shadow-lg">
+                        <CardContent className="pt-6">
+                            <Input
+                                type="text"
+                                placeholder="🔍 Buscar por nombre o código..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="max-w-md transition-all focus:ring-2 focus:ring-[#8b7355]"
+                            />
+                        </CardContent>
+                    </Card>
+                </motion.div>
 
                 {/* Groups Table */}
-                <Card>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.4 }}
+                >
+                    <Card className="transition-shadow hover:shadow-lg">
                     <CardHeader>
                         <CardTitle>Grupos de Invitación</CardTitle>
                         <CardDescription>
@@ -265,7 +250,8 @@ export default function GroupsIndex({ groups, stats }) {
                         </Table>
                     </CardContent>
                 </Card>
-            </div>
+                </motion.div>
+            </motion.div>
         </AuthenticatedLayout>
     );
 }

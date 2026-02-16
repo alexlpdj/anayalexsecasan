@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guest;
+use App\Models\WeddingSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -75,38 +76,46 @@ class GuestController extends Controller
      */
     private function getWeddingInfo()
     {
+        $settings = WeddingSetting::current();
+
+        if (!$settings) {
+            // Fallback to default values if no settings exist
+            return [
+                'bride' => 'Ana',
+                'groom' => 'Alex',
+                'date' => '2026-06-20',
+                'civil_ceremony_date' => '2026-06-19',
+                'venue' => [
+                    'name' => 'La Ópera',
+                    'address' => 'Benicàssim, Castellón',
+                    'url' => 'https://laoperabenicassim.com/',
+                    'parking' => 'Parking subterráneo gratuito disponible',
+                ],
+                'schedule' => [],
+                'transport' => [
+                    'buses_available' => true,
+                    'buses_info' => 'Autobuses gratuitos desde Onda y Castellón',
+                    'parking_available' => true,
+                ],
+            ];
+        }
+
         return [
-            'bride' => 'Ana',
-            'groom' => 'Alex',
-            'date' => '2026-06-20',
-            'civil_ceremony_date' => '2026-06-19',
+            'bride' => $settings->bride,
+            'groom' => $settings->groom,
+            'date' => $settings->wedding_date?->format('Y-m-d'),
+            'civil_ceremony_date' => $settings->civil_ceremony_date?->format('Y-m-d'),
             'venue' => [
-                'name' => 'La Ópera Benicàssim',
-                'url' => 'https://laoperabenicassim.com/',
-                'address' => 'Benicàssim, Castellón',
-                'parking' => 'Parking subterráneo privado gratuito',
+                'name' => $settings->venue_name,
+                'address' => $settings->venue_address,
+                'url' => $settings->venue_url,
+                'parking' => $settings->venue_parking_info,
             ],
-            'schedule' => [
-                [
-                    'time' => '19:30',
-                    'event' => 'Ceremonia Civil',
-                    'description' => 'Oficiada por nuestros amigos',
-                ],
-                [
-                    'time' => '21:00',
-                    'event' => 'Cocktail y Buffé',
-                    'description' => 'Al aire libre',
-                ],
-                [
-                    'time' => '00:00',
-                    'event' => 'Fiesta DJ',
-                    'description' => 'En el salón',
-                ],
-            ],
+            'schedule' => $settings->schedule ?? [],
             'transport' => [
-                'buses_available' => true,
-                'buses_schedule' => 'Por confirmar - próximamente',
-                'parking_available' => true,
+                'buses_available' => $settings->buses_available,
+                'buses_info' => $settings->buses_info,
+                'parking_available' => $settings->parking_available,
             ],
         ];
     }

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\InvitationGroupController;
+use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
 use App\Http\Controllers\Guest\GuestDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +47,14 @@ Route::prefix('invitacion')->name('guest.')->group(function () {
 | Login: /admin/login
 */
 
+// Ruta raíz /admin - redirige según autenticación
+Route::get('/admin', function () {
+    if (auth()->check()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('login');
+});
+
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard principal
@@ -80,6 +90,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Preguntas de invitados
     Route::get('/questions', [InvitationGroupController::class, 'questions'])
         ->name('questions');
+
+    // FAQs - Preguntas Frecuentes
+    Route::resource('faqs', FaqController::class)->except(['show', 'create', 'edit']);
+    Route::post('/faqs/{faq}/toggle', [FaqController::class, 'toggleActive'])->name('faqs.toggle');
+    Route::post('/faqs/update-order', [FaqController::class, 'updateOrder'])->name('faqs.update-order');
+
+    // Wedding Settings - Configuración de la Boda
+    Route::get('/settings/wedding', [WeddingSettingsController::class, 'edit'])->name('settings.wedding.edit');
+    Route::put('/settings/wedding', [WeddingSettingsController::class, 'update'])->name('settings.wedding.update');
 });
 
 /*
