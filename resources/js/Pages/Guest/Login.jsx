@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AnimatePresence, motion } from 'framer-motion';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function GuestLogin() {
+    const [showLoading, setShowLoading] = useState(true);
     const { data, setData, post, processing, errors } = useForm({
         code: '',
     });
@@ -15,11 +19,24 @@ export default function GuestLogin() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f5f1ed] via-[#faf8f5] to-[#ede8e3]">
-            <Head title="Bienvenido" />
+        <>
+            {/* Loading Screen */}
+            <AnimatePresence>
+                {showLoading && (
+                    <LoadingScreen onComplete={() => setTimeout(() => setShowLoading(false), 2000)} />
+                )}
+            </AnimatePresence>
 
-            {/* Header decorativo */}
-            <header className="relative py-12 text-center">
+            <div className="min-h-screen bg-gradient-to-br from-[#f5f1ed] via-[#faf8f5] to-[#ede8e3]">
+                <Head title="Bienvenido" />
+
+                {/* Header decorativo */}
+                <motion.header
+                    className="relative py-12 text-center"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: showLoading ? 0 : 1, y: showLoading ? -20 : 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                >
                 <div className="mx-auto max-w-6xl px-4">
                     <h1 className="mb-2 font-serif text-6xl italic text-[#8b7355]">
                         A <span className="text-5xl">&</span> A
@@ -58,10 +75,15 @@ export default function GuestLogin() {
                         <ellipse cx="70" cy="15" rx="15" ry="8" fill="#6b8e5a" opacity="0.2" />
                     </svg>
                 </div>
-            </header>
+            </motion.header>
 
             {/* Main Content */}
-            <main className="mx-auto max-w-md px-4 pb-12">
+            <motion.main
+                className="mx-auto max-w-md px-4 pb-12"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: showLoading ? 0 : 1, y: showLoading ? 20 : 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+            >
                 <Card className="border-[#d4c5b9]/30 bg-white/70 shadow-2xl backdrop-blur-sm">
                     <CardHeader className="text-center">
                         <CardTitle className="font-serif text-3xl italic text-[#8b7355]">
@@ -169,14 +191,20 @@ export default function GuestLogin() {
                         </p>
                     </div>
                 </div>
-            </main>
+            </motion.main>
 
             {/* Footer */}
-            <footer className="py-8 text-center">
+            <motion.footer
+                className="py-8 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: showLoading ? 0 : 1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+            >
                 <p className="font-serif italic text-[#a89584]">
                     Con todo nuestro amor, Alex & Ana 🌴💝
                 </p>
-            </footer>
+            </motion.footer>
         </div>
+        </>
     );
 }

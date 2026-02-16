@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "WebFetch(domain:minimalist-demo.thedigitalyes.com)",
+      "WebFetch(domain:finca-demo.thedigitalyes.com)",
+      "WebSearch",
+      "WebFetch(domain:www.thedigitalyes.com)",
+      "Bash(npm install:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

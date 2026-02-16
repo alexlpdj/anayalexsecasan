@@ -6,14 +6,25 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import LoadingScreen from '@/components/LoadingScreen';
+import MusicPlayer from '@/components/MusicPlayer';
+import CountdownTimer from '@/components/CountdownTimer';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
-function Section({ children, className = '' }) {
+function Section({ children, className = '', delay = 0 }) {
     return (
-        <div className={`rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}>
+        <motion.div
+            className={`rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay }}
+        >
             {children}
-        </div>
+        </motion.div>
     );
 }
 
@@ -39,10 +50,45 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
     const { flash } = usePage().props;
     const [step, setStep] = useState('initial');
     const [showFlash, setShowFlash] = useState(false);
+    const [showLoading, setShowLoading] = useState(true);
 
     const isSubmitted = !!group.submitted_at;
     const allAttending = group.guests.every((g) => g.attending);
     const isSingle = group.guests.length === 1;
+
+    // Función para disparar confetti
+    const triggerConfetti = () => {
+        const duration = 3000;
+        const colors = ['#8b7355', '#d4c5b9', '#f5f1ed', '#c4a571'];
+
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: colors,
+        });
+
+        // Segundo disparo después de 200ms
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors,
+            });
+        }, 200);
+
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors,
+            });
+        }, 400);
+    };
 
     useEffect(() => {
         if (isSubmitted) setStep('confirmed');
@@ -77,7 +123,11 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
         e.preventDefault();
         confirmForm.post(route('guest.confirm'), {
             preserveScroll: true,
-            onSuccess: () => setStep('confirmed'),
+            onSuccess: () => {
+                setStep('confirmed');
+                // Disparar confetti cuando confirman asistencia
+                setTimeout(triggerConfetti, 300);
+            },
         });
     };
 
@@ -105,8 +155,21 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
     const logout = () => router.post(route('guest.logout'));
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#f5f1ed] via-[#faf8f5] to-[#f0ebe5]">
-            <Head title={`Bienvenido/a ${group.name}`} />
+        <>
+            {/* Loading Screen */}
+            <AnimatePresence>
+                {showLoading && (
+                    <LoadingScreen onComplete={() => setTimeout(() => setShowLoading(false), 2000)} />
+                )}
+            </AnimatePresence>
+
+            {/* Music Player - solo se muestra cuando termina el loading */}
+            {!showLoading && (
+                <MusicPlayer audioUrl="/audio/wedding-music.mp3" />
+            )}
+
+            <div className="min-h-screen bg-gradient-to-b from-[#f5f1ed] via-[#faf8f5] to-[#f0ebe5]">
+                <Head title={`Bienvenido/a ${group.name}`} />
 
             {/* ── Flash toast ── */}
             <div
@@ -122,7 +185,12 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
             </div>
 
             {/* ── Header ── */}
-            <header className="pb-4 pt-12 text-center">
+            <motion.header
+                className="pb-4 pt-12 text-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: showLoading ? 0 : 1, y: showLoading ? -20 : 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+            >
                 <p className="mb-3 text-[10px] uppercase tracking-[0.4em] text-[#c4b5a4]">
                     os invitamos a nuestra boda
                 </p>
@@ -136,18 +204,34 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                     </p>
                     <span className="h-px w-8 bg-[#d4c5b9]" />
                 </div>
-            </header>
 
-            <main className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4">
+                {/* Countdown Timer */}
+                <div className="mt-8">
+                    <CountdownTimer targetDate="2026-06-20T00:00:00" />
+                </div>
+            </motion.header>
+
+            <motion.main
+                className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: showLoading ? 0 : 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+            >
                 {/* ── Saludo ── */}
-                <div className="text-center">
+                <motion.div
+                    className="text-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
                     <h2 className="font-serif text-2xl italic text-[#8b7355]">
                         ¡Hola, {group.name}!
                     </h2>
                     <p className="mt-1.5 text-sm text-[#a89584]">
                         Nos encantaría que nos acompañaseis en este día tan especial
                     </p>
-                </div>
+                </motion.div>
 
                 {/* ══════════════════════════════════════════
                      1. DETALLES DEL EVENTO
@@ -503,7 +587,8 @@ export default function GuestDashboard({ group, questions, weddingInfo }) {
                         Cerrar sesión
                     </button>
                 </div>
-            </main>
+            </motion.main>
         </div>
+        </>
     );
 }
