@@ -21,15 +21,15 @@ function AppWrapper({ children }) {
 
     // Playlist de canciones
     const playlist = [
-        '/audio/wedding-music.mp3',
-        '/audio/wedding-music-2.mp3'
+        '/audio/wedding-music-2.mp3',
+        '/audio/wedding-music.mp3'
     ];
 
     return (
         <>
             {children}
             {/* Music Player persistente con playlist */}
-            {showMusic && <MusicPlayer playlist={playlist} autoplay />}
+            {<MusicPlayer playlist={playlist} autoplay />}
         </>
     );
 }

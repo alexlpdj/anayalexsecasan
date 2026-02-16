@@ -256,7 +256,9 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
                     >
-                        <CountdownTimer targetDate="2026-06-20T00:00:00" />
+                        <div style={{marginTop: '3rem', marginBottom: '3rem'}}>
+                            <CountdownTimer targetDate="2026-06-20T00:00:00" />
+                        </div>
                     </motion.div>
                 </motion.div>
 
