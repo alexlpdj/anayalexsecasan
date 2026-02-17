@@ -9,10 +9,11 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
     const [audioError, setAudioError] = useState(false);
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [hasStarted, setHasStarted] = useState(false);
+    const [waitingForInteraction, setWaitingForInteraction] = useState(autoplay);
     const soundRef = useRef(null);
 
     // Función para cargar y reproducir una canción
-    const loadAndPlayTrack = (index) => {
+    const loadAndPlayTrack = (index, shouldPlay = false) => {
         // Limpiar la canción anterior
         if (soundRef.current) {
             soundRef.current.unload();
@@ -27,18 +28,16 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
         soundRef.current = new Howl({
             src: [playlist[index]],
             html5: true,
-            loop: false, // No hacer loop de la misma canción
+            loop: false,
             volume: volume,
             onplay: () => setIsPlaying(true),
             onpause: () => setIsPlaying(false),
             onend: () => {
-                // Cuando termina, pasar a la siguiente canción
                 const nextIndex = (index + 1) % playlist.length;
                 setCurrentTrackIndex(nextIndex);
             },
             onloaderror: () => {
                 console.warn(`No se pudo cargar el archivo de audio: ${playlist[index]}`);
-                // Intentar con la siguiente canción
                 const nextIndex = (index + 1) % playlist.length;
                 if (nextIndex !== index) {
                     setCurrentTrackIndex(nextIndex);
@@ -48,34 +47,50 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
             },
         });
 
-        // Reproducir automáticamente
-        if (autoplay && !hasStarted) {
+        // Reproducir si se indica (tras interacción del usuario o cambio de pista)
+        if (shouldPlay) {
             setTimeout(() => {
                 if (soundRef.current) {
                     soundRef.current.play();
                     soundRef.current.fade(0, volume, 1000);
                     setHasStarted(true);
                 }
-            }, 500);
-        } else if (isPlaying && hasStarted) {
-            setTimeout(() => {
-                if (soundRef.current) {
-                    soundRef.current.play();
-                    soundRef.current.fade(0, volume, 1000);
-                }
             }, 300);
         }
     };
 
+    // Cargar la pista (sin reproducir automáticamente)
     useEffect(() => {
-        loadAndPlayTrack(currentTrackIndex);
+        const shouldAutoResume = hasStarted && isPlaying;
+        loadAndPlayTrack(currentTrackIndex, shouldAutoResume);
 
         return () => {
             if (soundRef.current) {
                 soundRef.current.unload();
             }
         };
-    }, [currentTrackIndex, autoplay, volume]);
+    }, [currentTrackIndex]);
+
+    // Esperar primera interacción del usuario para autoplay
+    useEffect(() => {
+        if (!autoplay || hasStarted) return;
+
+        const startPlayback = () => {
+            setWaitingForInteraction(false);
+            if (soundRef.current && !hasStarted) {
+                soundRef.current.play();
+                soundRef.current.fade(0, volume, 1000);
+                setHasStarted(true);
+            }
+        };
+
+        const events = ['click', 'touchstart', 'scroll', 'keydown'];
+        events.forEach(event => document.addEventListener(event, startPlayback, { once: true, passive: true }));
+
+        return () => {
+            events.forEach(event => document.removeEventListener(event, startPlayback));
+        };
+    }, [autoplay, hasStarted, volume]);
 
     useEffect(() => {
         if (soundRef.current) {

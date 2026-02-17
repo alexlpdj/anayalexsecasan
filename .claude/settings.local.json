@@ -9,7 +9,9 @@
       "WebFetch(domain:www.thedigitalyes.com)",
       "Bash(npm install:*)",
       "Bash(echo:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx vite:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

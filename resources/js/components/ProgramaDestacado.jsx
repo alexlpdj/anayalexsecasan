@@ -1,27 +1,32 @@
 import { motion } from 'framer-motion';
 
+// Importar iconos a través de Vite para que las rutas funcionen en cualquier entorno
+import bodaIcon from '@/../images/icons/boda.png';
+import banqueteIcon from '@/../images/icons/banquete.png';
+import musicaIcon from '@/../images/icons/musica.png';
+
 // Mapeo de iconos personalizados
 const getEventIcon = (eventName) => {
     const name = eventName.toLowerCase();
 
     if (name.includes('ceremonia') || name.includes('boda')) {
-        return '/icons/boda.png';
+        return bodaIcon;
     }
 
     if (name.includes('cóctel') || name.includes('coctel') || name.includes('cocktail') || name.includes('aperitivo') || name.includes('buffet')) {
-        return '/icons/banquete.png';
+        return banqueteIcon;
     }
 
     if (name.includes('comida') || name.includes('banquete') || name.includes('cena')) {
-        return '/icons/banquete.png';
+        return banqueteIcon;
     }
 
     if (name.includes('baile') || name.includes('fiesta') || name.includes('dj') || name.includes('música')) {
-        return '/icons/musica.png';
+        return musicaIcon;
     }
 
     // Default: boda
-    return '/icons/boda.png';
+    return bodaIcon;
 };
 
 export default function ProgramaDestacado({ schedule }) {
