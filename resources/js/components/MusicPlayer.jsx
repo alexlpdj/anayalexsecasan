@@ -9,12 +9,19 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
     const [audioError, setAudioError] = useState(false);
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [hasStarted, setHasStarted] = useState(false);
-    const [waitingForInteraction, setWaitingForInteraction] = useState(autoplay);
     const soundRef = useRef(null);
+    const volumeRef = useRef(volume);
+
+    // Mantener el ref sincronizado con el state
+    useEffect(() => {
+        volumeRef.current = volume;
+        if (soundRef.current) {
+            soundRef.current.volume(volume);
+        }
+    }, [volume]);
 
     // Función para cargar y reproducir una canción
     const loadAndPlayTrack = (index, shouldPlay = false) => {
-        // Limpiar la canción anterior
         if (soundRef.current) {
             soundRef.current.unload();
         }
@@ -24,12 +31,11 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
             return;
         }
 
-        // Cargar nueva canción
         soundRef.current = new Howl({
             src: [playlist[index]],
             html5: true,
             loop: false,
-            volume: volume,
+            volume: volumeRef.current,
             onplay: () => setIsPlaying(true),
             onpause: () => setIsPlaying(false),
             onend: () => {
@@ -47,19 +53,18 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
             },
         });
 
-        // Reproducir si se indica (tras interacción del usuario o cambio de pista)
         if (shouldPlay) {
             setTimeout(() => {
                 if (soundRef.current) {
                     soundRef.current.play();
-                    soundRef.current.fade(0, volume, 1000);
+                    soundRef.current.fade(0, volumeRef.current, 1000);
                     setHasStarted(true);
                 }
             }, 300);
         }
     };
 
-    // Cargar la pista (sin reproducir automáticamente)
+    // Cargar la pista
     useEffect(() => {
         const shouldAutoResume = hasStarted && isPlaying;
         loadAndPlayTrack(currentTrackIndex, shouldAutoResume);
@@ -71,32 +76,24 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
         };
     }, [currentTrackIndex]);
 
-    // Esperar primera interacción del usuario para autoplay
+    // Escuchar evento custom 'startMusic' (disparado desde WelcomeOverlay)
     useEffect(() => {
         if (!autoplay || hasStarted) return;
 
         const startPlayback = () => {
-            setWaitingForInteraction(false);
             if (soundRef.current && !hasStarted) {
                 soundRef.current.play();
-                soundRef.current.fade(0, volume, 1000);
+                soundRef.current.fade(0, volumeRef.current, 1000);
                 setHasStarted(true);
             }
         };
 
-        const events = ['click', 'touchstart', 'scroll', 'keydown'];
-        events.forEach(event => document.addEventListener(event, startPlayback, { once: true, passive: true }));
+        document.addEventListener('startMusic', startPlayback, { once: true });
 
         return () => {
-            events.forEach(event => document.removeEventListener(event, startPlayback));
+            document.removeEventListener('startMusic', startPlayback);
         };
-    }, [autoplay, hasStarted, volume]);
-
-    useEffect(() => {
-        if (soundRef.current) {
-            soundRef.current.volume(volume);
-        }
-    }, [volume]);
+    }, [autoplay, hasStarted]);
 
     const togglePlay = () => {
         if (!soundRef.current) return;
@@ -107,6 +104,7 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
         } else {
             soundRef.current.play();
             soundRef.current.fade(0, volume, 1000);
+            setHasStarted(true);
         }
     };
 

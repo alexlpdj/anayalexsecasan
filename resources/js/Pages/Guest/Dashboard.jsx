@@ -717,8 +717,8 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     >
                         <Lottie
                             animationData={noviosAnimation}
-                            loop={true}
-                            style={{ width: 350, height: 350 }}
+                            loop={false}
+                            style={{ width: 550, height: 550 }}
                         />
                     </motion.div>
                 )}
