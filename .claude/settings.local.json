@@ -11,7 +11,9 @@
       "Bash(echo:*)",
       "Bash(find:*)",
       "Bash(npx vite:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(composer dev:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

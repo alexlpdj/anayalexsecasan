@@ -97,22 +97,17 @@ function WelcomeOverlay({ onEnter }) {
                     Descubrir nuestra boda
                 </motion.button>
 
-                <motion.p
-                    className="mt-4 text-xs text-[#c4b5a4]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 1.8 }}
-                >
-                    toca para entrar con música
-                </motion.p>
             </div>
         </motion.div>
     );
 }
 
-// Wrapper component para elementos persistentes
+// Wrapper component para elementos persistentes (solo en rutas de invitados)
 function AppWrapper({ children }) {
     const [showWelcome, setShowWelcome] = useState(true);
+
+    // Detectar si estamos en una ruta de invitados
+    const isGuestRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/invitacion');
 
     const handleEnter = () => {
         // Disparar evento custom que el MusicPlayer escucha
@@ -128,11 +123,13 @@ function AppWrapper({ children }) {
 
     return (
         <>
-            <AnimatePresence>
-                {showWelcome && <WelcomeOverlay onEnter={handleEnter} />}
-            </AnimatePresence>
+            {isGuestRoute && (
+                <AnimatePresence>
+                    {showWelcome && <WelcomeOverlay onEnter={handleEnter} />}
+                </AnimatePresence>
+            )}
             {children}
-            <MusicPlayer playlist={playlist} autoplay />
+            {isGuestRoute && <MusicPlayer playlist={playlist} autoplay />}
         </>
     );
 }

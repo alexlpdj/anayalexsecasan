@@ -32,6 +32,7 @@ Route::prefix('invitacion')->name('guest.')->group(function () {
     // Rutas protegidas (requieren código válido)
     Route::middleware(['guest.auth'])->group(function () {
         Route::get('/dashboard', [GuestDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/nuestra-historia', [GuestDashboardController::class, 'ourStory'])->name('our-story');
         Route::post('/confirmar', [GuestDashboardController::class, 'confirm'])->name('confirm');
         Route::post('/pregunta', [GuestDashboardController::class, 'askQuestion'])->name('question');
         Route::post('/logout', [GuestAuthController::class, 'logout'])->name('logout');

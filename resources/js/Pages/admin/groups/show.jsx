@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -12,26 +12,26 @@ import {
 
 export default function ShowGroup({ group }) {
     return (
-        <AuthenticatedLayout>
+        <AdminSidebarLayout>
             <Head title={`Grupo: ${group.name}`} />
 
-            <div className="mx-auto max-w-5xl space-y-6 p-6">
+            <div className="mx-auto max-w-5xl space-y-4 p-3 sm:space-y-6 sm:p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                             {group.name}
                         </h1>
                         <p className="mt-1 text-sm text-gray-600">
                             Detalle completo del grupo
                         </p>
                     </div>
-                    <div className="flex gap-3">
-                        <Link href={route('admin.groups.index')}>
-                            <Button variant="outline">← Volver</Button>
+                    <div className="flex gap-2 sm:gap-3">
+                        <Link href={route('admin.groups.index')} className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
                         </Link>
-                        <Link href={route('admin.groups.edit', group.id)}>
-                            <Button variant="outline">✏️ Editar</Button>
+                        <Link href={route('admin.groups.edit', group.id)} className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full sm:w-auto">✏️ Editar</Button>
                         </Link>
                     </div>
                 </div>
@@ -282,6 +282,6 @@ export default function ShowGroup({ group }) {
                     </Card>
                 )}
             </div>
-        </AuthenticatedLayout>
+        </AdminSidebarLayout>
     );
 }

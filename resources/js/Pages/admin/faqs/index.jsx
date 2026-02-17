@@ -1,7 +1,7 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -106,18 +106,18 @@ export default function FaqsIndex({ faqs }) {
     const activeFaqs = faqs.filter((f) => f.is_active).length;
 
     return (
-        <AuthenticatedLayout>
+        <AdminSidebarLayout>
             <Head title="Gestión de FAQs" />
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto max-w-7xl space-y-6 p-6"
+                className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6"
             >
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Preguntas Frecuentes</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Preguntas Frecuentes</h1>
                     <p className="mt-1 text-sm text-gray-600">
                         Gestiona las FAQs que verán tus invitados
                     </p>
@@ -440,6 +440,6 @@ export default function FaqsIndex({ faqs }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </AuthenticatedLayout>
+        </AdminSidebarLayout>
     );
 }

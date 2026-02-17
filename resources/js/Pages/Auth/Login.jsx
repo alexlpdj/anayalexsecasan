@@ -68,20 +68,6 @@ export default function Login({ status, canResetPassword }) {
                     </p>
                 </div>
 
-                {/* Palmeras decorativas */}
-                <div className="pointer-events-none absolute right-8 top-8 h-48 w-36 opacity-15">
-                    <svg viewBox="0 0 100 200" className="h-full w-full">
-                        <path
-                            d="M50 180 Q45 140 40 100 Q35 60 30 20 M50 180 Q50 140 50 100 Q50 60 50 20 M50 180 Q55 140 60 100 Q65 60 70 20"
-                            stroke="white"
-                            strokeWidth="1.5"
-                            fill="none"
-                        />
-                        <ellipse cx="30" cy="15" rx="15" ry="8" fill="white" opacity="0.4" />
-                        <ellipse cx="50" cy="10" rx="18" ry="8" fill="white" opacity="0.4" />
-                        <ellipse cx="70" cy="15" rx="15" ry="8" fill="white" opacity="0.4" />
-                    </svg>
-                </div>
             </div>
 
             {/* Lado derecho - Formulario */}

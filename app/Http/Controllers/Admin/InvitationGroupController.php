@@ -39,11 +39,31 @@ class InvitationGroupController extends Controller
             'pending_groups' => InvitationGroup::pending()->count(),
             'total_guests' => Guest::count(),
             'attending_guests' => Guest::attending()->count(),
+            'confirmed_groups' => InvitationGroup::submitted()->count(),
+        ];
+
+        $chartData = [
+            'attendance' => [
+                ['name' => 'Confirmados', 'value' => Guest::attending()->count(), 'color' => '#22c55e'],
+                ['name' => 'No asisten', 'value' => Guest::where('attending', false)->count(), 'color' => '#f87171'],
+                ['name' => 'Pendientes', 'value' => Guest::whereNull('attending')->count(), 'color' => '#d1d5db'],
+            ],
+            'transport' => [
+                ['name' => 'Bus Onda (ida)', 'value' => InvitationGroup::submitted()->where('bus_onda_ida', true)->count()],
+                ['name' => 'Bus Onda (vuelta)', 'value' => InvitationGroup::submitted()->where('bus_onda_vuelta', true)->count()],
+                ['name' => 'Bus Castellón', 'value' => InvitationGroup::submitted()->where('bus_cs', true)->count()],
+                ['name' => 'Coche', 'value' => InvitationGroup::submitted()->where('transport', 'COCHE')->count()],
+            ],
+            'group_types' => [
+                ['name' => 'Familiar', 'value' => InvitationGroup::where('type', 'FAMILIAR')->count(), 'color' => '#8b7355'],
+                ['name' => 'Amigos', 'value' => InvitationGroup::where('type', 'AMIGO')->count(), 'color' => '#c4a571'],
+            ],
         ];
 
         return Inertia::render('admin/groups/index', [
             'groups' => $groups,
             'stats' => $stats,
+            'chartData' => $chartData,
         ]);
     }
 

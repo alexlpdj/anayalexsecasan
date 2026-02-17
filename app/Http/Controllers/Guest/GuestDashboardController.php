@@ -166,6 +166,13 @@ class GuestDashboardController extends Controller
         return back()->with('success', '¡Pregunta enviada! Os responderemos lo antes posible.');
     }
 
+    public function ourStory()
+    {
+        $this->getAuthenticatedGroup();
+
+        return Inertia::render('Guest/OurStory');
+    }
+
     private function getWeddingInfo(): array
     {
         $settings = WeddingSetting::current();

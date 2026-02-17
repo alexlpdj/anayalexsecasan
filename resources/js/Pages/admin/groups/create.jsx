@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,22 +42,22 @@ export default function CreateGroup() {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AdminSidebarLayout>
             <Head title="Crear Grupo Nuevo" />
 
-            <div className="mx-auto max-w-4xl space-y-6 p-6">
+            <div className="mx-auto max-w-4xl space-y-4 p-3 sm:space-y-6 sm:p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                             Crear Grupo Nuevo
                         </h1>
                         <p className="mt-1 text-sm text-gray-600">
                             Define un nuevo núcleo familiar o grupo de amigos
                         </p>
                     </div>
-                    <Link href={route('admin.groups.index')}>
-                        <Button variant="outline">← Volver</Button>
+                    <Link href={route('admin.groups.index')} className="w-full sm:w-auto">
+                        <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
                     </Link>
                 </div>
 
@@ -162,8 +162,8 @@ export default function CreateGroup() {
                                     <div className="flex-1 space-y-3">
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                             {/* Número */}
-                                            <div className="flex items-center justify-center rounded-full bg-[#8b7355] text-white md:col-span-1 md:max-w-[60px] md:justify-center">
-                                                <span className="text-lg font-bold">
+                                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#8b7355] text-white md:col-span-1 md:h-auto md:w-auto md:max-w-[60px]">
+                                                <span className="text-sm font-bold md:text-lg">
                                                     {index + 1}
                                                 </span>
                                             </div>
@@ -248,22 +248,22 @@ export default function CreateGroup() {
                     </Card>
 
                     {/* Acciones */}
-                    <div className="flex justify-end gap-3">
-                        <Link href={route('admin.groups.index')}>
-                            <Button type="button" variant="outline">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                        <Link href={route('admin.groups.index')} className="order-2 sm:order-1">
+                            <Button type="button" variant="outline" className="w-full sm:w-auto">
                                 Cancelar
                             </Button>
                         </Link>
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="bg-gradient-to-r from-[#8b7355] to-[#a89584]"
+                            className="order-1 w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] sm:order-2 sm:w-auto"
                         >
                             {processing ? 'Guardando...' : '💾 Guardar Grupo'}
                         </Button>
                     </div>
                 </form>
             </div>
-        </AuthenticatedLayout>
+        </AdminSidebarLayout>
     );
 }

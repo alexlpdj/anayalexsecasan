@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -261,6 +261,38 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             <CountdownTimer targetDate="2026-06-20T00:00:00" />
                         </div>
                     </motion.div>
+                </motion.div>
+
+                {/* ── Link a Nuestra Historia ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <Link
+                        href={route('guest.our-story')}
+                        className="group block rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-5 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm transition-all hover:shadow-md"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8b7355]/10 text-xl">
+                                    💕
+                                </span>
+                                <div>
+                                    <h3 className="font-serif text-base italic text-[#8b7355]">
+                                        Nuestra Historia
+                                    </h3>
+                                    <p className="text-xs text-[#a89584]">
+                                        Descubre cómo empezó todo
+                                    </p>
+                                </div>
+                            </div>
+                            <svg className="h-5 w-5 text-[#c4a571] transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </div>
+                    </Link>
                 </motion.div>
 
                 {/* ── Banner de recordatorio si no ha confirmado ── */}
