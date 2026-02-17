@@ -208,6 +208,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             </div>
 
             <div className="min-h-screen">
+
                 <Head title={`Hola ${group.name}`} />
 
             {/* ── Flash toast ── */}
@@ -706,22 +707,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     </>
                 )}
 
-                {/* ── Animación decorativa de novios ── */}
-                {noviosAnimation && (
-                    <motion.div
-                        className="flex justify-center py-8"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <Lottie
-                            animationData={noviosAnimation}
-                            loop={false}
-                            style={{ width: 550, height: 550 }}
-                        />
-                    </motion.div>
-                )}
 
                 {/* ── Logout ── */}
                 <motion.div

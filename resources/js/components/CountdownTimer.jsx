@@ -73,7 +73,7 @@ export default function CountdownTimer({ targetDate }) {
     return (
         <div className="w-full">
             <div className="text-center">
-                <p className="mb-1 text-[10px] uppercase tracking-[0.3em] text-[#b5a594]">
+                <p className="mb-3 text-[24px] uppercase tracking-[0.3em] text-[#b5a594]">
                     Faltan
                 </p>
                 <div className="mx-auto flex max-w-md justify-center gap-3 sm:gap-4">

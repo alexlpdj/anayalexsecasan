@@ -1,9 +1,24 @@
 import { motion } from 'framer-motion';
+import {Head} from "@inertiajs/react";
+import {useEffect, useState} from "react";
+import Lottie from "lottie-react";
 
 export default function AnimatedHero() {
+
+    const [noviosAnimation, setNoviosAnimation] = useState(null);
+
+    useEffect(() => {
+        // Cargar la animación de novios
+        fetch('/animations/noviosoutlined.json')
+            .then(response => response.json())
+            .then(data => setNoviosAnimation(data))
+            .catch(err => console.log('Error cargando animación:', err));
+    }, []);
+
+
     return (
         <motion.header
-            className="pb-4 pt-12 text-center"
+            className="pb-12 pt-12 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
@@ -17,6 +32,24 @@ export default function AnimatedHero() {
             >
                 os invitamos a nuestra boda
             </motion.p>
+
+            {/* ── Animación decorativa de novios ── */}
+            {noviosAnimation && (
+                <motion.div
+                    className="flex justify-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    style={{ marginBottom: '-0.5rem', marginTop: '-3.75rem' }}
+                >
+                    <Lottie
+                        animationData={noviosAnimation}
+                        loop={false}
+                        style={{ width: 350, height: 350 }}
+                    />
+                </motion.div>
+            )}
 
             {/* Nombres con animación suave */}
             <motion.h1
