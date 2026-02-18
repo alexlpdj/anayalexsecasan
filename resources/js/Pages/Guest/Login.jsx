@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -100,11 +100,21 @@ function WelcomeOverlay({ onEnter }) {
 
 export default function GuestLogin() {
     const { t } = useTranslation();
+    const { flash } = usePage().props;
     const [showWelcome, setShowWelcome] = useState(true);
+    const [showFlash, setShowFlash] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         code: '',
     });
     const inputRef = useRef(null);
+
+    useEffect(() => {
+        if (flash?.success) {
+            setShowFlash(true);
+            const timer = setTimeout(() => setShowFlash(false), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.success]);
 
     const handleInputFocus = () => {
         // Esperar a que el teclado móvil termine de aparecer antes de hacer scroll
@@ -146,6 +156,19 @@ export default function GuestLogin() {
 
             <div className="min-h-screen">
                 <Head title={t('login.page_title')} />
+
+                {/* Flash toast */}
+                <div
+                    className={`fixed left-0 right-0 top-0 z-50 flex justify-center px-4 transition-all duration-500 ${
+                        showFlash && flash?.success
+                            ? 'translate-y-4 opacity-100'
+                            : '-translate-y-full opacity-0'
+                    }`}
+                >
+                    <div className="rounded-full bg-[#8b7355] px-6 py-2.5 text-sm font-medium text-white shadow-lg">
+                        {flash?.success}
+                    </div>
+                </div>
 
                 {/* Header decorativo */}
                 <motion.header
