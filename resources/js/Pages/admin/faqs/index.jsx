@@ -1,5 +1,5 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,17 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export default function FaqsIndex({ faqs }) {
+export default function FaqsIndex({ faqs, pendingCount }) {
     const [editingId, setEditingId] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
+    const [translating, setTranslating] = useState(false);
+
+    const handleTranslate = useCallback(() => {
+        setTranslating(true);
+        router.post(route('admin.faqs.translate'), {}, {
+            onFinish: () => setTranslating(false),
+        });
+    }, []);
 
     // Form for creating new FAQ
     const { data: createData, setData: setCreateData, post: createPost, processing: createProcessing, reset: createReset, errors: createErrors } = useForm({
@@ -115,6 +123,48 @@ export default function FaqsIndex({ faqs }) {
                 transition={{ duration: 0.4 }}
                 className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6"
             >
+                {/* Banner de traducciones pendientes */}
+                {pendingCount > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="flex flex-col gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">⚠️</span>
+                            <div>
+                                <p className="font-semibold text-amber-800">
+                                    {pendingCount} {pendingCount === 1 ? 'FAQ pendiente' : 'FAQs pendientes'} de traducción
+                                </p>
+                                <p className="mt-0.5 text-sm text-amber-700">
+                                    Las FAQs marcadas no están traducidas al PT y FR. Pulsa el botón para traducirlas automáticamente con IA.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            onClick={handleTranslate}
+                            disabled={translating}
+                            className="shrink-0 bg-amber-600 text-white hover:bg-amber-700"
+                        >
+                            {translating ? (
+                                <span className="flex items-center gap-2">
+                                    <motion.span
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                    >
+                                        ⏳
+                                    </motion.span>
+                                    Traduciendo...
+                                </span>
+                            ) : (
+                                '🌐 Traducir ahora'
+                            )}
+                        </Button>
+                    </motion.div>
+                )}
+
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Preguntas Frecuentes</h1>
@@ -360,7 +410,14 @@ export default function FaqsIndex({ faqs }) {
                                                 ) : (
                                                     <>
                                                         <TableCell className="font-medium">
-                                                            {faq.question}
+                                                            <div className="flex flex-col gap-1">
+                                                                {faq.question}
+                                                                {faq.needs_translation && (
+                                                                    <Badge className="w-fit bg-amber-100 text-amber-800 text-[11px]">
+                                                                        ⚠️ Sin traducir
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="hidden md:table-cell">
                                                             <div className="max-w-md truncate text-sm text-gray-600">

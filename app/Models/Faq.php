@@ -11,10 +11,14 @@ class Faq extends Model
         'answer',
         'order',
         'is_active',
+        'translations',
+        'needs_translation',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'translations' => 'array',
+        'needs_translation' => 'boolean',
     ];
 
     /**

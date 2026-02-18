@@ -21,6 +21,7 @@ class InvitationGroup extends Model
         'contact_email',
         'contact_phone',
         'notes',
+        'default_language',
     ];
 
     protected $casts = [

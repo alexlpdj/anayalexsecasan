@@ -6,8 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnimatePresence, motion } from 'framer-motion';
 import Lottie from 'lottie-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '@/components/LanguageSelector';
 
 function WelcomeOverlay({ onEnter }) {
+    const { t } = useTranslation();
     const [animationData, setAnimationData] = useState(null);
 
     useEffect(() => {
@@ -50,7 +53,7 @@ function WelcomeOverlay({ onEnter }) {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6, delay: 0.9 }}
                 >
-                    20 de junio de 2026
+                    {t('login.welcome_date')}
                 </motion.p>
 
                 <motion.div
@@ -88,7 +91,7 @@ function WelcomeOverlay({ onEnter }) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                 >
-                    Descubrir nuestra boda
+                    {t('login.welcome_button')}
                 </motion.button>
             </div>
         </motion.div>
@@ -96,6 +99,7 @@ function WelcomeOverlay({ onEnter }) {
 }
 
 export default function GuestLogin() {
+    const { t } = useTranslation();
     const [showWelcome, setShowWelcome] = useState(true);
     const { data, setData, post, processing, errors } = useForm({
         code: '',
@@ -141,21 +145,21 @@ export default function GuestLogin() {
             </div>
 
             <div className="min-h-screen">
-                <Head title="Acceso invitados" />
+                <Head title={t('login.page_title')} />
 
                 {/* Header decorativo */}
                 <motion.header
-                    className="relative py-12 text-center"
+                    className="relative py-8 text-center"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: showWelcome ? 0 : 1, y: showWelcome ? -20 : 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                <div className="mx-auto max-w-6xl px-4">
-                    <h1 className="mb-2 font-serif text-6xl italic text-[#8b7355]">
-                        A <span className="text-5xl">&</span> A
+                <div className="mx-auto max-w-5xl px-4">
+                    <h1 className="mb-2 font-serif text-5xl italic text-[#8b7355]">
+                        A <span className="text-4xl">&</span> A
                     </h1>
                     <p className="text-sm uppercase tracking-[0.3em] text-[#a89584]">
-                        20 • Junio • 2026
+                        {t('login.date_header')}
                     </p>
                 </div>
 
@@ -192,7 +196,7 @@ export default function GuestLogin() {
 
             {/* Main Content */}
             <motion.main
-                className="mx-auto max-w-md px-4 pb-12"
+                className="mx-auto max-w-md px-4 pb-8"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: showWelcome ? 0 : 1, y: showWelcome ? 20 : 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
@@ -200,10 +204,10 @@ export default function GuestLogin() {
                 <Card className="border-[#d4c5b9]/30 bg-white/70 shadow-2xl backdrop-blur-sm">
                     <CardHeader className="text-center">
                         <CardTitle className="font-serif text-3xl italic text-[#8b7355]">
-                            ¡Bienvenido/s!
+                            {t('login.title')}
                         </CardTitle>
                         <CardDescription className="text-base leading-relaxed text-[#a89584]">
-                            Nos hace mucha ilusión compartir este día contigo.
+                            {t('login.subtitle')}
                         </CardDescription>
                     </CardHeader>
 
@@ -215,7 +219,7 @@ export default function GuestLogin() {
                                     htmlFor="code"
                                     className="text-base uppercase tracking-wide text-[#8b7355]"
                                 >
-                                    Código de Invitación
+                                    {t('login.code_label')}
                                 </Label>
 
                                 <Input
@@ -269,25 +273,26 @@ export default function GuestLogin() {
                                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                             ></path>
                                         </svg>
-                                        Verificando...
+                                        {t('login.submit_verifying')}
                                     </span>
                                 ) : (
-                                    'Acceder'
+                                    t('login.submit')
                                 )}
                             </Button>
                         </form>
 
                         {/* Ayuda */}
-                        <div className="mt-3 border-t border-[#d4c5b9]/30 pt-6">
+                        <div className="mt-3 border-t border-[#d4c5b9]/30 pt-3">
                             <div className="rounded-lg bg-[#faf8f5] p-4 text-center">
                                 <p className="text-sm text-[#a89584]">
-                                    💌 El código está escrito a mano en tu invitación.
-                                    <br />
-                                    <span className="mt-2 block text-xs">
-                                        Si tienes problemas para acceder, contáctanos.
-                                    </span>
+                                    {t('login.help_text')}
                                 </p>
                             </div>
+                        </div>
+
+                        {/* Selector de idioma */}
+                        <div className="mt-4 flex justify-center">
+                            <LanguageSelector />
                         </div>
                     </CardContent>
                 </Card>
@@ -295,13 +300,13 @@ export default function GuestLogin() {
 
             {/* Footer */}
             <motion.footer
-                className="py-2 text-center"
+                className="text-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showWelcome ? 0 : 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
             >
                 <p className="font-serif italic text-[#a89584]">
-                    Con todo nuestro amor, Alex & Ana 🌴💝
+                    {t('login.footer')}
                 </p>
             </motion.footer>
         </div>

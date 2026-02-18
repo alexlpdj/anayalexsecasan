@@ -13,7 +13,10 @@
       "Bash(npx vite:*)",
       "Bash(ls:*)",
       "Bash(composer dev:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(node scripts/translate.js:*)",
+      "Bash(ANTHROPIC_API_KEY=\"$ANTHROPIC_API_KEY\" node scripts/translate.js:*)",
+      "Bash(php -l:*)"
     ],
     "deny": [],
     "ask": []

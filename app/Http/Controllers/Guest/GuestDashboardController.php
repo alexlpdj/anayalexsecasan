@@ -61,6 +61,7 @@ class GuestDashboardController extends Controller
                 'bus_cs' => $group->bus_cs,
                 'contact_email' => $group->contact_email,
                 'contact_phone' => $group->contact_phone,
+                'default_language' => $group->default_language,
                 'guests' => $group->guests->map(fn($g) => [
                     'id' => $g->id,
                     'name' => $g->name,
@@ -191,6 +192,7 @@ class GuestDashboardController extends Controller
                     'parking' => 'Parking subterráneo gratuito disponible',
                 ],
                 'schedule' => [],
+                'schedule_translations' => [],
                 'transport' => [
                     'buses_available' => true,
                     'buses_info' => 'Autobuses gratuitos desde Onda y Castellón',
@@ -211,6 +213,7 @@ class GuestDashboardController extends Controller
                 'parking' => $settings->venue_parking_info,
             ],
             'schedule' => $settings->schedule ?? [],
+            'schedule_translations' => $settings->schedule_translations ?? [],
             'transport' => [
                 'buses_available' => $settings->buses_available,
                 'buses_info' => $settings->buses_info,

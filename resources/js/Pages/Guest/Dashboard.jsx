@@ -19,6 +19,8 @@ import FaqAccordion from '@/components/FaqAccordion';
 import ProgramaDestacado from '@/components/ProgramaDestacado';
 import {CardDescription, CardHeader, CardTitle} from "@/components/ui/card.jsx";
 import Lottie from "lottie-react";
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '@/components/LanguageSelector';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
@@ -61,6 +63,7 @@ function Divider() {
 // ── Main component ──
 
 export default function GuestDashboard({ group, questions, faqs, weddingInfo }) {
+    const { t, i18n } = useTranslation();
     const { flash } = usePage().props;
     const [step, setStep] = useState('initial');
     const [showFlash, setShowFlash] = useState(false);
@@ -69,7 +72,29 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
     const allAttending = group.guests.every((g) => g.attending);
     const isSingle = group.guests.length === 1;
 
+    const currentLang = i18n.language;
+
+    // Localizar el programa del día
+    const localizedSchedule = (currentLang !== 'es' && weddingInfo.schedule_translations?.[currentLang])
+        ? weddingInfo.schedule_translations[currentLang]
+        : weddingInfo.schedule;
+
+    // Localizar las FAQs
+    const localizedFaqs = (faqs || []).map((faq) => {
+        const tr = faq.translations?.[currentLang];
+        if (!tr) return faq;
+        return { ...faq, question: tr.question, answer: tr.answer };
+    });
+
     const [noviosAnimation, setNoviosAnimation] = useState(null);
+
+    // Aplicar idioma por defecto del grupo si el usuario no ha elegido manualmente
+    useEffect(() => {
+        if (group.default_language && !localStorage.getItem('lang-user-chosen')) {
+            i18n.changeLanguage(group.default_language);
+            localStorage.setItem('i18nextLng', group.default_language);
+        }
+    }, []);
 
     useEffect(() => {
         // Cargar la animación de novios
@@ -91,7 +116,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             colors: colors,
         });
 
-        // Segundo disparo después de 200ms
         setTimeout(() => {
             confetti({
                 particleCount: 50,
@@ -114,22 +138,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
     };
 
     useEffect(() => {
-        // Cargar la animación de novios
-        fetch('/animations/noviosoutlined.json')
-            .then(response => response.json())
-            .then(data => setNoviosAnimation(data))
-            .catch(err => console.log('Error cargando animación:', err));
-    }, []);
-
-    useEffect(() => {
         if (isSubmitted) setStep('confirmed');
     }, [isSubmitted]);
 
     useEffect(() => {
         if (flash?.success) {
             setShowFlash(true);
-            const t = setTimeout(() => setShowFlash(false), 4000);
-            return () => clearTimeout(t);
+            const timer = setTimeout(() => setShowFlash(false), 4000);
+            return () => clearTimeout(timer);
         }
     }, [flash?.success]);
 
@@ -156,7 +172,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             preserveScroll: true,
             onSuccess: () => {
                 setStep('confirmed');
-                // Disparar confetti cuando confirman asistencia
                 setTimeout(triggerConfetti, 300);
             },
         });
@@ -203,13 +218,12 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     backgroundRepeat: 'no-repeat',
                 }}
             >
-                {/* Capa dorada semitransparente */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#f5f1ed]/95 via-[#faf8f5]/92 to-[#f0ebe5]/95" />
             </div>
 
             <div className="min-h-screen">
 
-                <Head title={`Hola ${group.name}`} />
+                <Head title={`${t('dashboard.greeting', { name: group.name })}`} />
 
             {/* ── Flash toast ── */}
             <div
@@ -243,14 +257,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 >
                     <div>
                         <h2 className="font-serif text-2xl italic text-[#8b7355]">
-                            ¡Hola, {group.name}!
+                            {t('dashboard.greeting', { name: group.name })}
                         </h2>
                         <p className="mt-1.5 text-sm text-[#a89584]">
-                            Nos encantaría que nos acompañaseis en este día tan especial
+                            {t('dashboard.greeting_sub')}
                         </p>
                     </div>
 
-                    {/* Countdown Timer - más compacto */}
+                    {/* Countdown Timer */}
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -281,10 +295,10 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 </span>
                                 <div>
                                     <h3 className="font-serif text-base italic text-[#8b7355]">
-                                        Nuestra Historia
+                                        {t('dashboard.our_story_title')}
                                     </h3>
                                     <p className="text-xs text-[#a89584]">
-                                        Descubre cómo empezó todo
+                                        {t('dashboard.our_story_sub')}
                                     </p>
                                 </div>
                             </div>
@@ -308,20 +322,20 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
                             <p className="text-sm font-medium text-white">
-                                ¡No olvides confirmar tu asistencia! 👇
+                                {t('dashboard.reminder')}
                             </p>
                         </div>
                     </motion.div>
                 )}
 
                 {/* ══════════════════════════════════════════
-                     1. CONFIRMACIÓN DE ASISTENCIA - PRIORIDAD #1
+                     1. CONFIRMACIÓN DE ASISTENCIA
                      ══════════════════════════════════════════ */}
 
                 {/* ── Initial choice ── */}
                 {step === 'initial' && (
                     <Section>
-                        <SectionTitle>Confirma tu asistencia</SectionTitle>
+                        <SectionTitle>{t('dashboard.confirm_title')}</SectionTitle>
                         <motion.p
                             className="mb-5 text-center text-sm text-[#a89584]"
                             initial={{ opacity: 0 }}
@@ -330,8 +344,8 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
                             {isSingle
-                                ? '¿Podrás venir?'
-                                : `Sois ${group.guests.length} invitados. ¿Podréis venir?`}
+                                ? t('dashboard.confirm_single_question')
+                                : t('dashboard.confirm_group_question', { count: group.guests.length })}
                         </motion.p>
                         <motion.div
                             className="flex flex-col gap-3"
@@ -348,7 +362,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                 </svg>
-                                {isSingle ? 'Asistiré' : 'Asistiremos'}
+                                {isSingle ? t('dashboard.attend_single') : t('dashboard.attend_plural')}
                             </RippleButton>
                             <RippleButton
                                 onClick={submitDecline}
@@ -359,7 +373,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                {declineForm.processing ? 'Enviando...' : 'No podremos asistir'}
+                                {declineForm.processing ? t('dashboard.sending') : t('dashboard.decline')}
                             </RippleButton>
                         </motion.div>
                         <motion.p
@@ -369,7 +383,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.5 }}
                         >
-                            Podéis modificar vuestra respuesta hasta el 1 de mayo
+                            {t('dashboard.deadline')}
                         </motion.p>
                     </Section>
                 )}
@@ -379,7 +393,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     <form onSubmit={submitAttending} className="space-y-5">
                         {/* Allergies */}
                         <Section>
-                            <SectionTitle>Alergias alimentarias</SectionTitle>
+                            <SectionTitle>{t('dashboard.allergies_title')}</SectionTitle>
                             <div className="space-y-4">
                                 {group.guests.map((guest, index) => (
                                     <div key={guest.id}>
@@ -390,7 +404,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                             value={confirmForm.data.guests[index].allergies}
                                             onChange={(e) => updateGuestAllergies(index, e.target.value)}
                                             className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
-                                            placeholder="Ninguna"
+                                            placeholder={t('dashboard.allergies_placeholder')}
                                         />
                                     </div>
                                 ))}
@@ -399,7 +413,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
 
                         {/* Transport */}
                         <Section>
-                            <SectionTitle>Transporte</SectionTitle>
+                            <SectionTitle>{t('dashboard.transport_title')}</SectionTitle>
                             <RadioGroup
                                 value={confirmForm.data.transport}
                                 onValueChange={(v) => confirmForm.setData('transport', v)}
@@ -415,17 +429,17 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 >
                                     <RadioGroupItem value="AUTOBUS" id="t-autobus" className="text-[#8b7355]" />
                                     <div>
-                                        <span className="text-sm font-medium text-[#8b7355]">Autobús gratuito</span>
-                                        <p className="text-xs text-[#b5a594]">Horarios por confirmar</p>
+                                        <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_bus')}</span>
+                                        <p className="text-xs text-[#b5a594]">{t('dashboard.transport_bus_hint')}</p>
                                     </div>
                                 </label>
 
                                 {confirmForm.data.transport === 'AUTOBUS' && (
                                     <div className="ml-4 space-y-2.5 rounded-xl bg-[#faf8f5] p-4">
                                         {[
-                                            { id: 'bus_onda_ida', label: 'Bus desde Onda (ida)', key: 'bus_onda_ida' },
-                                            { id: 'bus_onda_vuelta', label: 'Bus desde Onda (vuelta)', key: 'bus_onda_vuelta' },
-                                            { id: 'bus_cs', label: 'Bus desde Castellón', key: 'bus_cs' },
+                                            { id: 'bus_onda_ida', label: t('dashboard.transport_bus_onda_ida'), key: 'bus_onda_ida' },
+                                            { id: 'bus_onda_vuelta', label: t('dashboard.transport_bus_onda_vuelta'), key: 'bus_onda_vuelta' },
+                                            { id: 'bus_cs', label: t('dashboard.transport_bus_cs'), key: 'bus_cs' },
                                         ].map((bus) => (
                                             <div key={bus.id} className="flex items-center gap-2.5">
                                                 <AnimatedCheckbox
@@ -452,8 +466,8 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 >
                                     <RadioGroupItem value="COCHE" id="t-coche" className="text-[#8b7355]" />
                                     <div>
-                                        <span className="text-sm font-medium text-[#8b7355]">Coche propio</span>
-                                        <p className="text-xs text-[#b5a594]">Parking gratuito disponible</p>
+                                        <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_car')}</span>
+                                        <p className="text-xs text-[#b5a594]">{t('dashboard.transport_car_hint')}</p>
                                     </div>
                                 </label>
                             </RadioGroup>
@@ -462,11 +476,11 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                         {/* Contact */}
                         <Section>
                             <SectionTitle>
-                                Contacto <span className="text-sm font-normal not-italic text-[#b5a594]">(opcional)</span>
+                                {t('dashboard.contact_title')} <span className="text-sm font-normal not-italic text-[#b5a594]">{t('dashboard.contact_optional')}</span>
                             </SectionTitle>
                             <div className="space-y-3">
                                 <div>
-                                    <Label htmlFor="contact_email" className="text-sm text-[#8b7355]">Email</Label>
+                                    <Label htmlFor="contact_email" className="text-sm text-[#8b7355]">{t('dashboard.contact_email')}</Label>
                                     <Input
                                         id="contact_email"
                                         type="email"
@@ -477,7 +491,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="contact_phone" className="text-sm text-[#8b7355]">Teléfono</Label>
+                                    <Label htmlFor="contact_phone" className="text-sm text-[#8b7355]">{t('dashboard.contact_phone')}</Label>
                                     <Input
                                         id="contact_phone"
                                         type="tel"
@@ -497,14 +511,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 disabled={confirmForm.processing}
                                 className="w-full rounded-xl bg-[#8b7355] py-6 text-base font-medium text-white shadow-sm transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
                             >
-                                {confirmForm.processing ? 'Guardando...' : 'Confirmar asistencia'}
+                                {confirmForm.processing ? t('dashboard.confirm_saving') : t('dashboard.confirm_submit')}
                             </Button>
                             <button
                                 type="button"
                                 onClick={() => setStep('initial')}
                                 className="block w-full py-2 text-center text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                             >
-                                Volver
+                                {t('dashboard.back')}
                             </button>
                         </div>
                     </form>
@@ -533,7 +547,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: 0.4 }}
                                 >
-                                    ¡Confirmación recibida!
+                                    {t('dashboard.confirmed_attending_title')}
                                 </motion.h3>
                                 <motion.div
                                     initial={{ opacity: 0 }}
@@ -542,10 +556,12 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     transition={{ duration: 0.5, delay: 0.5 }}
                                 >
                                     <p className="text-sm text-[#a89584]">
-                                        {isSingle ? '1 persona asistirá' : `${group.guests.length} personas asistirán`}
+                                        {isSingle
+                                            ? t('dashboard.confirmed_attending_single')
+                                            : t('dashboard.confirmed_attending_plural', { count: group.guests.length })}
                                     </p>
                                     <p className="mt-1 text-sm text-[#a89584]">
-                                        ¡Nos vemos el 20 de junio!
+                                        {t('dashboard.confirmed_attending_see_you')}
                                     </p>
                                 </motion.div>
                             </>
@@ -569,7 +585,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: 0.4 }}
                                 >
-                                    Respuesta registrada
+                                    {t('dashboard.confirmed_decline_title')}
                                 </motion.h3>
                                 <motion.p
                                     className="text-sm text-[#a89584]"
@@ -578,7 +594,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: 0.5 }}
                                 >
-                                    Lamentamos que no podáis acompañarnos. ¡Os echaremos de menos!
+                                    {t('dashboard.confirmed_decline_text')}
                                 </motion.p>
                             </>
                         )}
@@ -590,7 +606,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.6 }}
                         >
-                            Modificar respuesta
+                            {t('dashboard.modify_response')}
                         </motion.button>
                         <motion.p
                             className="mt-2 text-xs text-[#b5a594]"
@@ -599,7 +615,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.7 }}
                         >
-                            Podéis modificar vuestra respuesta hasta el 1 de mayo
+                            {t('dashboard.deadline')}
                         </motion.p>
                     </Section>
                 )}
@@ -610,7 +626,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                      2. DETALLES DEL EVENTO
                      ══════════════════════════════════════════ */}
                 <Section>
-                    <SectionTitle>Detalles del evento</SectionTitle>
+                    <SectionTitle>{t('dashboard.event_title')}</SectionTitle>
 
                     <div className="grid grid-cols-2 gap-3">
                         <motion.div
@@ -625,9 +641,9 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                                 </svg>
                             </div>
-                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Fecha</p>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">{t('dashboard.event_date_label')}</p>
                             <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
-                                Sábado, 20 de junio
+                                {t('dashboard.event_date_value')}
                             </p>
                         </motion.div>
                         <motion.div
@@ -643,7 +659,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                                 </svg>
                             </div>
-                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">Lugar</p>
+                            <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">{t('dashboard.event_venue_label')}</p>
                             <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
                                 {weddingInfo.venue.name}
                             </p>
@@ -654,7 +670,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 rel="noopener noreferrer"
                                 className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#8b7355] underline underline-offset-2"
                             >
-                                Ver ubicación
+                                {t('dashboard.event_venue_link')}
                                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                                 </svg>
@@ -667,24 +683,24 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 <Divider />
 
                 {/* ══════════════════════════════════════════
-                     PROGRAMA DEL DÍA - SECCIÓN DESTACADA
+                     PROGRAMA DEL DÍA
                      ══════════════════════════════════════════ */}
                 <Section delay={0.1}>
-                    <SectionTitle>Programa del Día</SectionTitle>
+                    <SectionTitle>{t('dashboard.program_title')}</SectionTitle>
                     <p className="mb-6 text-center text-sm text-[#a89584]">
-                        El orden del día para que no os perdáis nada
+                        {t('dashboard.program_sub')}
                     </p>
-                    <ProgramaDestacado schedule={weddingInfo.schedule} />
+                    <ProgramaDestacado schedule={localizedSchedule} />
                 </Section>
 
 
                 {/* ══════════════════════════════════════════
-                     3. PREGUNTAS / DUDAS  (always visible)
+                     3. PREGUNTAS / DUDAS
                      ══════════════════════════════════════════ */}
                 <Section>
-                    <SectionTitle>¿Tenéis alguna duda?</SectionTitle>
+                    <SectionTitle>{t('dashboard.questions_title')}</SectionTitle>
                     <p className="mb-4 text-center text-sm text-[#a89584]">
-                        Escríbenos y os contestaremos lo antes posible
+                        {t('dashboard.questions_sub')}
                     </p>
                     <form onSubmit={submitQuestion} className="space-y-3">
                         <Textarea
@@ -692,7 +708,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             onChange={(e) => questionForm.setData('message', e.target.value)}
                             rows={3}
                             className="border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
-                            placeholder="Escribe tu pregunta aquí..."
+                            placeholder={t('dashboard.questions_placeholder')}
                         />
                         {questionForm.errors.message && (
                             <p className="text-xs text-red-500">{questionForm.errors.message}</p>
@@ -702,14 +718,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             disabled={questionForm.processing || !questionForm.data.message.trim()}
                             className="w-full bg-[#a89584] text-white transition-all hover:bg-[#8b7355]"
                         >
-                            {questionForm.processing ? 'Enviando...' : 'Enviar pregunta'}
+                            {questionForm.processing ? t('dashboard.questions_sending') : t('dashboard.questions_submit')}
                         </Button>
                     </form>
 
                     {questions.length > 0 && (
                         <div className="mt-6 border-t border-[#e2dbd3]/60 pt-4">
                             <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">
-                                Preguntas anteriores
+                                {t('dashboard.previous_questions')}
                             </h4>
                             <div className="space-y-2.5">
                                 {questions.map((q) => (
@@ -730,29 +746,29 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     <>
                         <Divider />
                         <Section delay={0.1}>
-                            <SectionTitle>Preguntas Frecuentes</SectionTitle>
+                            <SectionTitle>{t('dashboard.faqs_title')}</SectionTitle>
                             <p className="mb-4 text-center text-sm text-[#a89584]">
-                                Respuestas a las dudas más comunes
+                                {t('dashboard.faqs_sub')}
                             </p>
-                            <FaqAccordion faqs={faqs} />
+                            <FaqAccordion faqs={localizedFaqs} />
                         </Section>
                     </>
                 )}
 
-
-                {/* ── Logout ── */}
+                {/* ── Logout + Selector de idioma ── */}
                 <motion.div
-                    className="pt-2 text-center"
+                    className="pt-2 flex flex-col items-center gap-3"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                 >
+                    <LanguageSelector />
                     <button
                         onClick={logout}
                         className="text-xs text-[#b5a594] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
                     >
-                        Cerrar sesión
+                        {t('dashboard.logout')}
                     </button>
                 </motion.div>
             </motion.main>

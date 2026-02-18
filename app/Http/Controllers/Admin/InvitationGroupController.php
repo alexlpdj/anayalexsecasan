@@ -83,6 +83,7 @@ class InvitationGroupController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:FAMILIAR,AMIGO',
+            'default_language' => 'nullable|in:es,pt-BR,fr',
             'guests' => 'required|array|min:1',
             'guests.*.name' => 'required|string|max:255',
             'guests.*.gender' => 'nullable|in:HOMBRE,MUJER',
@@ -93,6 +94,7 @@ class InvitationGroupController extends Controller
             'name' => $validated['name'],
             'type' => $validated['type'],
             'code' => InvitationGroup::generateUniqueCode(),
+            'default_language' => $validated['default_language'] ?? null,
         ]);
 
         // Crear invitados del grupo
@@ -157,6 +159,7 @@ class InvitationGroupController extends Controller
                 'code' => $group->code,
                 'type' => $group->type,
                 'notes' => $group->notes,
+                'default_language' => $group->default_language,
                 'guests' => $group->guests,
             ],
         ]);
@@ -171,6 +174,7 @@ class InvitationGroupController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:FAMILIAR,AMIGO',
             'notes' => 'nullable|string',
+            'default_language' => 'nullable|in:es,pt-BR,fr',
             'guests' => 'required|array|min:1',
             'guests.*.id' => 'nullable|exists:guests,id',
             'guests.*.name' => 'required|string|max:255',
@@ -182,6 +186,7 @@ class InvitationGroupController extends Controller
             'name' => $validated['name'],
             'type' => $validated['type'],
             'notes' => $validated['notes'] ?? null,
+            'default_language' => $validated['default_language'] ?? null,
         ]);
 
         // IDs de invitados a mantener

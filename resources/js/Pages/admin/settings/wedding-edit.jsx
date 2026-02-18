@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm, router } from '@inertiajs/react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 
 export default function WeddingEdit({ settings }) {
+    const [translating, setTranslating] = useState(false);
+
+    const handleTranslateSchedule = useCallback(() => {
+        setTranslating(true);
+        router.post(route('admin.settings.wedding.translate-schedule'), {}, {
+            onFinish: () => setTranslating(false),
+        });
+    }, []);
+
     const { data, setData, put, processing, errors } = useForm({
         bride: settings.bride || '',
         groom: settings.groom || '',
@@ -90,6 +99,46 @@ export default function WeddingEdit({ settings }) {
                         </p>
                     </div>
                 </div>
+
+                {/* Banner de traducción pendiente del programa */}
+                {settings.schedule_needs_translation && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="flex flex-col gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">⚠️</span>
+                            <div>
+                                <p className="font-semibold text-amber-800">Programa pendiente de traducción</p>
+                                <p className="mt-0.5 text-sm text-amber-700">
+                                    El programa del día ha cambiado y aún no está traducido al PT y FR. Pulsa el botón para traducirlo automáticamente con IA.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            onClick={handleTranslateSchedule}
+                            disabled={translating}
+                            className="shrink-0 bg-amber-600 text-white hover:bg-amber-700"
+                        >
+                            {translating ? (
+                                <span className="flex items-center gap-2">
+                                    <motion.span
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                    >
+                                        ⏳
+                                    </motion.span>
+                                    Traduciendo...
+                                </span>
+                            ) : (
+                                '🌐 Traducir programa'
+                            )}
+                        </Button>
+                    </motion.div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Couple Information */}

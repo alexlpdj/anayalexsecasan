@@ -30,6 +30,7 @@ export default function EditGroup({ group }) {
         name: group.name || '',
         type: group.type || 'FAMILIAR',
         notes: group.notes || '',
+        default_language: group.default_language || '',
         guests: group.guests.map(g => ({
             id: g.id,
             name: g.name,
@@ -163,6 +164,27 @@ export default function EditGroup({ group }) {
                                 {errors.type && (
                                     <p className="mt-1 text-sm text-red-600">{errors.type}</p>
                                 )}
+                            </div>
+
+                            {/* Idioma por defecto */}
+                            <div>
+                                <Label className="text-base">Idioma por defecto</Label>
+                                <Select
+                                    value={data.default_language}
+                                    onValueChange={(value) => setData('default_language', value)}
+                                >
+                                    <SelectTrigger className="mt-2">
+                                        <SelectValue placeholder="Sin preferencia (Español)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="es">🇪🇸 Español</SelectItem>
+                                        <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
+                                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    El invitado verá la web en este idioma al entrar con su código
+                                </p>
                             </div>
 
                             {/* Notas administrativas */}

@@ -18,6 +18,7 @@ export default function CreateGroup() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         type: 'FAMILIAR',
+        default_language: '',
         guests: [{ name: '', gender: '' }],
     });
 
@@ -116,6 +117,27 @@ export default function CreateGroup() {
                                 {errors.type && (
                                     <p className="mt-1 text-sm text-red-600">{errors.type}</p>
                                 )}
+                            </div>
+
+                            {/* Idioma por defecto */}
+                            <div>
+                                <Label className="text-base">Idioma por defecto</Label>
+                                <Select
+                                    value={data.default_language}
+                                    onValueChange={(value) => setData('default_language', value)}
+                                >
+                                    <SelectTrigger className="mt-2">
+                                        <SelectValue placeholder="Sin preferencia (Español)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="es">🇪🇸 Español</SelectItem>
+                                        <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
+                                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    El invitado verá la web en este idioma al entrar con su código
+                                </p>
                             </div>
 
                             {/* Info: Código */}

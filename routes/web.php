@@ -93,13 +93,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         ->name('questions');
 
     // FAQs - Preguntas Frecuentes
+    Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');
+    Route::post('/faqs/update-order', [FaqController::class, 'updateOrder'])->name('faqs.update-order');
     Route::resource('faqs', FaqController::class)->except(['show', 'create', 'edit']);
     Route::post('/faqs/{faq}/toggle', [FaqController::class, 'toggleActive'])->name('faqs.toggle');
-    Route::post('/faqs/update-order', [FaqController::class, 'updateOrder'])->name('faqs.update-order');
 
     // Wedding Settings - Configuración de la Boda
     Route::get('/settings/wedding', [WeddingSettingsController::class, 'edit'])->name('settings.wedding.edit');
     Route::put('/settings/wedding', [WeddingSettingsController::class, 'update'])->name('settings.wedding.update');
+    Route::post('/settings/wedding/translate-schedule', [WeddingSettingsController::class, 'translateSchedule'])->name('settings.wedding.translate-schedule');
 });
 
 /*

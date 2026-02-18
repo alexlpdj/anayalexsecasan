@@ -3,56 +3,23 @@ import { motion } from 'framer-motion';
 import MusicPlayer from '@/components/MusicPlayer';
 import ScrollProgress from '@/components/ScrollProgress';
 import ScrollToTop from '@/components/ScrollToTop';
+import { useTranslation } from 'react-i18next';
 
-const storyMoments = [
-    {
-        date: 'Septiembre 2018',
-        title: 'Nos conocimos',
-        description: 'Todo empezó en una noche cualquiera que resultó no ser tan cualquiera. Cruzamos miradas y supimos que algo especial estaba comenzando.',
-        icon: '💫',
-    },
-    {
-        date: 'Diciembre 2018',
-        title: 'Primera cita',
-        description: 'Nervios, risas y la certeza de querer repetir. Aquella primera cita fue el inicio de miles de momentos juntos.',
-        icon: '☕',
-    },
-    {
-        date: 'Verano 2019',
-        title: 'Primer viaje juntos',
-        description: 'Descubrimos que viajar juntos era tan natural como respirar. Cada destino se convertía en nuestro lugar favorito.',
-        icon: '✈️',
-    },
-    {
-        date: '2020',
-        title: 'Superamos todo juntos',
-        description: 'El mundo se detuvo, pero nuestro amor se hizo más fuerte. Aprendimos que juntos podemos con cualquier cosa.',
-        icon: '💪',
-    },
-    {
-        date: '2022',
-        title: 'Nuestro hogar',
-        description: 'Construimos nuestro nido. Cuatro paredes que se llenaron de risas, cenas improvisadas y noches de película.',
-        icon: '🏠',
-    },
-    {
-        date: '2025',
-        title: 'La pedida',
-        description: '¡Dijo que sí! El momento más emocionante de nuestras vidas. Lágrimas de felicidad y la promesa de un para siempre.',
-        icon: '💍',
-    },
-    {
-        date: '20 de Junio, 2026',
-        title: 'Nuestra boda',
-        description: 'El día que celebraremos nuestro amor rodeados de las personas que más queremos. ¡Y tú eres una de ellas!',
-        icon: '💒',
-    },
-];
+const MOMENT_ICONS = ['💫', '☕', '✈️', '💪', '🏠', '💍', '💒'];
 
 export default function OurStory() {
+    const { t } = useTranslation();
+
+    const storyMoments = [0, 1, 2, 3, 4, 5, 6].map((i) => ({
+        date: t(`story.moment_${i}_date`),
+        title: t(`story.moment_${i}_title`),
+        description: t(`story.moment_${i}_desc`),
+        icon: MOMENT_ICONS[i],
+    }));
+
     return (
         <>
-            <Head title="Nuestra Historia" />
+            <Head title={t('story.page_title')} />
             <ScrollProgress />
             <ScrollToTop />
             <MusicPlayer
@@ -74,7 +41,7 @@ export default function OurStory() {
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                         </svg>
-                        Volver a la invitación
+                        {t('story.back')}
                     </Link>
 
                     <motion.div
@@ -83,7 +50,7 @@ export default function OurStory() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         <h1 className="font-serif text-4xl italic text-[#8b7355] sm:text-5xl">
-                            Nuestra Historia
+                            {t('story.title')}
                         </h1>
                         <div className="mx-auto mt-4 flex items-center justify-center gap-3">
                             <span className="h-px w-12 bg-[#d4c5b9]" />
@@ -91,7 +58,7 @@ export default function OurStory() {
                             <span className="h-px w-12 bg-[#d4c5b9]" />
                         </div>
                         <p className="mx-auto mt-4 max-w-md text-sm text-[#a89584] sm:text-base">
-                            Cada gran historia de amor tiene sus capítulos. Esta es la nuestra.
+                            {t('story.subtitle')}
                         </p>
                     </motion.div>
                 </motion.header>
@@ -113,7 +80,7 @@ export default function OurStory() {
                                     index % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'
                                 }`}
                             >
-                                {/* Icon circle - mobile: left side, desktop: center */}
+                                {/* Icon circle */}
                                 <div className="relative z-10 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border-2 border-[#c4a571]/30 bg-white shadow-md sm:absolute sm:left-1/2 sm:-translate-x-1/2">
                                     <span className="text-2xl">{moment.icon}</span>
                                 </div>
@@ -151,13 +118,13 @@ export default function OurStory() {
                     className="pb-16 text-center"
                 >
                     <p className="mb-4 font-serif text-lg italic text-[#8b7355]">
-                        Y el próximo capítulo lo escribiremos juntos...
+                        {t('story.cta')}
                     </p>
                     <Link
                         href={route('guest.dashboard')}
                         className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#8b7355] to-[#a89584] px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                     >
-                        Confirmar Asistencia
+                        {t('story.confirm_button')}
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                         </svg>
