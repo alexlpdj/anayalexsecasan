@@ -89,7 +89,7 @@ class FaqController extends Controller
         $apiKey = config('services.anthropic.key');
 
         if (!$apiKey) {
-            return back()->withErrors(['translate' => 'Falta ANTHROPIC_API_KEY en el fichero .env']);
+            return back()->with('error', 'Falta ANTHROPIC_API_KEY en el fichero .env');
         }
 
         $pending = Faq::where('needs_translation', true)->get();
@@ -129,7 +129,7 @@ class FaqController extends Controller
             ]);
 
             if ($response->failed()) {
-                return back()->withErrors(['translate' => "Error al llamar a la API de Claude: " . $response->status()]);
+                return back()->with('error', "Error al llamar a la API de Claude: " . $response->status());
             }
 
             $raw = $response->json('content.0.text', '');
@@ -138,7 +138,7 @@ class FaqController extends Controller
             $translated = json_decode(trim($raw), true);
 
             if (!is_array($translated)) {
-                return back()->withErrors(['translate' => "La respuesta de Claude no es JSON válido para $name."]);
+                return back()->with('error', "La respuesta de Claude no es JSON válido para $name.");
             }
 
             foreach ($translated as $item) {
