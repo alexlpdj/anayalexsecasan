@@ -1,10 +1,10 @@
 import '../css/app.css';
 import './bootstrap';
 
-import { createInertiaApp, router } from '@inertiajs/react';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createRoot } from 'react-dom/client';
-import { useState, useEffect } from 'react';
+import {createInertiaApp, router} from '@inertiajs/react';
+import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
+import {createRoot} from 'react-dom/client';
+import {useEffect, useState} from 'react';
 import MusicPlayer from './components/MusicPlayer';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -16,10 +16,9 @@ function AppWrapper({ children }) {
     );
 
     useEffect(() => {
-        const removeListener = router.on('navigate', () => {
+        return router.on('navigate', () => {
             setCurrentPath(window.location.pathname);
         });
-        return removeListener;
     }, []);
 
     const isGuestRoute = currentPath.startsWith('/invitacion');
@@ -44,7 +43,7 @@ createInertiaApp({
             `./Pages/${name}.jsx`,
             import.meta.glob('./Pages/**/*.jsx'),
         ),
-    setup({ el, App, props }) {
+    setup({el, App, props}) {
         const root = createRoot(el);
 
         root.render(
@@ -56,4 +55,4 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
-});
+}).then(r =>{});

@@ -25,7 +25,7 @@ export default function AnimatedHero() {
         >
             {/* Texto superior */}
             <motion.p
-                className="mb-3 text-[10px] uppercase tracking-[0.4em] text-[#c4b5a4]"
+                className="mb-3 text-[11px] uppercase tracking-[0.4em] text-[#7a6a58] font-medium"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}

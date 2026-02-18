@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -100,6 +100,14 @@ export default function GuestLogin() {
     const { data, setData, post, processing, errors } = useForm({
         code: '',
     });
+    const inputRef = useRef(null);
+
+    const handleInputFocus = () => {
+        // Esperar a que el teclado móvil termine de aparecer antes de hacer scroll
+        setTimeout(() => {
+            inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 350);
+    };
 
     const handleEnter = () => {
         document.dispatchEvent(new Event('startMusic'));
@@ -196,8 +204,6 @@ export default function GuestLogin() {
                         </CardTitle>
                         <CardDescription className="text-base leading-relaxed text-[#a89584]">
                             Nos hace mucha ilusión compartir este día contigo.
-                            <br />
-                            Por favor, introduce tu código de invitación.
                         </CardDescription>
                     </CardHeader>
 
@@ -213,12 +219,14 @@ export default function GuestLogin() {
                                 </Label>
 
                                 <Input
+                                    ref={inputRef}
                                     id="code"
                                     type="text"
                                     value={data.code}
                                     onChange={(e) =>
                                         setData('code', e.target.value.toUpperCase())
                                     }
+                                    onFocus={handleInputFocus}
                                     className="mt-2 border-2 border-[#d4c5b9] text-center font-mono text-2xl uppercase tracking-widest focus:border-[#8b7355] focus:ring-2 focus:ring-[#8b7355]/20"
                                     placeholder=""
                                     maxLength={6}
@@ -270,7 +278,7 @@ export default function GuestLogin() {
                         </form>
 
                         {/* Ayuda */}
-                        <div className="mt-6 border-t border-[#d4c5b9]/30 pt-6">
+                        <div className="mt-3 border-t border-[#d4c5b9]/30 pt-6">
                             <div className="rounded-lg bg-[#faf8f5] p-4 text-center">
                                 <p className="text-sm text-[#a89584]">
                                     💌 El código está escrito a mano en tu invitación.

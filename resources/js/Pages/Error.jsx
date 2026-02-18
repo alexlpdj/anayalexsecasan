@@ -4,25 +4,25 @@ import { motion } from 'framer-motion';
 const errorMessages = {
     404: {
         title: "¿Te has perdido?",
-        message: "Parece que esta página se fue de luna de miel antes que nosotros...",
-        suggestion: "No te preocupes, seguro que la ceremonia sigue en pie.",
+        message: "Parece que esta página se ha ido de luna de miel antes que nosotros...",
+        suggestion: "No te preocupes, vuelve atrás y solucionado.",
         emoji: "🗺️"
     },
     403: {
         title: "¡Alto ahí!",
-        message: "Esta zona es solo para los novios. ¿Acaso nos viste intercambiar anillos?",
-        suggestion: "Si eres invitado, vuelve a tu mesa (dashboard).",
+        message: "Esta zona es solo para los novios.",
+        suggestion: "Si eres invitado, vuelve a tu sitio!.",
         emoji: "🚫"
     },
     500: {
         title: "¡Ay, no!",
-        message: "Algo se rompió... pero tranquilo, no fue el vestido de novia.",
+        message: "Algo se ha roto... pero tranquilo, no ha sido el vestido de la novia.",
         suggestion: "Nuestro técnico está cosiendo el código. Vuelve en un momento.",
         emoji: "💔"
     },
     419: {
         title: "Sesión expirada",
-        message: "Tu sesión expiró más rápido que el champán en el brindis.",
+        message: "Tu sesión ha expirado más rápido que el champán en el brindis.",
         suggestion: "Inicia sesión de nuevo para seguir celebrando.",
         emoji: "🥂"
     },
@@ -36,7 +36,7 @@ const errorMessages = {
 
 export default function Error({ status }) {
     const errorContent = errorMessages[status] || {
-        title: "Algo salió mal",
+        title: "Algo falla",
         message: "Ups... esto no estaba en el plan de boda.",
         suggestion: "Volvamos a la pista de baile.",
         emoji: "😅"
