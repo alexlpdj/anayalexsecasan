@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,6 +87,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
     });
 
     const [noviosAnimation, setNoviosAnimation] = useState(null);
+    const flashTimerRef = useRef(null);
 
     // Aplicar idioma por defecto del grupo si el usuario no ha elegido manualmente
     useEffect(() => {
@@ -102,6 +103,17 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             .then(response => response.json())
             .then(data => setNoviosAnimation(data))
             .catch(err => console.log('Error cargando animación:', err));
+    }, []);
+
+    useEffect(() => {
+        return router.on('success', (event) => {
+            const { flash: newFlash } = event.detail.page.props;
+            if (newFlash?.success) {
+                if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+                setShowFlash(true);
+                flashTimerRef.current = setTimeout(() => setShowFlash(false), 4000);
+            }
+        });
     }, []);
 
     // Función para disparar confetti
@@ -141,13 +153,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
         if (isSubmitted) setStep('confirmed');
     }, [isSubmitted]);
 
-    useEffect(() => {
-        if (flash?.success) {
-            setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [flash?.success]);
 
     const confirmForm = useForm({
         attending: true,

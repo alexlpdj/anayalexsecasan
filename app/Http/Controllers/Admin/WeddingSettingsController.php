@@ -132,7 +132,8 @@ class WeddingSettingsController extends Controller
             ]);
 
             if ($response->failed()) {
-                return back()->with('error', "Error al llamar a la API de Claude: " . $response->status());
+                $errorMsg = $response->json('error.message', $response->body());
+                return back()->with('error', "Error API Claude {$response->status()}: {$errorMsg}");
             }
 
             $raw = $response->json('content.0.text', '');

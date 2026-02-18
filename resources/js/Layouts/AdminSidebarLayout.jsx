@@ -1,5 +1,5 @@
 import { Link, usePage, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Sidebar,
@@ -69,14 +69,18 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
     const { auth, flash, adminNav } = usePage().props;
     const user = auth.user;
     const [showFlash, setShowFlash] = useState(false);
+    const timerRef = useRef(null);
 
     useEffect(() => {
-        if (flash?.success || flash?.error) {
-            setShowFlash(true);
-            const t = setTimeout(() => setShowFlash(false), 4000);
-            return () => clearTimeout(t);
-        }
-    }, [flash?.success, flash?.error]);
+        return router.on('success', (event) => {
+            const { flash: newFlash } = event.detail.page.props;
+            if (newFlash?.success || newFlash?.error) {
+                if (timerRef.current) clearTimeout(timerRef.current);
+                setShowFlash(true);
+                timerRef.current = setTimeout(() => setShowFlash(false), 4000);
+            }
+        });
+    }, []);
 
     const isActive = (match) => route().current(match);
 

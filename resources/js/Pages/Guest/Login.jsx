@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -107,14 +107,18 @@ export default function GuestLogin() {
         code: '',
     });
     const inputRef = useRef(null);
+    const flashTimerRef = useRef(null);
 
     useEffect(() => {
-        if (flash?.success) {
-            setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [flash?.success]);
+        return router.on('success', (event) => {
+            const { flash: newFlash } = event.detail.page.props;
+            if (newFlash?.success) {
+                if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+                setShowFlash(true);
+                flashTimerRef.current = setTimeout(() => setShowFlash(false), 4000);
+            }
+        });
+    }, []);
 
     const handleInputFocus = () => {
         // Esperar a que el teclado móvil termine de aparecer antes de hacer scroll
