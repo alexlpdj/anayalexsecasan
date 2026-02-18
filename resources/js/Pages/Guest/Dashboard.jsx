@@ -243,6 +243,11 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 </div>
             </div>
 
+            {/* ── Barra superior con selector de idioma ── */}
+            <div className="flex justify-end px-5 pt-4">
+                <LanguageSelector />
+            </div>
+
             {/* ── Header with Typewriter Animation ── */}
             <AnimatedHero />
 
@@ -760,15 +765,14 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     </>
                 )}
 
-                {/* ── Logout + Selector de idioma ── */}
+                {/* ── Logout ── */}
                 <motion.div
-                    className="pt-2 flex flex-col items-center gap-3"
+                    className="pt-2 flex flex-col items-center"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                 >
-                    <LanguageSelector />
                     <button
                         onClick={logout}
                         className="text-xs text-[#b5a594] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
