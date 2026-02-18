@@ -67,6 +67,20 @@
     "faqs_sub": "Réponses aux questions les plus courantes",
     "logout": "Se déconnecter"
   },
+  "header": {
+    "invitation": "nous vous invitons à notre mariage"
+  },
+  "countdown": {
+    "label": "Dans",
+    "days": "Jours",
+    "hours": "Heures",
+    "minutes": "Min",
+    "seconds": "Sec"
+  },
+  "player": {
+    "title": "Musique de fond",
+    "volume": "Volume"
+  },
   "story": {
     "page_title": "Notre Histoire",
     "back": "Retour à l'invitation",

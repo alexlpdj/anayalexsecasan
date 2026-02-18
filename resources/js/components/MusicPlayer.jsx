@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Howl } from 'howler';
+import { useTranslation } from 'react-i18next';
 
 export default function MusicPlayer({ playlist = [], autoplay = false }) {
+    const { t } = useTranslation();
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(0.5);
     const [showControls, setShowControls] = useState(false);
@@ -188,7 +190,7 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
                         {/* Play/Pause */}
                         <div className="mb-3 flex items-center justify-between">
                             <span className="text-sm font-medium text-[#8b7355]">
-                                Música de fondo
+                                {t('player.title')}
                             </span>
                             <button
                                 onClick={togglePlay}
@@ -217,7 +219,7 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
                         {/* Control de volumen */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-[#a89584]">Volumen</span>
+                                <span className="text-xs text-[#a89584]">{t('player.volume')}</span>
                                 <span className="text-xs text-[#8b7355]">
                                     {Math.round(volume * 100)}%
                                 </span>

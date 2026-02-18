@@ -2,8 +2,10 @@ import { motion } from 'framer-motion';
 import {Head} from "@inertiajs/react";
 import {useEffect, useState} from "react";
 import Lottie from "lottie-react";
+import { useTranslation } from 'react-i18next';
 
 export default function AnimatedHero() {
+    const { t } = useTranslation();
 
     const [noviosAnimation, setNoviosAnimation] = useState(null);
 
@@ -30,7 +32,7 @@ export default function AnimatedHero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
             >
-                os invitamos a nuestra boda
+                {t('header.invitation')}
             </motion.p>
 
             {/* ── Animación decorativa de novios ── */}
@@ -91,7 +93,7 @@ export default function AnimatedHero() {
             >
                 <span className="h-px w-8 bg-[#d4c5b9]" />
                 <p className="text-[11px] uppercase tracking-[0.25em] text-[#a89584]">
-                    20 de junio de 2026
+                    {t('login.welcome_date')}
                 </p>
                 <span className="h-px w-8 bg-[#d4c5b9]" />
             </motion.div>

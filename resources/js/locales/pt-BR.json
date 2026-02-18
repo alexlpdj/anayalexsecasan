@@ -67,6 +67,20 @@
     "faqs_sub": "Respostas para as dúvidas mais comuns",
     "logout": "Sair"
   },
+  "header": {
+    "invitation": "convidamos vocês para o nosso casamento"
+  },
+  "countdown": {
+    "label": "Faltam",
+    "days": "Dias",
+    "hours": "Horas",
+    "minutes": "Min",
+    "seconds": "Seg"
+  },
+  "player": {
+    "title": "Música de fundo",
+    "volume": "Volume"
+  },
   "story": {
     "page_title": "Nossa História",
     "back": "Voltar ao convite",

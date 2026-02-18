@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function CountdownTimer({ targetDate }) {
+    const { t } = useTranslation();
     const [timeLeft, setTimeLeft] = useState({
         days: 0,
         hours: 0,
@@ -74,13 +76,13 @@ export default function CountdownTimer({ targetDate }) {
         <div className="w-full">
             <div className="text-center">
                 <p className="mb-3 text-[24px] uppercase tracking-[0.3em] text-[#b5a594]">
-                    Faltan
+                    {t('countdown.label')}
                 </p>
                 <div className="mx-auto flex max-w-md justify-center gap-3 sm:gap-4">
-                    <TimeUnit value={timeLeft.days} label="Días" shouldAnimate={false} />
-                    <TimeUnit value={timeLeft.hours} label="Horas" shouldAnimate={false} />
-                    <TimeUnit value={timeLeft.minutes} label="Min" shouldAnimate={false} />
-                    <TimeUnit value={timeLeft.seconds} label="Seg" shouldAnimate={true} />
+                    <TimeUnit value={timeLeft.days} label={t('countdown.days')} shouldAnimate={false} />
+                    <TimeUnit value={timeLeft.hours} label={t('countdown.hours')} shouldAnimate={false} />
+                    <TimeUnit value={timeLeft.minutes} label={t('countdown.minutes')} shouldAnimate={false} />
+                    <TimeUnit value={timeLeft.seconds} label={t('countdown.seconds')} shouldAnimate={true} />
                 </div>
             </div>
         </div>

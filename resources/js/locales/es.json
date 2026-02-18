@@ -67,6 +67,20 @@
     "faqs_sub": "Respuestas a las dudas más comunes",
     "logout": "Cerrar sesión"
   },
+  "header": {
+    "invitation": "os invitamos a nuestra boda"
+  },
+  "countdown": {
+    "label": "Faltan",
+    "days": "Días",
+    "hours": "Horas",
+    "minutes": "Min",
+    "seconds": "Seg"
+  },
+  "player": {
+    "title": "Música de fondo",
+    "volume": "Volumen"
+  },
   "story": {
     "page_title": "Nuestra Historia",
     "back": "Volver a la invitación",
