@@ -74,6 +74,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::post('/groups/{group}/regenerate-code', [InvitationGroupController::class, 'regenerateCode'])
         ->name('groups.regenerate-code');
 
+    // Envío de emails
+    Route::post('/groups/{group}/send-invitation', [InvitationGroupController::class, 'sendInvitation'])
+        ->name('groups.send-invitation');
+    Route::post('/groups/send-reminders', [InvitationGroupController::class, 'sendReminders'])
+        ->name('groups.send-reminders');
+    Route::post('/groups/send-custom-message', [InvitationGroupController::class, 'sendCustomMessage'])
+        ->name('groups.send-custom-message');
+
     // Exportaciones y reportes
     Route::get('/export/all', [InvitationGroupController::class, 'exportAll'])
         ->name('export.all');

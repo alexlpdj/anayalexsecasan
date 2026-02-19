@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\CodeInvitationMail;
+use App\Mail\CustomMessageMail;
 use App\Mail\RsvpReminderMail;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
@@ -327,5 +328,46 @@ class InvitationGroupController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Enviar mensaje personalizado a grupos seleccionados
+     */
+    public function sendCustomMessage(Request $request)
+    {
+        $validated = $request->validate([
+            'group_ids'   => 'required|array|min:1',
+            'group_ids.*' => 'integer|exists:invitation_groups,id',
+            'subject'     => 'required|string|max:200',
+            'message'     => 'required|string|max:5000',
+        ]);
+
+        $groups = InvitationGroup::whereIn('id', $validated['group_ids'])
+            ->whereNotNull('contact_email')
+            ->get();
+
+        if ($groups->isEmpty()) {
+            return back()->with('error', 'Ninguno de los grupos seleccionados tiene email de contacto.');
+        }
+
+        $sent = 0;
+        $errors = 0;
+
+        foreach ($groups as $group) {
+            try {
+                Mail::to($group->contact_email)
+                    ->queue(new CustomMessageMail($group, $validated['subject'], $validated['message']));
+                $sent++;
+            } catch (\Exception $e) {
+                $errors++;
+            }
+        }
+
+        $msg = "Mensaje enviado a {$sent} grupo" . ($sent !== 1 ? 's' : '');
+        if ($errors) {
+            $msg .= " ({$errors} con error)";
+        }
+
+        return back()->with('success', $msg);
     }
 }

@@ -13,6 +13,7 @@ import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight } from 'lucide-react';
 import {
@@ -58,6 +59,11 @@ export default function GroupsIndex({ groups, stats, chartData }) {
     const [search, setSearch] = useState('');
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [sendingReminders, setSendingReminders] = useState(false);
+    const [showCustomModal, setShowCustomModal] = useState(false);
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const [customSubject, setCustomSubject] = useState('');
+    const [customMessage, setCustomMessage] = useState('');
+    const [sendingCustom, setSendingCustom] = useState(false);
 
     const filteredGroups = groups.filter((group) =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,6 +78,27 @@ export default function GroupsIndex({ groups, stats, chartData }) {
         ) {
             router.delete(route('admin.groups.destroy', group.id));
         }
+    };
+
+    const closeCustomModal = () => {
+        setShowCustomModal(false);
+        setSelectedIds(new Set());
+        setCustomSubject('');
+        setCustomMessage('');
+    };
+
+    const handleSendCustom = () => {
+        setSendingCustom(true);
+        router.post(route('admin.groups.send-custom-message'), {
+            group_ids: [...selectedIds],
+            subject: customSubject,
+            message: customMessage,
+        }, {
+            onFinish: () => {
+                setSendingCustom(false);
+                closeCustomModal();
+            },
+        });
     };
 
     const handleSendReminders = () => {
@@ -114,6 +141,13 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                 📨 Enviar recordatorio a pendientes
                             </Button>
                         )}
+                        <Button
+                            variant="outline"
+                            className="flex-1 sm:flex-none"
+                            onClick={() => setShowCustomModal(true)}
+                        >
+                            ✉️ Mensaje personalizado
+                        </Button>
                         <Link href={route('admin.groups.create')} className="flex-1 sm:flex-none">
                             <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
                                 <Plus className="mr-1.5 h-4 w-4" />
@@ -532,6 +566,139 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 </Card>
                 </motion.div>
             </motion.div>
+            {/* Custom message modal */}
+            <Dialog open={showCustomModal} onOpenChange={(open) => { if (!open) closeCustomModal(); }}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>✉️ Mensaje personalizado</DialogTitle>
+                        <DialogDescription>
+                            Selecciona los destinatarios y escribe el mensaje.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        {/* Quick filters */}
+                        <div>
+                            <p className="mb-2 text-sm font-medium text-gray-700">Filtros rápidos</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setSelectedIds(new Set(groups.filter(g => g.contact_email).map(g => g.id)))}
+                                >
+                                    Todos con email
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setSelectedIds(new Set(groups.filter(g => !g.has_submitted && g.contact_email).map(g => g.id)))}
+                                >
+                                    Pendientes con email
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setSelectedIds(new Set(groups.filter(g => g.has_submitted && g.contact_email).map(g => g.id)))}
+                                >
+                                    Confirmados con email
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-red-200 px-3 py-1 text-xs text-red-500 hover:bg-red-50"
+                                    onClick={() => setSelectedIds(new Set())}
+                                >
+                                    Limpiar
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Group list */}
+                        <div>
+                            <p className="mb-2 text-sm font-medium text-gray-700">
+                                Destinatarios{' '}
+                                <span className="text-gray-400">({selectedIds.size} grupo{selectedIds.size !== 1 ? 's' : ''} seleccionado{selectedIds.size !== 1 ? 's' : ''})</span>
+                            </p>
+                            <div className="max-h-44 overflow-y-auto rounded-md border border-gray-200">
+                                {groups.map((group) => (
+                                    <label
+                                        key={group.id}
+                                        className={`flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors hover:bg-gray-50 ${!group.contact_email ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            disabled={!group.contact_email}
+                                            checked={selectedIds.has(group.id)}
+                                            onChange={() => {
+                                                setSelectedIds(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(group.id)) {
+                                                        next.delete(group.id);
+                                                    } else {
+                                                        next.add(group.id);
+                                                    }
+                                                    return next;
+                                                });
+                                            }}
+                                            className="h-4 w-4 rounded border-gray-300 accent-[#8b7355]"
+                                        />
+                                        <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
+                                        {group.has_submitted ? (
+                                            <Badge className="bg-green-100 text-green-700 text-xs">Confirmado</Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                        )}
+                                        {!group.contact_email && (
+                                            <span className="text-xs text-gray-400">sin email</span>
+                                        )}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Message form */}
+                        <div className="space-y-3">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">Asunto</label>
+                                <Input
+                                    type="text"
+                                    placeholder="Asunto del mensaje..."
+                                    value={customSubject}
+                                    onChange={(e) => setCustomSubject(e.target.value)}
+                                    maxLength={200}
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">Mensaje</label>
+                                <Textarea
+                                    placeholder="Escribe el mensaje aquí..."
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    rows={5}
+                                    maxLength={5000}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={closeCustomModal}
+                            disabled={sendingCustom}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-[#8b7355] text-white hover:bg-[#7a6449]"
+                            onClick={handleSendCustom}
+                            disabled={selectedIds.size === 0 || !customSubject.trim() || !customMessage.trim() || sendingCustom}
+                        >
+                            {sendingCustom ? 'Enviando…' : `Enviar a ${selectedIds.size} grupo${selectedIds.size !== 1 ? 's' : ''} ✉️`}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Reminder confirmation modal */}
             <Dialog open={showReminderModal} onOpenChange={setShowReminderModal}>
                 <DialogContent className="max-w-sm">
