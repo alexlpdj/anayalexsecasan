@@ -21,6 +21,8 @@ import {CardDescription, CardHeader, CardTitle} from "@/components/ui/card.jsx";
 import Lottie from "lottie-react";
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
+import InstallPrompt from '@/components/InstallPrompt';
+import NotificationPrompt from '@/components/NotificationPrompt';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
@@ -207,6 +209,8 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
 
     return (
         <>
+            <InstallPrompt />
+
             {/* Scroll Progress Bar */}
             <ScrollProgress />
 
@@ -257,6 +261,9 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
             >
+                {/* ── PWA Notification Prompt ── */}
+                <NotificationPrompt />
+
                 {/* ── Saludo ── */}
                 <motion.div
                     className="text-center space-y-3"

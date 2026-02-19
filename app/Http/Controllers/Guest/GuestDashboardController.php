@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Mail\GuestQuestionMail;
+use App\Mail\RsvpConfirmationMail;
 use App\Models\Faq;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
@@ -137,6 +138,12 @@ class GuestDashboardController extends Controller
                 ]);
             }
         });
+
+        // Send confirmation email if contact email was provided
+        $group->refresh()->load('guests');
+        if ($group->contact_email) {
+            Mail::to($group->contact_email)->queue(new RsvpConfirmationMail($group));
+        }
 
         $message = $attending
             ? '¡Gracias por confirmar! Nos vemos el 20 de junio.'

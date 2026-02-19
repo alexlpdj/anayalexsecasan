@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
 use App\Http\Controllers\Guest\GuestDashboardController;
+use App\Http\Controllers\Guest\PushController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,8 @@ Route::prefix('invitacion')->name('guest.')->group(function () {
         Route::post('/confirmar', [GuestDashboardController::class, 'confirm'])->name('confirm');
         Route::post('/pregunta', [GuestDashboardController::class, 'askQuestion'])->name('question');
         Route::post('/logout', [GuestAuthController::class, 'logout'])->name('logout');
+        Route::post('/push/subscribe',   [PushController::class, 'subscribe'])->name('push.subscribe');
+        Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
     });
 });
 
@@ -64,6 +67,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     })->name('dashboard');
 
     // Gestión de Grupos
+    Route::post('/groups/send-push', [InvitationGroupController::class, 'sendPushNotification'])
+        ->name('groups.send-push');
     Route::resource('groups', InvitationGroupController::class)->except(['show']);
 
     // Detalle de grupo

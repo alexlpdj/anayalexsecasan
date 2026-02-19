@@ -9,9 +9,12 @@ use App\Mail\RsvpReminderMail;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
 use App\Models\Guest;
+use App\Models\PushSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
 
 class InvitationGroupController extends Controller
 {
@@ -365,6 +368,75 @@ class InvitationGroupController extends Controller
 
         $msg = "Mensaje enviado a {$sent} grupo" . ($sent !== 1 ? 's' : '');
         if ($errors) {
+            $msg .= " ({$errors} con error)";
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Enviar notificación push a grupos seleccionados
+     */
+    public function sendPushNotification(Request $request)
+    {
+        $validated = $request->validate([
+            'group_ids'   => 'required|array|min:1',
+            'group_ids.*' => 'integer|exists:invitation_groups,id',
+            'title'       => 'required|string|max:100',
+            'body'        => 'required|string|max:500',
+        ]);
+
+        $subscriptions = PushSubscription::whereIn('invitation_group_id', $validated['group_ids'])->get();
+
+        if ($subscriptions->isEmpty()) {
+            return back()->with('error', 'Ninguno de los grupos seleccionados tiene dispositivos suscritos a notificaciones push.');
+        }
+
+        $auth = [
+            'VAPID' => [
+                'subject'    => config('webpush.vapid.subject'),
+                'publicKey'  => config('webpush.vapid.public_key'),
+                'privateKey' => config('webpush.vapid.private_key'),
+            ],
+        ];
+
+        $webPush = new WebPush($auth);
+        $payload = json_encode(['title' => $validated['title'], 'body' => $validated['body']]);
+
+        $staleIds = [];
+
+        foreach ($subscriptions as $sub) {
+            $subscription = Subscription::create([
+                'endpoint'        => $sub->endpoint,
+                'keys'            => [
+                    'p256dh' => $sub->p256dh,
+                    'auth'   => $sub->auth,
+                ],
+            ]);
+            $webPush->queueNotification($subscription, $payload);
+        }
+
+        $sent   = 0;
+        $errors = 0;
+
+        foreach ($webPush->flush() as $report) {
+            if ($report->isSuccess()) {
+                $sent++;
+            } else {
+                $errors++;
+                // Remove stale subscriptions (410 Gone or 404 Not Found)
+                if ($report->getResponse() && in_array($report->getResponse()->getStatusCode(), [404, 410])) {
+                    $staleIds[] = $report->getRequest()->getUri()->__toString();
+                }
+            }
+        }
+
+        if (!empty($staleIds)) {
+            PushSubscription::whereIn('endpoint', $staleIds)->delete();
+        }
+
+        $msg = "Push enviado a {$sent} dispositivo" . ($sent !== 1 ? 's' : '');
+        if ($errors > 0) {
             $msg .= " ({$errors} con error)";
         }
 

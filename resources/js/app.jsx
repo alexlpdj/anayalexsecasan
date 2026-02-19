@@ -2,6 +2,17 @@ import '../css/app.css';
 import './bootstrap';
 import './i18n';
 
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+
+// Capture install prompt (Chrome/Android)
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.__pwaInstallPrompt = e;
+});
+
 import {createInertiaApp, router} from '@inertiajs/react';
 import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
 import {createRoot} from 'react-dom/client';

@@ -48,6 +48,11 @@ class InvitationGroup extends Model
         return $this->hasMany(GuestQuestion::class);
     }
 
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
     /**
      * Generar código único alfanumérico
      * Formato: 5 caracteres mayúsculas y números

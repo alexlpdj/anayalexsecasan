@@ -65,6 +65,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
     const [customMessage, setCustomMessage] = useState('');
     const [sendingCustom, setSendingCustom] = useState(false);
 
+    const [showPushModal, setShowPushModal] = useState(false);
+    const [pushSelectedIds, setPushSelectedIds] = useState(new Set());
+    const [pushTitle, setPushTitle] = useState('');
+    const [pushBody, setPushBody] = useState('');
+    const [sendingPush, setSendingPush] = useState(false);
+
     const filteredGroups = groups.filter((group) =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
         group.code.toLowerCase().includes(search.toLowerCase())
@@ -85,6 +91,27 @@ export default function GroupsIndex({ groups, stats, chartData }) {
         setSelectedIds(new Set());
         setCustomSubject('');
         setCustomMessage('');
+    };
+
+    const closePushModal = () => {
+        setShowPushModal(false);
+        setPushSelectedIds(new Set());
+        setPushTitle('');
+        setPushBody('');
+    };
+
+    const handleSendPush = () => {
+        setSendingPush(true);
+        router.post(route('admin.groups.send-push'), {
+            group_ids: [...pushSelectedIds],
+            title: pushTitle,
+            body: pushBody,
+        }, {
+            onFinish: () => {
+                setSendingPush(false);
+                closePushModal();
+            },
+        });
     };
 
     const handleSendCustom = () => {
@@ -147,6 +174,13 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             onClick={() => setShowCustomModal(true)}
                         >
                             ✉️ Mensaje personalizado
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="flex-1 sm:flex-none"
+                            onClick={() => setShowPushModal(true)}
+                        >
+                            🔔 Notificación push
                         </Button>
                         <Link href={route('admin.groups.create')} className="flex-1 sm:flex-none">
                             <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
@@ -694,6 +728,135 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             disabled={selectedIds.size === 0 || !customSubject.trim() || !customMessage.trim() || sendingCustom}
                         >
                             {sendingCustom ? 'Enviando…' : `Enviar a ${selectedIds.size} grupo${selectedIds.size !== 1 ? 's' : ''} ✉️`}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Push notification modal */}
+            <Dialog open={showPushModal} onOpenChange={(open) => { if (!open) closePushModal(); }}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>🔔 Notificación push</DialogTitle>
+                        <DialogDescription>
+                            Selecciona los grupos y escribe el mensaje de notificación.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        {/* Quick filters */}
+                        <div>
+                            <p className="mb-2 text-sm font-medium text-gray-700">Filtros rápidos</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setPushSelectedIds(new Set(groups.map(g => g.id)))}
+                                >
+                                    Todos los grupos
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setPushSelectedIds(new Set(groups.filter(g => !g.has_submitted).map(g => g.id)))}
+                                >
+                                    Pendientes
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100"
+                                    onClick={() => setPushSelectedIds(new Set(groups.filter(g => g.has_submitted).map(g => g.id)))}
+                                >
+                                    Confirmados
+                                </button>
+                                <button
+                                    type="button"
+                                    className="rounded-full border border-red-200 px-3 py-1 text-xs text-red-500 hover:bg-red-50"
+                                    onClick={() => setPushSelectedIds(new Set())}
+                                >
+                                    Limpiar
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Group list */}
+                        <div>
+                            <p className="mb-2 text-sm font-medium text-gray-700">
+                                Destinatarios{' '}
+                                <span className="text-gray-400">({pushSelectedIds.size} grupo{pushSelectedIds.size !== 1 ? 's' : ''} seleccionado{pushSelectedIds.size !== 1 ? 's' : ''})</span>
+                            </p>
+                            <div className="max-h-44 overflow-y-auto rounded-md border border-gray-200">
+                                {groups.map((group) => (
+                                    <label
+                                        key={group.id}
+                                        className="flex cursor-pointer items-center gap-3 px-3 py-2 transition-colors hover:bg-gray-50"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={pushSelectedIds.has(group.id)}
+                                            onChange={() => {
+                                                setPushSelectedIds(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(group.id)) {
+                                                        next.delete(group.id);
+                                                    } else {
+                                                        next.add(group.id);
+                                                    }
+                                                    return next;
+                                                });
+                                            }}
+                                            className="h-4 w-4 rounded border-gray-300 accent-[#8b7355]"
+                                        />
+                                        <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
+                                        {group.has_submitted ? (
+                                            <Badge className="bg-green-100 text-green-700 text-xs">Confirmado</Badge>
+                                        ) : (
+                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                        )}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Push form */}
+                        <div className="space-y-3">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">Título</label>
+                                <Input
+                                    type="text"
+                                    placeholder="Título de la notificación..."
+                                    value={pushTitle}
+                                    onChange={(e) => setPushTitle(e.target.value)}
+                                    maxLength={100}
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700">Mensaje</label>
+                                <Textarea
+                                    placeholder="Escribe el mensaje aquí..."
+                                    value={pushBody}
+                                    onChange={(e) => setPushBody(e.target.value)}
+                                    rows={3}
+                                    maxLength={500}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={closePushModal}
+                            disabled={sendingPush}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-[#8b7355] text-white hover:bg-[#7a6449]"
+                            onClick={handleSendPush}
+                            disabled={pushSelectedIds.size === 0 || !pushTitle.trim() || !pushBody.trim() || sendingPush}
+                        >
+                            {sendingPush ? 'Enviando…' : `Enviar push a ${pushSelectedIds.size} grupo${pushSelectedIds.size !== 1 ? 's' : ''} 🔔`}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
