@@ -21,7 +21,7 @@ import {CardDescription, CardHeader, CardTitle} from "@/components/ui/card.jsx";
 import Lottie from "lottie-react";
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
-import InstallPrompt from '@/components/InstallPrompt';
+import InstallPrompt, { InstallButton } from '@/components/InstallPrompt';
 import NotificationPrompt from '@/components/NotificationPrompt';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
@@ -247,8 +247,9 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                 </div>
             </div>
 
-            {/* ── Barra superior con selector de idioma ── */}
-            <div className="flex justify-end px-5 pt-4">
+            {/* ── Barra superior con selector de idioma e instalación PWA ── */}
+            <div className="flex items-center justify-end gap-2 px-5 pt-4">
+                <InstallButton />
                 <LanguageSelector />
             </div>
 
