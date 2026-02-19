@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +10,116 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+
+function formatDate(dateString) {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+}
+
+function EmailRow({ label, sentAt, onSend, isSending, emailType }) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const handleConfirm = () => {
+        onSend(() => setDialogOpen(false));
+    };
+
+    return (
+        <>
+            <div className="flex items-center justify-between py-3 border-b last:border-0">
+                <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-800">{label}</p>
+                    {sentAt ? (
+                        <p className="text-xs text-green-600 mt-0.5">
+                            ✓ Enviado el {formatDate(sentAt)}
+                        </p>
+                    ) : (
+                        <p className="text-xs text-gray-400 mt-0.5">— Aún no enviado</p>
+                    )}
+                </div>
+                <Button
+                    size="sm"
+                    variant={sentAt ? 'outline' : 'default'}
+                    className={sentAt
+                        ? 'text-[#8b7355] border-[#8b7355] hover:bg-[#8b7355]/10 ml-3'
+                        : 'bg-[#8b7355] text-white hover:bg-[#7a6449] ml-3'
+                    }
+                    onClick={() => setDialogOpen(true)}
+                    disabled={isSending}
+                >
+                    {sentAt ? 'Reenviar ↺' : 'Enviar'}
+                </Button>
+            </div>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Confirmar envío</DialogTitle>
+                        <DialogDescription asChild>
+                            <div className="space-y-2 pt-1">
+                                <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Tipo:</span> {label}
+                                </p>
+                                {sentAt && (
+                                    <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-800">
+                                        ⚠ Ya enviado el {formatDate(sentAt)} — ¿reenviar?
+                                    </div>
+                                )}
+                            </div>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDialogOpen(false)}
+                            disabled={isSending}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-[#8b7355] text-white hover:bg-[#7a6449]"
+                            onClick={handleConfirm}
+                            disabled={isSending}
+                        >
+                            {isSending ? 'Enviando…' : 'Enviar ✉️'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
 
 export default function ShowGroup({ group }) {
+    const [sendingInvitation, setSendingInvitation] = useState(false);
+
+    const handleSendInvitation = (onDone) => {
+        setSendingInvitation(true);
+        router.post(route('admin.groups.send-invitation', group.id), {}, {
+            onFinish: () => {
+                setSendingInvitation(false);
+                onDone();
+            },
+        });
+    };
+
+    const langLabel = {
+        'es': 'Español',
+        'pt-BR': 'Portugués (BR)',
+        'fr': 'Francés',
+    };
+
     return (
         <AdminSidebarLayout>
             <Head title={`Grupo: ${group.name}`} />
@@ -26,7 +135,7 @@ export default function ShowGroup({ group }) {
                             Detalle completo del grupo
                         </p>
                     </div>
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
                         <Link href={route('admin.groups.index')} className="flex-1 sm:flex-none">
                             <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
                         </Link>
@@ -108,6 +217,59 @@ export default function ShowGroup({ group }) {
                             </div>
                         )}
                     </CardContent>
+                </Card>
+
+                {/* Comunicaciones por email */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>📧 Comunicaciones por email</CardTitle>
+                        {group.contact_email ? (
+                            <CardDescription>
+                                Contacto: <span className="font-medium text-gray-700">{group.contact_email}</span>
+                                {group.default_language && (
+                                    <span className="ml-2 text-gray-400">· {langLabel[group.default_language] ?? group.default_language}</span>
+                                )}
+                            </CardDescription>
+                        ) : (
+                            <CardDescription>
+                                ℹ Sin email — el invitado lo facilita al confirmar
+                            </CardDescription>
+                        )}
+                    </CardHeader>
+
+                    {group.contact_email && (
+                        <CardContent className="pt-0">
+                            <EmailRow
+                                label="Código de invitación"
+                                sentAt={group.invitation_sent_at}
+                                onSend={handleSendInvitation}
+                                isSending={sendingInvitation}
+                                emailType="invitation"
+                            />
+                            <div className="flex items-center justify-between py-3 border-b last:border-0">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">Recordatorio RSVP</p>
+                                    {group.reminder_sent_at ? (
+                                        <p className="text-xs text-green-600 mt-0.5">
+                                            ✓ Enviado el {formatDate(group.reminder_sent_at)}
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 mt-0.5">— Aún no enviado</p>
+                                    )}
+                                </div>
+                                <Badge variant="outline" className="ml-3 text-xs text-gray-400">
+                                    Envío masivo desde el índice
+                                </Badge>
+                            </div>
+                            <div className="flex items-center justify-between py-3">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">Confirmación de asistencia</p>
+                                    <p className="text-xs text-gray-400 mt-0.5">Automática al confirmar el RSVP</p>
+                                </div>
+                                <Badge className="ml-3 bg-green-100 text-green-700 text-xs">auto ✓</Badge>
+                            </div>
+                        </CardContent>
+                    )}
                 </Card>
 
                 {/* Lista de Invitados */}

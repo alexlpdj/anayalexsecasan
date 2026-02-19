@@ -22,10 +22,14 @@ class InvitationGroup extends Model
         'contact_phone',
         'notes',
         'default_language',
+        'invitation_sent_at',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
+        'invitation_sent_at' => 'datetime',
+        'reminder_sent_at' => 'datetime',
         'bus_onda_ida' => 'boolean',
         'bus_onda_vuelta' => 'boolean',
         'bus_cs' => 'boolean',

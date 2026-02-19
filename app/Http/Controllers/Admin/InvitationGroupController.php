@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\CodeInvitationMail;
+use App\Mail\RsvpReminderMail;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
 use App\Models\Guest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class InvitationGroupController extends Controller
@@ -30,6 +33,9 @@ class InvitationGroupController extends Controller
                     'attending_count' => $group->attendingCount(),
                     'submitted_at' => $group->submitted_at,
                     'has_submitted' => $group->hasSubmitted(),
+                    'contact_email' => $group->contact_email,
+                    'invitation_sent_at' => $group->invitation_sent_at,
+                    'reminder_sent_at' => $group->reminder_sent_at,
                 ];
             });
 
@@ -40,6 +46,7 @@ class InvitationGroupController extends Controller
             'total_guests' => Guest::count(),
             'attending_guests' => Guest::attending()->count(),
             'confirmed_groups' => InvitationGroup::submitted()->count(),
+            'pending_with_email' => InvitationGroup::pending()->whereNotNull('contact_email')->count(),
         ];
 
         $chartData = [
@@ -132,6 +139,9 @@ class InvitationGroupController extends Controller
                 'contact_email' => $group->contact_email,
                 'contact_phone' => $group->contact_phone,
                 'notes' => $group->notes,
+                'default_language' => $group->default_language,
+                'invitation_sent_at' => $group->invitation_sent_at,
+                'reminder_sent_at' => $group->reminder_sent_at,
                 'guests' => $group->guests->map(function ($guest) {
                     return [
                         'id' => $guest->id,
@@ -265,5 +275,57 @@ class InvitationGroupController extends Controller
         ]);
 
         return back()->with('success', "Código regenerado: {$oldCode} → {$group->code}");
+    }
+
+    /**
+     * Enviar email de invitación con código a un grupo
+     */
+    public function sendInvitation(InvitationGroup $group)
+    {
+        if (!$group->contact_email) {
+            return back()->with('error', "El grupo '{$group->name}' no tiene email de contacto.");
+        }
+
+        try {
+            Mail::to($group->contact_email)->queue(new CodeInvitationMail($group));
+            $group->update(['invitation_sent_at' => now()]);
+            return back()->with('success', "Invitación enviada a {$group->contact_email}");
+        } catch (\Exception $e) {
+            return back()->with('error', "Error al enviar el email: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Enviar recordatorio bulk a todos los grupos pendientes con email
+     */
+    public function sendReminders()
+    {
+        $groups = InvitationGroup::pending()
+            ->whereNotNull('contact_email')
+            ->get();
+
+        if ($groups->isEmpty()) {
+            return back()->with('error', 'No hay grupos pendientes con email de contacto.');
+        }
+
+        $sent = 0;
+        $errors = 0;
+
+        foreach ($groups as $group) {
+            try {
+                Mail::to($group->contact_email)->queue(new RsvpReminderMail($group));
+                $group->update(['reminder_sent_at' => now()]);
+                $sent++;
+            } catch (\Exception $e) {
+                $errors++;
+            }
+        }
+
+        $message = "Recordatorios enviados: {$sent}";
+        if ($errors > 0) {
+            $message .= " ({$errors} con error)";
+        }
+
+        return back()->with('success', $message);
     }
 }

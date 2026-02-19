@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -48,6 +56,8 @@ function CenterLabel({ viewBox, total, label }) {
 
 export default function GroupsIndex({ groups, stats, chartData }) {
     const [search, setSearch] = useState('');
+    const [showReminderModal, setShowReminderModal] = useState(false);
+    const [sendingReminders, setSendingReminders] = useState(false);
 
     const filteredGroups = groups.filter((group) =>
         group.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -62,6 +72,16 @@ export default function GroupsIndex({ groups, stats, chartData }) {
         ) {
             router.delete(route('admin.groups.destroy', group.id));
         }
+    };
+
+    const handleSendReminders = () => {
+        setSendingReminders(true);
+        router.post(route('admin.groups.send-reminders'), {}, {
+            onFinish: () => {
+                setSendingReminders(false);
+                setShowReminderModal(false);
+            },
+        });
     };
 
     return (
@@ -84,12 +104,23 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             Organiza a tus invitados por grupos o núcleos familiares
                         </p>
                     </div>
-                    <Link href={route('admin.groups.create')} className="w-full sm:w-auto">
-                        <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
-                            <Plus className="mr-1.5 h-4 w-4" />
-                            Crear Grupo Nuevo
-                        </Button>
-                    </Link>
+                    <div className="flex w-full gap-2 sm:w-auto">
+                        {stats.pending_with_email > 0 && (
+                            <Button
+                                variant="outline"
+                                className="flex-1 border-[#8b7355] text-[#8b7355] hover:bg-[#8b7355]/10 sm:flex-none"
+                                onClick={() => setShowReminderModal(true)}
+                            >
+                                📨 Enviar recordatorio a pendientes
+                            </Button>
+                        )}
+                        <Link href={route('admin.groups.create')} className="flex-1 sm:flex-none">
+                            <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
+                                <Plus className="mr-1.5 h-4 w-4" />
+                                Crear Grupo Nuevo
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -373,6 +404,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                     Asistirán
                                                 </TableHead>
                                                 <TableHead className="text-center">Estado</TableHead>
+                                                <TableHead className="text-center">Email</TableHead>
                                                 <TableHead className="text-right">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -418,6 +450,29 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 Pendiente
                                                             </Badge>
                                                         )}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <TooltipProvider delayDuration={200}>
+                                                            <UiTooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span className="cursor-default text-base leading-none">
+                                                                        {group.invitation_sent_at
+                                                                            ? '📧'
+                                                                            : group.contact_email
+                                                                                ? <span className="text-gray-400">📧</span>
+                                                                                : <span className="text-gray-300">—</span>
+                                                                        }
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {group.invitation_sent_at
+                                                                        ? `Invitación enviada el ${new Date(group.invitation_sent_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                                                                        : group.contact_email
+                                                                            ? 'Tiene email, sin contactar'
+                                                                            : 'Sin email'}
+                                                                </TooltipContent>
+                                                            </UiTooltip>
+                                                        </TooltipProvider>
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <TooltipProvider delayDuration={200}>
@@ -477,6 +532,41 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 </Card>
                 </motion.div>
             </motion.div>
+            {/* Reminder confirmation modal */}
+            <Dialog open={showReminderModal} onOpenChange={setShowReminderModal}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>📨 Enviar recordatorio</DialogTitle>
+                        <DialogDescription asChild>
+                            <div className="space-y-2 pt-1">
+                                <p className="text-sm text-gray-600">
+                                    Se enviará un email de recordatorio a{' '}
+                                    <strong className="text-[#8b7355]">
+                                        {stats.pending_with_email} grupo{stats.pending_with_email !== 1 ? 's' : ''}
+                                    </strong>{' '}
+                                    pendientes que tienen email de contacto.
+                                </p>
+                            </div>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowReminderModal(false)}
+                            disabled={sendingReminders}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            className="bg-[#8b7355] text-white hover:bg-[#7a6449]"
+                            onClick={handleSendReminders}
+                            disabled={sendingReminders}
+                        >
+                            {sendingReminders ? 'Enviando…' : 'Enviar ✉️'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminSidebarLayout>
     );
 }
