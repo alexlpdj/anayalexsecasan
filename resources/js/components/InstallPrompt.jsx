@@ -1,22 +1,44 @@
 import { useState, useEffect } from 'react';
 
-export default function InstallPrompt() {
-    const [show, setShow] = useState(false);
+function useInstall() {
+    const [isInstallable, setIsInstallable] = useState(false);
     const [isIos, setIsIos] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Already installed as PWA
-        if (window.matchMedia('(display-mode: standalone)').matches) return;
-        // User dismissed before
-        if (localStorage.getItem('pwa-install-dismissed')) return;
-
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            setIsStandalone(true);
+            return;
+        }
         const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
         setIsIos(ios);
-
         if (ios || window.__pwaInstallPrompt) {
-            setShow(true);
+            setIsInstallable(true);
         }
     }, []);
+
+    const triggerInstall = async () => {
+        if (!window.__pwaInstallPrompt) return false;
+        window.__pwaInstallPrompt.prompt();
+        const { outcome } = await window.__pwaInstallPrompt.userChoice;
+        if (outcome === 'accepted') window.__pwaInstallPrompt = null;
+        return outcome === 'accepted';
+    };
+
+    return { isInstallable, isIos, isStandalone, triggerInstall };
+}
+
+// ── Banner (se muestra automáticamente la primera vez) ──────────────────────
+
+export default function InstallPrompt() {
+    const { isInstallable, isIos, isStandalone, triggerInstall } = useInstall();
+    const [show, setShow] = useState(false);
+
+    useEffect(() => {
+        if (isStandalone) return;
+        if (localStorage.getItem('pwa-install-dismissed')) return;
+        if (isInstallable) setShow(true);
+    }, [isInstallable, isStandalone]);
 
     if (!show) return null;
 
@@ -26,12 +48,7 @@ export default function InstallPrompt() {
     };
 
     const handleInstall = async () => {
-        if (!window.__pwaInstallPrompt) return;
-        window.__pwaInstallPrompt.prompt();
-        const { outcome } = await window.__pwaInstallPrompt.userChoice;
-        if (outcome === 'accepted') {
-            window.__pwaInstallPrompt = null;
-        }
+        await triggerInstall();
         setShow(false);
     };
 
@@ -107,5 +124,95 @@ export default function InstallPrompt() {
                 ×
             </button>
         </div>
+    );
+}
+
+// ── Botón pequeño para la barra superior (siempre accesible) ─────────────────
+
+export function InstallButton() {
+    const { isInstallable, isIos, isStandalone, triggerInstall } = useInstall();
+    const [showIosTooltip, setShowIosTooltip] = useState(false);
+
+    if (isStandalone || !isInstallable) return null;
+
+    if (isIos) {
+        return (
+            <div style={{ position: 'relative' }}>
+                <button
+                    onClick={() => setShowIosTooltip(v => !v)}
+                    aria-label="Añadir a pantalla de inicio"
+                    title="Añadir a pantalla de inicio"
+                    style={{
+                        background: 'none',
+                        border: '1px solid #e2dbd3',
+                        borderRadius: 8,
+                        padding: '4px 8px',
+                        cursor: 'pointer',
+                        fontSize: 16,
+                        lineHeight: 1,
+                        color: '#8b7355',
+                    }}
+                >
+                    ⊕
+                </button>
+                {showIosTooltip && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '110%',
+                            right: 0,
+                            width: 220,
+                            backgroundColor: '#faf8f5',
+                            border: '1px solid #e2dbd3',
+                            borderRadius: 10,
+                            padding: '10px 12px',
+                            boxShadow: '0 4px 16px rgba(139,115,85,0.15)',
+                            zIndex: 1000,
+                            fontSize: 13,
+                            color: '#5c4a35',
+                            lineHeight: 1.5,
+                        }}
+                    >
+                        Pulsa <strong>Compartir</strong> <span style={{ fontSize: 15 }}>⬆</span> y selecciona{' '}
+                        <strong>"Añadir a pantalla de inicio"</strong>
+                        <button
+                            onClick={() => setShowIosTooltip(false)}
+                            style={{
+                                display: 'block',
+                                marginTop: 8,
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: '#a89584',
+                                fontSize: 12,
+                                padding: 0,
+                            }}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <button
+            onClick={triggerInstall}
+            aria-label="Instalar app"
+            title="Instalar app"
+            style={{
+                background: 'none',
+                border: '1px solid #e2dbd3',
+                borderRadius: 8,
+                padding: '4px 8px',
+                cursor: 'pointer',
+                fontSize: 16,
+                lineHeight: 1,
+                color: '#8b7355',
+            }}
+        >
+            ⊕
+        </button>
     );
 }
