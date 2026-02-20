@@ -13,7 +13,7 @@ function urlBase64ToUint8Array(base64String) {
 
 async function sendSubscriptionToServer(subscription) {
     const { endpoint, keys } = subscription.toJSON();
-    await fetch(route('guest.push.subscribe'), {
+    const res = await fetch(route('guest.push.subscribe'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -21,6 +21,9 @@ async function sendSubscriptionToServer(subscription) {
         },
         body: JSON.stringify({ endpoint, p256dh: keys.p256dh, auth: keys.auth }),
     });
+    if (!res.ok) {
+        console.error('Push subscribe failed:', res.status, await res.text());
+    }
 }
 
 function useNotificationState() {
