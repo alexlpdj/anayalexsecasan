@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 function useInstall() {
     const [isInstallable, setIsInstallable] = useState(false);
@@ -6,24 +6,54 @@ function useInstall() {
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
+        const standalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+        if (standalone) {
             setIsStandalone(true);
             return;
         }
+
         const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
         setIsIos(ios);
+
+        // Already captured before React mounted
         if (ios || window.__pwaInstallPrompt) {
             setIsInstallable(true);
         }
+
+        // Listen for late-firing beforeinstallprompt
+        const handler = (e) => {
+            e.preventDefault();
+            window.__pwaInstallPrompt = e;
+            setIsInstallable(true);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+
+        // Listen for successful install
+        const installed = () => {
+            setIsStandalone(true);
+            setIsInstallable(false);
+            window.__pwaInstallPrompt = null;
+        };
+        window.addEventListener('appinstalled', installed);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handler);
+            window.removeEventListener('appinstalled', installed);
+        };
     }, []);
 
-    const triggerInstall = async () => {
-        if (!window.__pwaInstallPrompt) return false;
-        window.__pwaInstallPrompt.prompt();
-        const { outcome } = await window.__pwaInstallPrompt.userChoice;
-        if (outcome === 'accepted') window.__pwaInstallPrompt = null;
+    const triggerInstall = useCallback(async () => {
+        const prompt = window.__pwaInstallPrompt;
+        if (!prompt) return false;
+        prompt.prompt();
+        const { outcome } = await prompt.userChoice;
+        if (outcome === 'accepted') {
+            window.__pwaInstallPrompt = null;
+            setIsInstallable(false);
+        }
         return outcome === 'accepted';
-    };
+    }, []);
 
     return { isInstallable, isIos, isStandalone, triggerInstall };
 }
@@ -70,9 +100,9 @@ export default function InstallPrompt() {
             }}
         >
             <img
-                src="/icons/icon-512.png"
+                src="/icons/icon-192.png"
                 alt="App icon"
-                style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0 }}
+                style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, objectFit: 'cover' }}
             />
             <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 600, color: '#5c4a35' }}>
