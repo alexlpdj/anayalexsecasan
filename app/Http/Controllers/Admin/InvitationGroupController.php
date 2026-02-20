@@ -401,7 +401,7 @@ class InvitationGroupController extends Controller
         ];
 
         $webPush = new WebPush($auth);
-        $payload = json_encode(['title' => $validated['title'], 'body' => $validated['body']]);
+        $payload = json_encode(['title' => 'Boda Ana & Alex - ' . $validated['title'], 'body' => $validated['body']]);
 
         $staleIds = [];
 
