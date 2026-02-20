@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import appIcon from '@/../images/icons/app-icon.png';
 
 function useInstall() {
     const [isInstallable, setIsInstallable] = useState(false);
@@ -100,7 +101,7 @@ export default function InstallPrompt() {
             }}
         >
             <img
-                src="/icons/icon-192.png"
+                src={appIcon}
                 alt="App icon"
                 style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, objectFit: 'cover' }}
             />
