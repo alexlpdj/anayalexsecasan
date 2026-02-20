@@ -16,7 +16,15 @@
       "Bash(curl:*)",
       "Bash(node scripts/translate.js:*)",
       "Bash(ANTHROPIC_API_KEY=\"$ANTHROPIC_API_KEY\" node scripts/translate.js:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(composer require:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git -C /Users/grabatutalentosl/Documents/GitHub/boda-alex-ana push origin idiomas)",
+      "Bash(test:*)",
+      "Bash(identify:*)",
+      "Bash(sips:*)"
     ],
     "deny": [],
     "ask": []
