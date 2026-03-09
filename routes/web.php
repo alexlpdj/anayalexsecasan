@@ -83,6 +83,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::post('/groups/{group}/toggle-invitation-sent', [InvitationGroupController::class, 'toggleInvitationSent'])
         ->name('groups.toggle-invitation-sent');
 
+    // Marcar/desmarcar invitación como impresa
+    Route::post('/groups/{group}/toggle-printed', [InvitationGroupController::class, 'togglePrinted'])
+        ->name('groups.toggle-printed');
+
+    // Marcar/desmarcar invitación como entregada
+    Route::post('/groups/{group}/toggle-delivered', [InvitationGroupController::class, 'toggleDelivered'])
+        ->name('groups.toggle-delivered');
+
     // Envío de emails
     Route::post('/groups/{group}/send-invitation', [InvitationGroupController::class, 'sendInvitation'])
         ->name('groups.send-invitation');

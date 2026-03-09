@@ -24,12 +24,16 @@ class InvitationGroup extends Model
         'default_language',
         'invitation_sent_at',
         'reminder_sent_at',
+        'printed_at',
+        'delivered_at',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
         'invitation_sent_at' => 'datetime',
         'reminder_sent_at' => 'datetime',
+        'printed_at' => 'datetime',
+        'delivered_at' => 'datetime',
         'bus_onda_ida' => 'boolean',
         'bus_onda_vuelta' => 'boolean',
         'bus_cs' => 'boolean',

@@ -40,6 +40,8 @@ class InvitationGroupController extends Controller
                     'contact_email' => $group->contact_email,
                     'invitation_sent_at' => $group->invitation_sent_at,
                     'reminder_sent_at' => $group->reminder_sent_at,
+                    'printed_at' => $group->printed_at,
+                    'delivered_at' => $group->delivered_at,
                 ];
             });
 
@@ -269,6 +271,24 @@ class InvitationGroupController extends Controller
     }
 
     /**
+     * Marcar o desmarcar invitación como impresa
+     */
+    public function togglePrinted(InvitationGroup $group)
+    {
+        $group->update(['printed_at' => $group->printed_at ? null : now()]);
+        return back();
+    }
+
+    /**
+     * Marcar o desmarcar invitación como entregada
+     */
+    public function toggleDelivered(InvitationGroup $group)
+    {
+        $group->update(['delivered_at' => $group->delivered_at ? null : now()]);
+        return back();
+    }
+
+    /**
      * Marcar o desmarcar invitación como enviada (sin enviar email)
      */
     public function toggleInvitationSent(InvitationGroup $group)
@@ -468,9 +488,12 @@ class InvitationGroupController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn($g) => [
-                'name'   => $g->name,
-                'code'   => $g->code,
-                'guests' => $g->guests->pluck('name')->join(', '),
+                'id'           => $g->id,
+                'name'         => $g->name,
+                'code'         => $g->code,
+                'guests'       => $g->guests->pluck('name')->join(', '),
+                'printed_at'   => $g->printed_at,
+                'delivered_at' => $g->delivered_at,
             ]);
 
         return Inertia::render('admin/printable-codes', [

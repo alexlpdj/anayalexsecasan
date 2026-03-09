@@ -492,6 +492,8 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                     Asistirán
                                                 </TableHead>
                                                 <TableHead className="text-center">Estado</TableHead>
+                                                <TableHead className="text-center">Preparada</TableHead>
+                                                <TableHead className="text-center">Entregada</TableHead>
                                                 <TableHead className="text-center">Email</TableHead>
                                                 <TableHead className="text-right">Acciones</TableHead>
                                             </TableRow>
@@ -538,6 +540,56 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 Pendiente
                                                             </Badge>
                                                         )}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <TooltipProvider delayDuration={200}>
+                                                            <UiTooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <button
+                                                                        onClick={() => router.post(route('admin.groups.toggle-printed', group.id))}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                            group.printed_at
+                                                                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                                                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        {group.printed_at
+                                                                            ? `✓ ${new Date(group.printed_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`
+                                                                            : '—'}
+                                                                    </button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {group.printed_at
+                                                                        ? `Preparada el ${new Date(group.printed_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} · Clic para desmarcar`
+                                                                        : 'Clic para marcar como preparada'}
+                                                                </TooltipContent>
+                                                            </UiTooltip>
+                                                        </TooltipProvider>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <TooltipProvider delayDuration={200}>
+                                                            <UiTooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <button
+                                                                        onClick={() => router.post(route('admin.groups.toggle-delivered', group.id))}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                            group.delivered_at
+                                                                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        {group.delivered_at
+                                                                            ? `✓ ${new Date(group.delivered_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`
+                                                                            : '—'}
+                                                                    </button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {group.delivered_at
+                                                                        ? `Entregada el ${new Date(group.delivered_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} · Clic para desmarcar`
+                                                                        : 'Clic para marcar como entregada'}
+                                                                </TooltipContent>
+                                                            </UiTooltip>
+                                                        </TooltipProvider>
                                                     </TableCell>
                                                     <TableCell className="text-center">
                                                         <TooltipProvider delayDuration={200}>
