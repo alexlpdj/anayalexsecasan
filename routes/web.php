@@ -79,6 +79,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::post('/groups/{group}/regenerate-code', [InvitationGroupController::class, 'regenerateCode'])
         ->name('groups.regenerate-code');
 
+    // Marcar/desmarcar invitación como enviada (sin enviar email)
+    Route::post('/groups/{group}/toggle-invitation-sent', [InvitationGroupController::class, 'toggleInvitationSent'])
+        ->name('groups.toggle-invitation-sent');
+
     // Envío de emails
     Route::post('/groups/{group}/send-invitation', [InvitationGroupController::class, 'sendInvitation'])
         ->name('groups.send-invitation');

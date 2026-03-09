@@ -428,7 +428,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                 </div>
                                             </div>
                                             <div className="mt-3 flex items-center justify-between">
-                                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                <div className="flex items-center gap-3 text-sm text-gray-600">
                                                     <span className="flex items-center gap-1">
                                                         <Users className="h-3.5 w-3.5 text-gray-400" />
                                                         <span className="font-semibold">{group.guests_count}</span>
@@ -437,6 +437,16 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                         <UserCheck className="h-3.5 w-3.5 text-green-500" />
                                                         <span className="font-semibold text-green-600">{group.attending_count}</span>
                                                     </span>
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); router.post(route('admin.groups.toggle-invitation-sent', group.id)); }}
+                                                        className={`rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                                                            group.invitation_sent_at
+                                                                ? 'bg-blue-100 text-blue-700'
+                                                                : 'bg-gray-100 text-gray-400'
+                                                        }`}
+                                                    >
+                                                        {group.invitation_sent_at ? '✓ Inv.' : '— Inv.'}
+                                                    </button>
                                                 </div>
                                                 <div className="flex gap-1" onClick={(e) => e.preventDefault()}>
                                                     <Button
@@ -533,21 +543,21 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                         <TooltipProvider delayDuration={200}>
                                                             <UiTooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <span className="cursor-default text-base leading-none">
-                                                                        {group.invitation_sent_at
-                                                                            ? '📧'
-                                                                            : group.contact_email
-                                                                                ? <span className="text-gray-400">📧</span>
-                                                                                : <span className="text-gray-300">—</span>
-                                                                        }
-                                                                    </span>
+                                                                    <button
+                                                                        onClick={() => router.post(route('admin.groups.toggle-invitation-sent', group.id))}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                            group.invitation_sent_at
+                                                                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                                                                        }`}
+                                                                    >
+                                                                        {group.invitation_sent_at ? '✓ Enviada' : '— Pendiente'}
+                                                                    </button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     {group.invitation_sent_at
-                                                                        ? `Invitación enviada el ${new Date(group.invitation_sent_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                                                                        : group.contact_email
-                                                                            ? 'Tiene email, sin contactar'
-                                                                            : 'Sin email'}
+                                                                        ? `Enviada el ${new Date(group.invitation_sent_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })} · Clic para desmarcar`
+                                                                        : 'Clic para marcar como enviada'}
                                                                 </TooltipContent>
                                                             </UiTooltip>
                                                         </TooltipProvider>

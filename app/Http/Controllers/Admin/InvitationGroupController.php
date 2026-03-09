@@ -269,6 +269,22 @@ class InvitationGroupController extends Controller
     }
 
     /**
+     * Marcar o desmarcar invitación como enviada (sin enviar email)
+     */
+    public function toggleInvitationSent(InvitationGroup $group)
+    {
+        $group->update([
+            'invitation_sent_at' => $group->invitation_sent_at ? null : now(),
+        ]);
+
+        $msg = $group->invitation_sent_at
+            ? "'{$group->name}' marcado como invitación enviada"
+            : "'{$group->name}' desmarcado como invitación enviada";
+
+        return back()->with('success', $msg);
+    }
+
+    /**
      * Regenerar código de un grupo
      */
     public function regenerateCode(InvitationGroup $group)
