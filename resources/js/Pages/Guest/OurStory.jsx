@@ -5,17 +5,23 @@ import ScrollProgress from '@/components/ScrollProgress';
 import ScrollToTop from '@/components/ScrollToTop';
 import { useTranslation } from 'react-i18next';
 
-const MOMENT_ICONS = ['💫', '☕', '✈️', '💪', '🏠', '💍', '💒'];
+const MOMENT_ICONS = ['💫', '☕', '✈️', '💍', '💒', '💪', '🏠'];
+const FALLBACK_ICON = '✨';
 
 export default function OurStory() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
-    const storyMoments = [0, 1, 2, 3, 4, 5, 6].map((i) => ({
-        date: t(`story.moment_${i}_date`),
-        title: t(`story.moment_${i}_title`),
-        description: t(`story.moment_${i}_desc`),
-        icon: MOMENT_ICONS[i],
-    }));
+    const storyMoments = [];
+    let i = 0;
+    while (i18n.exists(`story.moment_${i}_date`)) {
+        storyMoments.push({
+            date: t(`story.moment_${i}_date`),
+            title: t(`story.moment_${i}_title`),
+            description: t(`story.moment_${i}_desc`),
+            icon: MOMENT_ICONS[i] ?? FALLBACK_ICON,
+        });
+        i++;
+    }
 
     return (
         <>

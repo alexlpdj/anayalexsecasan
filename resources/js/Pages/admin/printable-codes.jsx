@@ -1,11 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 
-export default function PrintableCodes({ guests }) {
-    const printPage = () => {
-        window.print();
-    };
-
+export default function PrintableCodes({ groups }) {
     return (
         <>
             <Head title="Códigos de Invitados" />
@@ -13,7 +9,7 @@ export default function PrintableCodes({ guests }) {
             {/* Print button - hidden when printing */}
             <div className="fixed right-4 top-4 print:hidden">
                 <Button
-                    onClick={printPage}
+                    onClick={() => window.print()}
                     className="bg-gradient-to-r from-[#8b7355] to-[#a89584] hover:shadow-lg"
                 >
                     🖨️ Imprimir
@@ -26,35 +22,37 @@ export default function PrintableCodes({ guests }) {
                     <h1 className="mb-2 font-serif text-3xl italic text-[#8b7355]">
                         Códigos de Invitados
                     </h1>
-                    <p className="text-[#a89584]">Alex & Ana - 20.06.2026</p>
+                    <p className="text-[#a89584]">Alex & Ana — 20.06.2026</p>
                 </div>
 
                 {/* Grid of codes - 3 columns */}
                 <div className="grid grid-cols-3 gap-4">
-                    {guests.map((guest, index) => (
+                    {groups.map((group, index) => (
                         <div
-                            key={guest.code}
+                            key={group.code}
                             className="break-inside-avoid rounded-lg border-2 border-[#d4c5b9] bg-white p-4"
                         >
                             <div className="mb-2 flex items-center justify-between">
                                 <span className="text-sm text-[#a89584]">#{index + 1}</span>
                                 <code className="rounded bg-[#8b7355] px-3 py-1 font-mono text-lg font-bold text-white">
-                                    {guest.code}
+                                    {group.code}
                                 </code>
                             </div>
                             <div className="truncate text-sm font-medium text-[#8b7355]">
-                                {guest.name}
+                                {group.name}
                             </div>
+                            {group.guests && (
+                                <div className="mt-1 truncate text-xs text-[#a89584]">
+                                    {group.guests}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
 
                 {/* Footer */}
                 <div className="mt-8 text-center text-sm text-[#a89584]">
-                    <p>Total de invitados: {guests.length}</p>
-                    <p className="mt-2">
-                        Los invitados pueden acceder con su código en: [URL DE TU WEBAPP]
-                    </p>
+                    <p>Total de grupos: {groups.length}</p>
                 </div>
             </div>
 

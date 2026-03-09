@@ -55,14 +55,14 @@ class InvitationGroup extends Model
 
     /**
      * Generar código único alfanumérico
-     * Formato: 5 caracteres mayúsculas y números
-     * Ejemplo: K7HM2, P3QR9, etc.
+     * Formato: 4 caracteres mayúsculas y números
+     * Ejemplo: K7HM, P3QR, etc.
      */
     public static function generateUniqueCode(): string
     {
         do {
-            // Genera código de 5 caracteres alfanuméricos
-            $code = strtoupper(Str::random(5));
+            // Genera código de 4 caracteres alfanuméricos
+            $code = strtoupper(Str::random(4));
             
             // Evita caracteres confusos: 0, O, I, 1, L
             $code = str_replace(['0', 'O', 'I', '1', 'L'], ['A', 'B', 'C', 'D', 'E'], $code);

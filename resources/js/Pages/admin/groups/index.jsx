@@ -182,6 +182,16 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                         >
                             🔔 Notificación push
                         </Button>
+                        <a href={route('admin.print.codes')} target="_blank" className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full sm:w-auto">
+                                🖨️ Imprimir códigos
+                            </Button>
+                        </a>
+                        <a href={route('admin.export.codes')} className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full sm:w-auto">
+                                📥 Exportar CSV
+                            </Button>
+                        </a>
                         <Link href={route('admin.groups.create')} className="flex-1 sm:flex-none">
                             <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
                                 <Plus className="mr-1.5 h-4 w-4" />

@@ -29,10 +29,10 @@ class GuestAuthController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|size:5',
+            'code' => 'required|string|size:4',
         ], [
             'code.required' => 'Por favor, introduce tu código de invitación',
-            'code.size' => 'El código debe tener 5 carácteres',
+            'code.size' => 'El código debe tener 4 caracteres',
         ]);
 
         // Buscar grupo por código

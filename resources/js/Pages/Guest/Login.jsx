@@ -260,7 +260,7 @@ export default function GuestLogin() {
                                     onFocus={handleInputFocus}
                                     className="mt-2 border-2 border-[#d4c5b9] text-center font-mono text-2xl uppercase tracking-widest focus:border-[#8b7355] focus:ring-2 focus:ring-[#8b7355]/20"
                                     placeholder=""
-                                    maxLength={6}
+                                    maxLength={4}
                                     autoComplete="off"
                                     autoFocus
                                 />

@@ -442,4 +442,44 @@ class InvitationGroupController extends Controller
 
         return back()->with('success', $msg);
     }
+
+    /**
+     * Vista imprimible de códigos por grupo
+     */
+    public function printCodes()
+    {
+        $groups = InvitationGroup::with('guests')
+            ->orderBy('name')
+            ->get()
+            ->map(fn($g) => [
+                'name'   => $g->name,
+                'code'   => $g->code,
+                'guests' => $g->guests->pluck('name')->join(', '),
+            ]);
+
+        return Inertia::render('admin/printable-codes', [
+            'groups' => $groups,
+        ]);
+    }
+
+    /**
+     * Exportar códigos como CSV
+     */
+    public function exportCodes()
+    {
+        $groups = InvitationGroup::with('guests')->orderBy('name')->get();
+
+        $rows = ["Grupo,Código,Invitados"];
+        foreach ($groups as $group) {
+            $guests = $group->guests->pluck('name')->join(' / ');
+            $rows[] = "\"{$group->name}\",{$group->code},\"{$guests}\"";
+        }
+
+        $filename = 'codigos-boda-' . now()->format('Y-m-d') . '.csv';
+
+        return response(implode("\n", $rows), 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
 }
