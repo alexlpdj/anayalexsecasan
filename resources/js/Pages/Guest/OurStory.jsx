@@ -18,6 +18,7 @@ export default function OurStory() {
             date: t(`story.moment_${i}_date`),
             title: t(`story.moment_${i}_title`),
             description: t(`story.moment_${i}_desc`),
+            author: i18n.exists(`story.moment_${i}_author`) ? t(`story.moment_${i}_author`) : null,
             icon: MOMENT_ICONS[i] ?? FALLBACK_ICON,
         });
         i++;
@@ -105,6 +106,11 @@ export default function OurStory() {
                                         <p className="text-sm leading-relaxed text-[#a89584]">
                                             {moment.description}
                                         </p>
+                                        {moment.author && (
+                                            <p className="mt-3 text-right text-xs italic text-[#c4a571]">
+                                                — {moment.author}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
