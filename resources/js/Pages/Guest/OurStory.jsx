@@ -93,7 +93,7 @@ export default function OurStory() {
                                 </div>
 
                                 {/* Content card */}
-                                <div className={`flex-1 sm:w-[calc(50%-2.5rem)] ${
+                                <div className={`flex-1 sm:flex-none sm:w-[calc(50%-2.5rem)] ${
                                     index % 2 === 0 ? 'sm:pr-10 sm:text-right' : 'sm:pl-10 sm:text-left'
                                 }`}>
                                     <div className="rounded-2xl border border-[#e2dbd3]/60 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-md">
