@@ -61,6 +61,7 @@ class GuestDashboardController extends Controller
                 'album_name' => $s->album_name,
                 'artwork_url' => $s->artwork_url,
                 'itunes_track_id' => $s->itunes_track_id,
+                'preview_url' => $s->preview_url,
             ]);
 
         return Inertia::render('Guest/Dashboard', [
