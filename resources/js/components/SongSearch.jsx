@@ -223,11 +223,8 @@ export default function SongSearch({ suggestions }) {
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
-                            className="flex items-center justify-center gap-1 text-center text-[11px] text-[#b5a594]"
+                            className="text-center text-[11px] text-[#b5a594]"
                         >
-                            <svg className="h-3 w-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
                             {t('songs.preview_hint')}
                         </motion.p>
                     )}
@@ -266,6 +263,29 @@ export default function SongSearch({ suggestions }) {
                                             <p className="truncate text-sm font-medium text-[#3d3530]">{track.title}</p>
                                             <p className="truncate text-xs text-[#a89584]">{track.artist}</p>
                                         </div>
+
+                                        {/* Preview button */}
+                                        {track.preview_url && (
+                                            <button
+                                                type="button"
+                                                onClick={() => togglePreview(track.id, track.preview_url)}
+                                                className={`flex-shrink-0 rounded-full p-1.5 transition-all ${
+                                                    isPlaying
+                                                        ? 'bg-[#8b7355]/15 text-[#8b7355]'
+                                                        : 'text-[#c4b5a4] hover:bg-[#8b7355]/10 hover:text-[#8b7355]'
+                                                }`}
+                                            >
+                                                {isPlaying ? (
+                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        )}
 
                                         {/* Add button */}
                                         <button
