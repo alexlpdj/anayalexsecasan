@@ -250,7 +250,10 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
                 </div>
             </div>
 
-            {/* ── Barra superior estática: idioma + utilidades ── */}
+            {/* ── Navegación sticky: presente desde el primer momento ── */}
+            <SectionNav />
+
+            {/* ── Idioma + utilidades: estáticos, se van con el scroll ── */}
             <div className="flex items-center justify-end gap-1.5 px-4 pt-3 pb-1">
                 <NotificationButton />
                 <InstallButton />
@@ -349,9 +352,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
                     </motion.div>
                 )}
             </motion.main>
-
-            {/* ── Navegación sticky de secciones (se fija al llegar aquí) ── */}
-            <SectionNav />
 
             {/* ══════════════════════════════════════════
                  CONTENIDO PRINCIPAL (secciones navegables)
@@ -667,54 +667,56 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
 
                 <Divider />
 
-                {/* 5. DUDAS + FAQs */}
-                <Section id="sec-dudas">
-                    <SectionTitle>{t('dashboard.questions_title')}</SectionTitle>
-                    <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.questions_sub')}</p>
-                    <form onSubmit={submitQuestion} className="space-y-3">
-                        <Textarea
-                            value={questionForm.data.message}
-                            onChange={(e) => questionForm.setData('message', e.target.value)}
-                            rows={3}
-                            className="border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
-                            placeholder={t('dashboard.questions_placeholder')}
-                        />
-                        {questionForm.errors.message && (
-                            <p className="text-xs text-red-500">{questionForm.errors.message}</p>
-                        )}
-                        <Button
-                            type="submit"
-                            disabled={questionForm.processing || !questionForm.data.message.trim()}
-                            className="w-full bg-[#a89584] text-white transition-all hover:bg-[#8b7355]"
-                        >
-                            {questionForm.processing ? t('dashboard.questions_sending') : t('dashboard.questions_submit')}
-                        </Button>
-                    </form>
-                    {questions.length > 0 && (
-                        <div className="mt-6 border-t border-[#e2dbd3]/60 pt-4">
-                            <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">{t('dashboard.previous_questions')}</h4>
-                            <div className="space-y-2.5">
-                                {questions.map((q) => (
-                                    <div key={q.id} className="rounded-lg bg-[#faf8f5] p-3">
-                                        <p className="text-sm text-[#8b7355]">{q.message}</p>
-                                        <p className="mt-1 text-[11px] text-[#b5a594]">{q.created_at}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                {/* 5. DUDAS: FAQs primero, formulario de preguntas después */}
+                <div id="sec-dudas" className="scroll-mt-16 space-y-6">
+                    {faqs && faqs.length > 0 && (
+                        <>
+                            <Section delay={0.1}>
+                                <SectionTitle>{t('dashboard.faqs_title')}</SectionTitle>
+                                <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.faqs_sub')}</p>
+                                <FaqAccordion faqs={localizedFaqs} />
+                            </Section>
+                            <Divider />
+                        </>
                     )}
-                </Section>
 
-                {faqs && faqs.length > 0 && (
-                    <>
-                        <Divider />
-                        <Section delay={0.1}>
-                            <SectionTitle>{t('dashboard.faqs_title')}</SectionTitle>
-                            <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.faqs_sub')}</p>
-                            <FaqAccordion faqs={localizedFaqs} />
-                        </Section>
-                    </>
-                )}
+                    <Section>
+                        <SectionTitle>{t('dashboard.questions_title')}</SectionTitle>
+                        <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.questions_sub')}</p>
+                        <form onSubmit={submitQuestion} className="space-y-3">
+                            <Textarea
+                                value={questionForm.data.message}
+                                onChange={(e) => questionForm.setData('message', e.target.value)}
+                                rows={3}
+                                className="border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
+                                placeholder={t('dashboard.questions_placeholder')}
+                            />
+                            {questionForm.errors.message && (
+                                <p className="text-xs text-red-500">{questionForm.errors.message}</p>
+                            )}
+                            <Button
+                                type="submit"
+                                disabled={questionForm.processing || !questionForm.data.message.trim()}
+                                className="w-full bg-[#a89584] text-white transition-all hover:bg-[#8b7355]"
+                            >
+                                {questionForm.processing ? t('dashboard.questions_sending') : t('dashboard.questions_submit')}
+                            </Button>
+                        </form>
+                        {questions.length > 0 && (
+                            <div className="mt-6 border-t border-[#e2dbd3]/60 pt-4">
+                                <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">{t('dashboard.previous_questions')}</h4>
+                                <div className="space-y-2.5">
+                                    {questions.map((q) => (
+                                        <div key={q.id} className="rounded-lg bg-[#faf8f5] p-3">
+                                            <p className="text-sm text-[#8b7355]">{q.message}</p>
+                                            <p className="mt-1 text-[11px] text-[#b5a594]">{q.created_at}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </Section>
+                </div>
 
                 {/* ── Logout ── */}
                 <motion.div
