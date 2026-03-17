@@ -15,7 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Table,
     TableBody,
@@ -158,44 +165,75 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             Organiza a tus invitados por grupos o núcleos familiares
                         </p>
                     </div>
-                    <div className="flex w-full gap-2 sm:w-auto">
-                        {stats.pending_with_email > 0 && (
-                            <Button
-                                variant="outline"
-                                className="flex-1 border-[#8b7355] text-[#8b7355] hover:bg-[#8b7355]/10 sm:flex-none"
-                                onClick={() => setShowReminderModal(true)}
-                            >
-                                📨 Enviar recordatorio a pendientes
+                    <div className="flex w-full items-center gap-2 sm:w-auto">
+                        {/* Mobile: dropdown with secondary actions */}
+                        <div className="sm:hidden">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    {stats.pending_with_email > 0 && (
+                                        <>
+                                            <DropdownMenuItem onClick={() => setShowReminderModal(true)}>
+                                                📨 Recordatorio pendientes
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                        </>
+                                    )}
+                                    <DropdownMenuItem onClick={() => setShowCustomModal(true)}>
+                                        ✉️ Mensaje personalizado
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setShowPushModal(true)}>
+                                        🔔 Notificación push
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <a href={route('admin.print.codes')} target="_blank">
+                                            🖨️ Imprimir códigos
+                                        </a>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <a href={route('admin.export.codes')}>
+                                            📥 Exportar CSV
+                                        </a>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                        {/* Desktop: all buttons visible */}
+                        <div className="hidden sm:flex sm:items-center sm:gap-2">
+                            {stats.pending_with_email > 0 && (
+                                <Button
+                                    variant="outline"
+                                    className="border-[#8b7355] text-[#8b7355] hover:bg-[#8b7355]/10"
+                                    onClick={() => setShowReminderModal(true)}
+                                >
+                                    📨 Enviar recordatorio a pendientes
+                                </Button>
+                            )}
+                            <Button variant="outline" onClick={() => setShowCustomModal(true)}>
+                                ✉️ Mensaje personalizado
                             </Button>
-                        )}
-                        <Button
-                            variant="outline"
-                            className="flex-1 sm:flex-none"
-                            onClick={() => setShowCustomModal(true)}
-                        >
-                            ✉️ Mensaje personalizado
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="flex-1 sm:flex-none"
-                            onClick={() => setShowPushModal(true)}
-                        >
-                            🔔 Notificación push
-                        </Button>
-                        <a href={route('admin.print.codes')} target="_blank" className="flex-1 sm:flex-none">
-                            <Button variant="outline" className="w-full sm:w-auto">
-                                🖨️ Imprimir códigos
+                            <Button variant="outline" onClick={() => setShowPushModal(true)}>
+                                🔔 Notificación push
                             </Button>
-                        </a>
-                        <a href={route('admin.export.codes')} className="flex-1 sm:flex-none">
-                            <Button variant="outline" className="w-full sm:w-auto">
-                                📥 Exportar CSV
-                            </Button>
-                        </a>
-                        <Link href={route('admin.groups.create')} className="flex-1 sm:flex-none">
-                            <Button className="w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105 sm:w-auto">
+                            <a href={route('admin.print.codes')} target="_blank">
+                                <Button variant="outline">🖨️ Imprimir códigos</Button>
+                            </a>
+                            <a href={route('admin.export.codes')}>
+                                <Button variant="outline">📥 Exportar CSV</Button>
+                            </a>
+                        </div>
+
+                        <Link href={route('admin.groups.create')}>
+                            <Button className="bg-gradient-to-r from-[#8b7355] to-[#a89584] transition-transform hover:scale-105">
                                 <Plus className="mr-1.5 h-4 w-4" />
-                                Crear Grupo Nuevo
+                                <span className="hidden sm:inline">Crear Grupo Nuevo</span>
+                                <span className="sm:hidden">Nuevo</span>
                             </Button>
                         </Link>
                     </div>

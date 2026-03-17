@@ -23,13 +23,16 @@ import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
 import InstallPrompt, { InstallButton } from '@/components/InstallPrompt';
 import NotificationPrompt, { NotificationButton } from '@/components/NotificationPrompt';
+import SongSearch from '@/components/SongSearch';
+import SectionNav from '@/components/SectionNav';
 
 // ── Layout components (defined outside to avoid remount on every render) ──
 
-function Section({ children, className = '', delay = 0 }) {
+function Section({ children, className = '', delay = 0, id }) {
     return (
         <motion.div
-            className={`rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}
+            id={id}
+            className={`scroll-mt-16 rounded-2xl border border-[#e2dbd3]/60 bg-white/70 p-6 shadow-[0_2px_16px_rgba(139,115,85,0.06)] backdrop-blur-sm ${className}`}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -64,7 +67,7 @@ function Divider() {
 
 // ── Main component ──
 
-export default function GuestDashboard({ group, questions, faqs, weddingInfo }) {
+export default function GuestDashboard({ group, questions, faqs, weddingInfo, songSuggestions }) {
     const { t, i18n } = useTranslation();
     const { flash } = usePage().props;
     const [step, setStep] = useState('initial');
@@ -258,11 +261,12 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
             <AnimatedHero />
 
             <motion.main
-                className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-4"
+                className="mx-auto max-w-lg space-y-6 px-5 pt-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
             >
+
                 {/* ── PWA Notification Prompt ── */}
                 <NotificationPrompt />
 
@@ -282,15 +286,13 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             {t('dashboard.greeting_sub')}
                         </p>
                     </div>
-
-                    {/* Countdown Timer */}
                     <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
                     >
-                        <div style={{marginTop: '3rem', marginBottom: '3rem'}}>
+                        <div style={{ marginTop: '3rem', marginBottom: '3rem' }}>
                             <CountdownTimer targetDate="2026-06-20T00:00:00" />
                         </div>
                     </motion.div>
@@ -328,7 +330,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     </Link>
                 </motion.div>
 
-                {/* ── Banner de recordatorio si no ha confirmado ── */}
+                {/* ── Banner recordatorio ── */}
                 {!isSubmitted && (
                     <motion.div
                         className="rounded-xl bg-gradient-to-r from-[#8b7355] to-[#a89584] p-4 text-center shadow-lg"
@@ -346,307 +348,21 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                         </div>
                     </motion.div>
                 )}
+            </motion.main>
 
-                {/* ══════════════════════════════════════════
-                     1. CONFIRMACIÓN DE ASISTENCIA
-                     ══════════════════════════════════════════ */}
+            {/* ══════════════════════════════════════════
+                 NAVEGACIÓN STICKY DE SECCIONES
+                 ══════════════════════════════════════════ */}
+            <SectionNav />
 
-                {/* ── Initial choice ── */}
-                {step === 'initial' && (
-                    <Section>
-                        <SectionTitle>{t('dashboard.confirm_title')}</SectionTitle>
-                        <motion.p
-                            className="mb-5 text-center text-sm text-[#a89584]"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                            {isSingle
-                                ? t('dashboard.confirm_single_question')
-                                : t('dashboard.confirm_group_question', { count: group.guests.length })}
-                        </motion.p>
-                        <motion.div
-                            className="flex flex-col gap-3"
-                            initial={{ opacity: 0, y: 10 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                        >
-                            <RippleButton
-                                onClick={() => setStep('form')}
-                                className="flex items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-medium shadow-lg"
-                                variant="primary"
-                            >
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                </svg>
-                                {isSingle ? t('dashboard.attend_single') : t('dashboard.attend_plural')}
-                            </RippleButton>
-                            <RippleButton
-                                onClick={submitDecline}
-                                disabled={declineForm.processing}
-                                className="flex items-center justify-center gap-3 rounded-xl py-3.5 text-base"
-                                variant="secondary"
-                            >
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                {declineForm.processing ? t('dashboard.sending') : t('dashboard.decline')}
-                            </RippleButton>
-                        </motion.div>
-                        <motion.p
-                            className="mt-4 text-center text-xs text-[#b5a594]"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: 0.5 }}
-                        >
-                            {t('dashboard.deadline')}
-                        </motion.p>
-                    </Section>
-                )}
+            {/* ══════════════════════════════════════════
+                 CONTENIDO PRINCIPAL (secciones navegables)
+                 ══════════════════════════════════════════ */}
+            <div className="mx-auto max-w-lg space-y-6 px-5 pb-20 pt-6">
 
-                {/* ── Attending form ── */}
-                {step === 'form' && (
-                    <form onSubmit={submitAttending} className="space-y-5">
-                        {/* Allergies */}
-                        <Section>
-                            <SectionTitle>{t('dashboard.allergies_title')}</SectionTitle>
-                            <div className="space-y-4">
-                                {group.guests.map((guest, index) => (
-                                    <div key={guest.id}>
-                                        <Label className="text-sm font-medium text-[#8b7355]">
-                                            {guest.name}
-                                        </Label>
-                                        <Input
-                                            value={confirmForm.data.guests[index].allergies}
-                                            onChange={(e) => updateGuestAllergies(index, e.target.value)}
-                                            className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
-                                            placeholder={t('dashboard.allergies_placeholder')}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </Section>
-
-                        {/* Transport */}
-                        <Section>
-                            <SectionTitle>{t('dashboard.transport_title')}</SectionTitle>
-                            <RadioGroup
-                                value={confirmForm.data.transport}
-                                onValueChange={(v) => confirmForm.setData('transport', v)}
-                                className="space-y-3"
-                            >
-                                <label
-                                    htmlFor="t-autobus"
-                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
-                                        confirmForm.data.transport === 'AUTOBUS'
-                                            ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
-                                            : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
-                                    }`}
-                                >
-                                    <RadioGroupItem value="AUTOBUS" id="t-autobus" className="text-[#8b7355]" />
-                                    <div>
-                                        <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_bus')}</span>
-                                        <p className="text-xs text-[#b5a594]">{t('dashboard.transport_bus_hint')}</p>
-                                    </div>
-                                </label>
-
-                                {confirmForm.data.transport === 'AUTOBUS' && (
-                                    <div className="ml-4 space-y-2.5 rounded-xl bg-[#faf8f5] p-4">
-                                        {[
-                                            { id: 'bus_onda_ida', label: t('dashboard.transport_bus_onda_ida'), key: 'bus_onda_ida' },
-                                            { id: 'bus_onda_vuelta', label: t('dashboard.transport_bus_onda_vuelta'), key: 'bus_onda_vuelta' },
-                                            { id: 'bus_cs', label: t('dashboard.transport_bus_cs'), key: 'bus_cs' },
-                                        ].map((bus) => (
-                                            <div key={bus.id} className="flex items-center gap-2.5">
-                                                <AnimatedCheckbox
-                                                    id={bus.id}
-                                                    checked={confirmForm.data[bus.key]}
-                                                    onCheckedChange={(c) => confirmForm.setData(bus.key, c)}
-                                                    className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
-                                                />
-                                                <Label htmlFor={bus.id} className="text-sm text-[#8b7355]">
-                                                    {bus.label}
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <label
-                                    htmlFor="t-coche"
-                                    className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
-                                        confirmForm.data.transport === 'COCHE'
-                                            ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
-                                            : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
-                                    }`}
-                                >
-                                    <RadioGroupItem value="COCHE" id="t-coche" className="text-[#8b7355]" />
-                                    <div>
-                                        <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_car')}</span>
-                                        <p className="text-xs text-[#b5a594]">{t('dashboard.transport_car_hint')}</p>
-                                    </div>
-                                </label>
-                            </RadioGroup>
-                        </Section>
-
-                        {/* Contact */}
-                        <Section>
-                            <SectionTitle>
-                                {t('dashboard.contact_title')} <span className="text-sm font-normal not-italic text-[#b5a594]">{t('dashboard.contact_optional')}</span>
-                            </SectionTitle>
-                            <div className="space-y-3">
-                                <div>
-                                    <Label htmlFor="contact_email" className="text-sm text-[#8b7355]">{t('dashboard.contact_email')}</Label>
-                                    <Input
-                                        id="contact_email"
-                                        type="email"
-                                        value={confirmForm.data.contact_email}
-                                        onChange={(e) => confirmForm.setData('contact_email', e.target.value)}
-                                        className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
-                                        placeholder="tu@email.com"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="contact_phone" className="text-sm text-[#8b7355]">{t('dashboard.contact_phone')}</Label>
-                                    <Input
-                                        id="contact_phone"
-                                        type="tel"
-                                        value={confirmForm.data.contact_phone}
-                                        onChange={(e) => confirmForm.setData('contact_phone', e.target.value)}
-                                        className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
-                                        placeholder="+34 600 000 000"
-                                    />
-                                </div>
-                            </div>
-                        </Section>
-
-                        {/* Submit */}
-                        <div className="space-y-2.5 pt-1">
-                            <Button
-                                type="submit"
-                                disabled={confirmForm.processing}
-                                className="w-full rounded-xl bg-[#8b7355] py-6 text-base font-medium text-white shadow-sm transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
-                            >
-                                {confirmForm.processing ? t('dashboard.confirm_saving') : t('dashboard.confirm_submit')}
-                            </Button>
-                            <button
-                                type="button"
-                                onClick={() => setStep('initial')}
-                                className="block w-full py-2 text-center text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
-                            >
-                                {t('dashboard.back')}
-                            </button>
-                        </div>
-                    </form>
-                )}
-
-                {/* ── Confirmed summary ── */}
-                {step === 'confirmed' && (
-                    <Section className="text-center">
-                        {allAttending ? (
-                            <>
-                                <motion.div
-                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100"
-                                    initial={{ scale: 0, rotate: -180 }}
-                                    whileInView={{ scale: 1, rotate: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut", type: "spring" }}
-                                >
-                                    <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                    </svg>
-                                </motion.div>
-                                <motion.h3
-                                    className="mb-1 font-serif text-2xl italic text-[#8b7355]"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: 0.4 }}
-                                >
-                                    {t('dashboard.confirmed_attending_title')}
-                                </motion.h3>
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    whileInView={{ opacity: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: 0.5 }}
-                                >
-                                    <p className="text-sm text-[#a89584]">
-                                        {isSingle
-                                            ? t('dashboard.confirmed_attending_single')
-                                            : t('dashboard.confirmed_attending_plural', { count: group.guests.length })}
-                                    </p>
-                                    <p className="mt-1 text-sm text-[#a89584]">
-                                        {t('dashboard.confirmed_attending_see_you')}
-                                    </p>
-                                </motion.div>
-                            </>
-                        ) : (
-                            <>
-                                <motion.div
-                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f1ed]"
-                                    initial={{ scale: 0 }}
-                                    whileInView={{ scale: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-                                >
-                                    <svg className="h-8 w-8 text-[#a89584]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                                    </svg>
-                                </motion.div>
-                                <motion.h3
-                                    className="mb-1 font-serif text-2xl italic text-[#8b7355]"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: 0.4 }}
-                                >
-                                    {t('dashboard.confirmed_decline_title')}
-                                </motion.h3>
-                                <motion.p
-                                    className="text-sm text-[#a89584]"
-                                    initial={{ opacity: 0 }}
-                                    whileInView={{ opacity: 1 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: 0.5 }}
-                                >
-                                    {t('dashboard.confirmed_decline_text')}
-                                </motion.p>
-                            </>
-                        )}
-                        <motion.button
-                            onClick={() => setStep('initial')}
-                            className="mt-5 inline-block text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: 0.6 }}
-                        >
-                            {t('dashboard.modify_response')}
-                        </motion.button>
-                        <motion.p
-                            className="mt-2 text-xs text-[#b5a594]"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: 0.7 }}
-                        >
-                            {t('dashboard.deadline')}
-                        </motion.p>
-                    </Section>
-                )}
-
-                <Divider />
-
-                {/* ══════════════════════════════════════════
-                     2. DETALLES DEL EVENTO
-                     ══════════════════════════════════════════ */}
-                <Section>
+                {/* 1. DETALLES DEL EVENTO */}
+                <Section id="sec-evento">
                     <SectionTitle>{t('dashboard.event_title')}</SectionTitle>
-
                     <div className="grid grid-cols-2 gap-3">
                         <motion.div
                             className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
@@ -661,9 +377,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 </svg>
                             </div>
                             <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">{t('dashboard.event_date_label')}</p>
-                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
-                                {t('dashboard.event_date_value')}
-                            </p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">{t('dashboard.event_date_value')}</p>
                         </motion.div>
                         <motion.div
                             className="rounded-xl bg-gradient-to-br from-[#faf8f5] to-[#f5f1ed] p-4 text-center"
@@ -679,9 +393,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                                 </svg>
                             </div>
                             <p className="text-[10px] uppercase tracking-wider text-[#b5a594]">{t('dashboard.event_venue_label')}</p>
-                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">
-                                {weddingInfo.venue.name}
-                            </p>
+                            <p className="mt-0.5 text-sm font-medium text-[#8b7355]">{weddingInfo.venue.name}</p>
                             <p className="text-[11px] text-[#b5a594]">{weddingInfo.venue.address}</p>
                             <a
                                 href={weddingInfo.venue.url}
@@ -696,15 +408,12 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             </a>
                         </motion.div>
                     </div>
-
                 </Section>
 
                 <Divider />
 
-                {/* ══════════════════════════════════════════
-                     PROGRAMA DEL DÍA
-                     ══════════════════════════════════════════ */}
-                <Section delay={0.1}>
+                {/* 2. PROGRAMA DEL DÍA */}
+                <Section id="sec-programa" delay={0.1}>
                     <SectionTitle>{t('dashboard.program_title')}</SectionTitle>
                     <p className="mb-6 text-center text-sm text-[#a89584]">
                         {t('dashboard.program_sub')}
@@ -712,15 +421,258 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     <ProgramaDestacado schedule={localizedSchedule} />
                 </Section>
 
+                <Divider />
 
-                {/* ══════════════════════════════════════════
-                     3. PREGUNTAS / DUDAS
-                     ══════════════════════════════════════════ */}
-                <Section>
+                {/* 3. CONFIRMACIÓN DE ASISTENCIA */}
+                <div id="sec-rsvp" className="scroll-mt-16 space-y-5">
+                    {step === 'initial' && (
+                        <Section>
+                            <SectionTitle>{t('dashboard.confirm_title')}</SectionTitle>
+                            <motion.p
+                                className="mb-5 text-center text-sm text-[#a89584]"
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                            >
+                                {isSingle
+                                    ? t('dashboard.confirm_single_question')
+                                    : t('dashboard.confirm_group_question', { count: group.guests.length })}
+                            </motion.p>
+                            <motion.div
+                                className="flex flex-col gap-3"
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                            >
+                                <RippleButton
+                                    onClick={() => setStep('form')}
+                                    className="flex items-center justify-center gap-3 rounded-xl px-6 py-4 text-lg font-medium shadow-lg"
+                                    variant="primary"
+                                >
+                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                    </svg>
+                                    {isSingle ? t('dashboard.attend_single') : t('dashboard.attend_plural')}
+                                </RippleButton>
+                                <RippleButton
+                                    onClick={submitDecline}
+                                    disabled={declineForm.processing}
+                                    className="flex items-center justify-center gap-3 rounded-xl py-3.5 text-base"
+                                    variant="secondary"
+                                >
+                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    {declineForm.processing ? t('dashboard.sending') : t('dashboard.decline')}
+                                </RippleButton>
+                            </motion.div>
+                            <motion.p
+                                className="mt-4 text-center text-xs text-[#b5a594]"
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.5 }}
+                            >
+                                {t('dashboard.deadline')}
+                            </motion.p>
+                        </Section>
+                    )}
+
+                    {step === 'form' && (
+                        <form onSubmit={submitAttending} className="space-y-5">
+                            <Section>
+                                <SectionTitle>{t('dashboard.allergies_title')}</SectionTitle>
+                                <div className="space-y-4">
+                                    {group.guests.map((guest, index) => (
+                                        <div key={guest.id}>
+                                            <Label className="text-sm font-medium text-[#8b7355]">{guest.name}</Label>
+                                            <Input
+                                                value={confirmForm.data.guests[index].allergies}
+                                                onChange={(e) => updateGuestAllergies(index, e.target.value)}
+                                                className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
+                                                placeholder={t('dashboard.allergies_placeholder')}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </Section>
+                            <Section>
+                                <SectionTitle>{t('dashboard.transport_title')}</SectionTitle>
+                                <RadioGroup
+                                    value={confirmForm.data.transport}
+                                    onValueChange={(v) => confirmForm.setData('transport', v)}
+                                    className="space-y-3"
+                                >
+                                    <label
+                                        htmlFor="t-autobus"
+                                        className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
+                                            confirmForm.data.transport === 'AUTOBUS'
+                                                ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
+                                                : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
+                                        }`}
+                                    >
+                                        <RadioGroupItem value="AUTOBUS" id="t-autobus" className="text-[#8b7355]" />
+                                        <div>
+                                            <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_bus')}</span>
+                                            <p className="text-xs text-[#b5a594]">{t('dashboard.transport_bus_hint')}</p>
+                                        </div>
+                                    </label>
+                                    {confirmForm.data.transport === 'AUTOBUS' && (
+                                        <div className="ml-4 space-y-2.5 rounded-xl bg-[#faf8f5] p-4">
+                                            {[
+                                                { id: 'bus_onda_ida', label: t('dashboard.transport_bus_onda_ida'), key: 'bus_onda_ida' },
+                                                { id: 'bus_onda_vuelta', label: t('dashboard.transport_bus_onda_vuelta'), key: 'bus_onda_vuelta' },
+                                                { id: 'bus_cs', label: t('dashboard.transport_bus_cs'), key: 'bus_cs' },
+                                            ].map((bus) => (
+                                                <div key={bus.id} className="flex items-center gap-2.5">
+                                                    <AnimatedCheckbox
+                                                        id={bus.id}
+                                                        checked={confirmForm.data[bus.key]}
+                                                        onCheckedChange={(c) => confirmForm.setData(bus.key, c)}
+                                                        className="border-[#8b7355] data-[state=checked]:bg-[#8b7355]"
+                                                    />
+                                                    <Label htmlFor={bus.id} className="text-sm text-[#8b7355]">{bus.label}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <label
+                                        htmlFor="t-coche"
+                                        className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
+                                            confirmForm.data.transport === 'COCHE'
+                                                ? 'border-[#8b7355] bg-[#faf8f5] shadow-sm'
+                                                : 'border-[#e2dbd3] hover:border-[#c4b5a4]'
+                                        }`}
+                                    >
+                                        <RadioGroupItem value="COCHE" id="t-coche" className="text-[#8b7355]" />
+                                        <div>
+                                            <span className="text-sm font-medium text-[#8b7355]">{t('dashboard.transport_car')}</span>
+                                            <p className="text-xs text-[#b5a594]">{t('dashboard.transport_car_hint')}</p>
+                                        </div>
+                                    </label>
+                                </RadioGroup>
+                            </Section>
+                            <Section>
+                                <SectionTitle>
+                                    {t('dashboard.contact_title')} <span className="text-sm font-normal not-italic text-[#b5a594]">{t('dashboard.contact_optional')}</span>
+                                </SectionTitle>
+                                <div className="space-y-3">
+                                    <div>
+                                        <Label htmlFor="contact_email" className="text-sm text-[#8b7355]">{t('dashboard.contact_email')}</Label>
+                                        <Input
+                                            id="contact_email"
+                                            type="email"
+                                            value={confirmForm.data.contact_email}
+                                            onChange={(e) => confirmForm.setData('contact_email', e.target.value)}
+                                            className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
+                                            placeholder="tu@email.com"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="contact_phone" className="text-sm text-[#8b7355]">{t('dashboard.contact_phone')}</Label>
+                                        <Input
+                                            id="contact_phone"
+                                            type="tel"
+                                            value={confirmForm.data.contact_phone}
+                                            onChange={(e) => confirmForm.setData('contact_phone', e.target.value)}
+                                            className="mt-1.5 border-[#e2dbd3] bg-[#faf8f5] transition-colors focus:border-[#8b7355]"
+                                            placeholder="+34 600 000 000"
+                                        />
+                                    </div>
+                                </div>
+                            </Section>
+                            <div className="space-y-2.5 pt-1">
+                                <Button
+                                    type="submit"
+                                    disabled={confirmForm.processing}
+                                    className="w-full rounded-xl bg-[#8b7355] py-6 text-base font-medium text-white shadow-sm transition-all duration-200 hover:bg-[#7a6448] hover:shadow-lg active:scale-[0.98]"
+                                >
+                                    {confirmForm.processing ? t('dashboard.confirm_saving') : t('dashboard.confirm_submit')}
+                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => setStep('initial')}
+                                    className="block w-full py-2 text-center text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]"
+                                >
+                                    {t('dashboard.back')}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {step === 'confirmed' && (
+                        <Section className="text-center">
+                            {allAttending ? (
+                                <>
+                                    <motion.div
+                                        className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100"
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        whileInView={{ scale: 1, rotate: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut", type: "spring" }}
+                                    >
+                                        <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                        </svg>
+                                    </motion.div>
+                                    <motion.h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }}>
+                                        {t('dashboard.confirmed_attending_title')}
+                                    </motion.h3>
+                                    <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }}>
+                                        <p className="text-sm text-[#a89584]">
+                                            {isSingle ? t('dashboard.confirmed_attending_single') : t('dashboard.confirmed_attending_plural', { count: group.guests.length })}
+                                        </p>
+                                        <p className="mt-1 text-sm text-[#a89584]">{t('dashboard.confirmed_attending_see_you')}</p>
+                                    </motion.div>
+                                </>
+                            ) : (
+                                <>
+                                    <motion.div
+                                        className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#f5f1ed]"
+                                        initial={{ scale: 0 }}
+                                        whileInView={{ scale: 1 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                                    >
+                                        <svg className="h-8 w-8 text-[#a89584]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                        </svg>
+                                    </motion.div>
+                                    <motion.h3 className="mb-1 font-serif text-2xl italic text-[#8b7355]" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }}>
+                                        {t('dashboard.confirmed_decline_title')}
+                                    </motion.h3>
+                                    <motion.p className="text-sm text-[#a89584]" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.5 }}>
+                                        {t('dashboard.confirmed_decline_text')}
+                                    </motion.p>
+                                </>
+                            )}
+                            <motion.button onClick={() => setStep('initial')} className="mt-5 inline-block text-sm text-[#a89584] underline underline-offset-2 transition-colors hover:text-[#8b7355]" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.6 }}>
+                                {t('dashboard.modify_response')}
+                            </motion.button>
+                            <motion.p className="mt-2 text-xs text-[#b5a594]" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.7 }}>
+                                {t('dashboard.deadline')}
+                            </motion.p>
+                        </Section>
+                    )}
+                </div>
+
+                <Divider />
+
+                {/* 4. CANCIONES */}
+                <Section id="sec-canciones" delay={0.1}>
+                    <SectionTitle>{t('songs.title')}</SectionTitle>
+                    <p className="mb-4 text-center text-sm text-[#a89584]">{t('songs.sub')}</p>
+                    <SongSearch suggestions={songSuggestions || []} />
+                </Section>
+
+                <Divider />
+
+                {/* 5. DUDAS + FAQs */}
+                <Section id="sec-dudas">
                     <SectionTitle>{t('dashboard.questions_title')}</SectionTitle>
-                    <p className="mb-4 text-center text-sm text-[#a89584]">
-                        {t('dashboard.questions_sub')}
-                    </p>
+                    <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.questions_sub')}</p>
                     <form onSubmit={submitQuestion} className="space-y-3">
                         <Textarea
                             value={questionForm.data.message}
@@ -740,12 +692,9 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                             {questionForm.processing ? t('dashboard.questions_sending') : t('dashboard.questions_submit')}
                         </Button>
                     </form>
-
                     {questions.length > 0 && (
                         <div className="mt-6 border-t border-[#e2dbd3]/60 pt-4">
-                            <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">
-                                {t('dashboard.previous_questions')}
-                            </h4>
+                            <h4 className="mb-3 text-[10px] uppercase tracking-[0.15em] text-[#b5a594]">{t('dashboard.previous_questions')}</h4>
                             <div className="space-y-2.5">
                                 {questions.map((q) => (
                                     <div key={q.id} className="rounded-lg bg-[#faf8f5] p-3">
@@ -758,17 +707,12 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                     )}
                 </Section>
 
-                {/* ══════════════════════════════════════════
-                     4. PREGUNTAS FRECUENTES (FAQ)
-                     ══════════════════════════════════════════ */}
                 {faqs && faqs.length > 0 && (
                     <>
                         <Divider />
                         <Section delay={0.1}>
                             <SectionTitle>{t('dashboard.faqs_title')}</SectionTitle>
-                            <p className="mb-4 text-center text-sm text-[#a89584]">
-                                {t('dashboard.faqs_sub')}
-                            </p>
+                            <p className="mb-4 text-center text-sm text-[#a89584]">{t('dashboard.faqs_sub')}</p>
                             <FaqAccordion faqs={localizedFaqs} />
                         </Section>
                     </>
@@ -789,7 +733,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo }) 
                         {t('dashboard.logout')}
                     </button>
                 </motion.div>
-            </motion.main>
+            </div>
         </div>
         </>
     );

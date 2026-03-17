@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
+use App\Http\Controllers\Admin\SongSuggestionController;
 use App\Http\Controllers\Guest\GuestAuthController;
 use App\Http\Controllers\Guest\GuestDashboardController;
 use App\Http\Controllers\Guest\PushController;
@@ -39,6 +40,9 @@ Route::prefix('invitacion')->name('guest.')->group(function () {
         Route::post('/logout', [GuestAuthController::class, 'logout'])->name('logout');
         Route::post('/push/subscribe',   [PushController::class, 'subscribe'])->name('push.subscribe');
         Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
+        Route::get('/canciones/buscar', [GuestDashboardController::class, 'searchSongs'])->name('songs.search');
+        Route::post('/canciones', [GuestDashboardController::class, 'suggestSong'])->name('songs.suggest');
+        Route::delete('/canciones/{suggestion}', [GuestDashboardController::class, 'removeSuggestion'])->name('songs.remove');
     });
 });
 
@@ -116,6 +120,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Preguntas de invitados
     Route::get('/questions', [InvitationGroupController::class, 'questions'])
         ->name('questions');
+
+    // Sugerencias de canciones
+    Route::get('/songs', [SongSuggestionController::class, 'index'])
+        ->name('songs.index');
 
     // FAQs - Preguntas Frecuentes
     Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');

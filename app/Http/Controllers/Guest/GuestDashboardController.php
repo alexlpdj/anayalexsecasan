@@ -8,10 +8,12 @@ use App\Mail\RsvpConfirmationMail;
 use App\Models\Faq;
 use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
+use App\Models\SongSuggestion;
 use App\Models\User;
 use App\Models\WeddingSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
@@ -49,6 +51,18 @@ class GuestDashboardController extends Controller
 
         $faqs = Faq::active()->ordered()->get();
 
+        $songSuggestions = $group->songSuggestions()
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn($s) => [
+                'id' => $s->id,
+                'track_title' => $s->track_title,
+                'artist_name' => $s->artist_name,
+                'album_name' => $s->album_name,
+                'artwork_url' => $s->artwork_url,
+                'itunes_track_id' => $s->itunes_track_id,
+            ]);
+
         return Inertia::render('Guest/Dashboard', [
             'group' => [
                 'id' => $group->id,
@@ -74,6 +88,7 @@ class GuestDashboardController extends Controller
             'questions' => $questions,
             'faqs' => $faqs,
             'weddingInfo' => $weddingInfo,
+            'songSuggestions' => $songSuggestions,
         ]);
     }
 
@@ -172,6 +187,77 @@ class GuestDashboardController extends Controller
         }
 
         return back()->with('success', '¡Pregunta enviada! Os responderemos lo antes posible.');
+    }
+
+    public function searchSongs(Request $request)
+    {
+        $this->getAuthenticatedGroup();
+
+        $query = $request->validate(['q' => 'required|string|max:100'])['q'];
+
+        $response = Http::timeout(5)->get('https://itunes.apple.com/search', [
+            'term'   => $query,
+            'media'  => 'music',
+            'entity' => 'song',
+            'limit'  => 10,
+        ]);
+
+        if (!$response->successful()) {
+            return response()->json(['results' => []]);
+        }
+
+        $results = collect($response->json('results', []))->map(fn($t) => [
+            'id'          => (string) ($t['trackId'] ?? ''),
+            'title'       => $t['trackName'] ?? '',
+            'artist'      => $t['artistName'] ?? '',
+            'album'       => $t['collectionName'] ?? null,
+            'artwork'     => isset($t['artworkUrl100'])
+                ? str_replace('100x100bb', '300x300bb', $t['artworkUrl100'])
+                : null,
+            'preview_url' => $t['previewUrl'] ?? null,
+        ])->filter(fn($t) => $t['id'] && $t['title'])->values();
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function suggestSong(Request $request)
+    {
+        $group = $this->getAuthenticatedGroup();
+
+        $validated = $request->validate([
+            'track_title'     => 'required|string|max:255',
+            'artist_name'     => 'required|string|max:255',
+            'album_name'      => 'nullable|string|max:255',
+            'artwork_url'     => 'nullable|url|max:500',
+            'itunes_track_id' => 'nullable|string|max:50',
+            'preview_url'     => 'nullable|url|max:500',
+        ]);
+
+        if ($group->songSuggestions()->count() >= 5) {
+            return back()->with('error', 'Máximo 5 canciones por grupo.');
+        }
+
+        // Avoid duplicates
+        if ($validated['itunes_track_id'] && $group->songSuggestions()->where('itunes_track_id', $validated['itunes_track_id'])->exists()) {
+            return back();
+        }
+
+        $group->songSuggestions()->create($validated);
+
+        return back()->with('success', '¡Canción añadida!');
+    }
+
+    public function removeSuggestion(SongSuggestion $suggestion)
+    {
+        $group = $this->getAuthenticatedGroup();
+
+        if ($suggestion->invitation_group_id !== $group->id) {
+            abort(403);
+        }
+
+        $suggestion->delete();
+
+        return back()->with('success', 'Canción eliminada.');
     }
 
     public function ourStory()

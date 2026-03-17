@@ -34,7 +34,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer } from 'lucide-react';
+import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer, Music } from 'lucide-react';
 
 const navItems = [
     {
@@ -49,6 +49,13 @@ const navItems = [
         match: 'admin.questions',
         badge: 'questionsCount',
         icon: MessageCircle,
+    },
+    {
+        label: 'Canciones',
+        href: 'admin.songs.index',
+        match: 'admin.songs.*',
+        badge: 'songsCount',
+        icon: Music,
     },
     {
         label: 'FAQs',
@@ -237,7 +244,7 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
                 <SidebarRail />
             </Sidebar>
 
-            <SidebarInset>
+            <SidebarInset className="min-w-0 overflow-x-hidden">
                 {/* Top header bar */}
                 <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e2dbd3]/40 px-4">
                     <SidebarTrigger className="-ml-1 text-[#a89584]" />

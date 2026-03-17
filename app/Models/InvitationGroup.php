@@ -57,6 +57,11 @@ class InvitationGroup extends Model
         return $this->hasMany(PushSubscription::class);
     }
 
+    public function songSuggestions(): HasMany
+    {
+        return $this->hasMany(SongSuggestion::class);
+    }
+
     /**
      * Generar código único alfanumérico
      * Formato: 4 caracteres mayúsculas y números

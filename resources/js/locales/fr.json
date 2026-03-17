@@ -67,6 +67,22 @@
     "faqs_sub": "Réponses aux questions les plus courantes",
     "logout": "Se déconnecter"
   },
+  "songs": {
+    "title": "Chansons pour la fête",
+    "sub": "Suggérez les chansons que vous voulez danser ! Max. 5",
+    "search_placeholder": "Cherchez une chanson ou un artiste...",
+    "search_error": "Erreur de recherche. Réessayez.",
+    "your_suggestions": "Vos suggestions",
+    "max_reached": "Vous avez atteint le maximum de 5 chansons",
+    "empty_hint": "Cherchez une chanson et appuyez sur + pour l'ajouter"
+  },
+  "nav": {
+    "evento": "Événement",
+    "programa": "Programme",
+    "rsvp": "RSVP",
+    "canciones": "Chansons",
+    "dudas": "Questions"
+  },
   "header": {
     "invitation": "nous vous invitons à notre mariage"
   },

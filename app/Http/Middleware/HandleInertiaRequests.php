@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\GuestQuestion;
+use App\Models\SongSuggestion;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'adminNav' => fn () => $request->user() ? [
                 'questionsCount' => GuestQuestion::count(),
+                'songsCount'     => SongSuggestion::count(),
             ] : null,
         ];
     }
