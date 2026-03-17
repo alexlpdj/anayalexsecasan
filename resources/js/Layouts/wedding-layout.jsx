@@ -92,7 +92,7 @@ export default function WeddingLayout({ children }) {
 
             {/* Footer */}
             <footer className="py-8 text-center text-sm text-[#a89584]">
-                <p className="font-serif italic">Con todo nuestro amor, Alex & Ana</p>
+                <p className="font-serif italic">Con todo nuestro amor,  Ana & Alex</p>
             </footer>
         </div>
     );

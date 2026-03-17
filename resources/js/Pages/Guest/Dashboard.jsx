@@ -250,8 +250,8 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
                 </div>
             </div>
 
-            {/* ── Barra superior con selector de idioma e instalación PWA ── */}
-            <div className="flex items-center justify-end gap-2 px-5 pt-4">
+            {/* ── Barra superior estática: idioma + utilidades ── */}
+            <div className="flex items-center justify-end gap-1.5 px-4 pt-3 pb-1">
                 <NotificationButton />
                 <InstallButton />
                 <LanguageSelector />
@@ -350,9 +350,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
                 )}
             </motion.main>
 
-            {/* ══════════════════════════════════════════
-                 NAVEGACIÓN STICKY DE SECCIONES
-                 ══════════════════════════════════════════ */}
+            {/* ── Navegación sticky de secciones (se fija al llegar aquí) ── */}
             <SectionNav />
 
             {/* ══════════════════════════════════════════

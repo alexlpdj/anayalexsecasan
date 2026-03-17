@@ -52,7 +52,7 @@ export default function PrintableCodes({ groups }) {
                     <h1 className="mb-2 font-serif text-3xl italic text-[#8b7355]">
                         Códigos de Invitados
                     </h1>
-                    <p className="text-[#a89584]">Alex & Ana — 20.06.2026</p>
+                    <p className="text-[#a89584]">Ana & Alex — 20.06.2026</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
