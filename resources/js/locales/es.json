@@ -74,7 +74,10 @@
     "search_error": "Error al buscar. Inténtalo de nuevo.",
     "your_suggestions": "Tus sugerencias",
     "max_reached": "Ya has llegado al máximo de 5 canciones",
-    "empty_hint": "Busca una canción y pulsa + para añadirla"
+    "empty_hint": "Busca una canción y pulsa + para añadirla",
+    "preview_hint": "Pulsa ▶ para escuchar un fragmento antes de añadirla",
+    "play_preview": "Escuchar fragmento",
+    "pause_preview": "Pausar fragmento"
   },
   "nav": {
     "evento": "Evento",
@@ -95,7 +98,9 @@
   },
   "player": {
     "title": "Música de fondo",
-    "volume": "Volumen"
+    "volume": "Volumen",
+    "playing": "Reproduciendo",
+    "paused": "Música pausada"
   },
   "story": {
     "page_title": "Nuestra Historia",

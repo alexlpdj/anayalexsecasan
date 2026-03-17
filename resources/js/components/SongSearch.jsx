@@ -23,8 +23,8 @@ function Spinner({ className }) {
     );
 }
 
-function ArtworkButton({ src, alt, isPlaying, hasPreview, onClick, size = 'md' }) {
-    const dim = size === 'sm' ? 'h-9 w-9' : 'h-10 w-10';
+function ArtworkThumb({ src, alt, isPlaying, hasPreview, onClick, size = 'md' }) {
+    const dim = size === 'sm' ? 'h-10 w-10' : 'h-11 w-11';
     return (
         <button
             type="button"
@@ -39,7 +39,11 @@ function ArtworkButton({ src, alt, isPlaying, hasPreview, onClick, size = 'md' }
                 </div>
             )}
             {hasPreview && (
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${isPlaying ? 'bg-black/40 opacity-100' : 'bg-black/0 opacity-0 hover:bg-black/30 hover:opacity-100'}`}>
+                <div className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                    isPlaying
+                        ? 'bg-black/20 opacity-100'
+                        : 'bg-black/0 opacity-0 hover:bg-black/15 hover:opacity-100'
+                }`}>
                     {isPlaying ? (
                         <svg className="h-4 w-4 text-white drop-shadow" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
@@ -66,13 +70,22 @@ export default function SongSearch({ suggestions }) {
     const [playingId, setPlayingId] = useState(null);
     const debounceRef = useRef(null);
     const audioRef = useRef(null);
+    const playingIdRef = useRef(null);
 
-    // Stop audio on unmount
+    // Keep ref in sync for use in cleanup
+    useEffect(() => {
+        playingIdRef.current = playingId;
+    }, [playingId]);
+
+    // Stop audio and resume background music on unmount
     useEffect(() => {
         return () => {
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current = null;
+                if (playingIdRef.current !== null) {
+                    document.dispatchEvent(new Event('resumeBackgroundMusic'));
+                }
             }
         };
     }, []);
@@ -107,24 +120,33 @@ export default function SongSearch({ suggestions }) {
         return () => clearTimeout(debounceRef.current);
     }, [query]);
 
+    const stopPreview = () => {
+        audioRef.current?.pause();
+        setPlayingId(null);
+        document.dispatchEvent(new Event('resumeBackgroundMusic'));
+    };
+
     const togglePreview = (trackId, previewUrl) => {
         if (!previewUrl) return;
 
         if (playingId === trackId) {
-            // Pause current
-            audioRef.current?.pause();
-            setPlayingId(null);
+            stopPreview();
             return;
         }
 
-        // Stop previous
+        // Pause background music before starting preview
+        document.dispatchEvent(new Event('pauseBackgroundMusic'));
+
         if (audioRef.current) {
             audioRef.current.pause();
         }
 
         const audio = new Audio(previewUrl);
         audio.volume = 0.7;
-        audio.addEventListener('ended', () => setPlayingId(null));
+        audio.addEventListener('ended', () => {
+            setPlayingId(null);
+            document.dispatchEvent(new Event('resumeBackgroundMusic'));
+        });
         audio.play().catch(() => {});
         audioRef.current = audio;
         setPlayingId(trackId);
@@ -172,25 +194,44 @@ export default function SongSearch({ suggestions }) {
     };
 
     const isAtMax = suggestions.length >= MAX_SONGS;
+    const hasPreviewResults = results.some((r) => r.preview_url);
 
     return (
         <div className="space-y-4">
             {/* Search input */}
-            <div className="relative">
-                <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
-                    {loading ? (
-                        <Spinner className="h-4 w-4 text-[#a89584]" />
-                    ) : (
-                        <MusicIcon className="h-4 w-4 text-[#a89584]" />
-                    )}
+            <div className="space-y-1.5">
+                <div className="relative">
+                    <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                        {loading ? (
+                            <Spinner className="h-4 w-4 text-[#a89584]" />
+                        ) : (
+                            <MusicIcon className="h-4 w-4 text-[#a89584]" />
+                        )}
+                    </div>
+                    <Input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="border-[#e2dbd3] bg-[#faf8f5] pl-9 transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
+                        placeholder={isAtMax ? t('songs.max_reached') : t('songs.search_placeholder')}
+                        disabled={isAtMax}
+                    />
                 </div>
-                <Input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="border-[#e2dbd3] bg-[#faf8f5] pl-9 transition-colors focus:border-[#8b7355] focus:ring-[#8b7355]/20"
-                    placeholder={isAtMax ? t('songs.max_reached') : t('songs.search_placeholder')}
-                    disabled={isAtMax}
-                />
+                {/* Preview helper hint */}
+                <AnimatePresence>
+                    {hasPreviewResults && (
+                        <motion.p
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            className="flex items-center justify-center gap-1 text-center text-[11px] text-[#b5a594]"
+                        >
+                            <svg className="h-3 w-3 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            {t('songs.preview_hint')}
+                        </motion.p>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Error */}
@@ -212,17 +253,21 @@ export default function SongSearch({ suggestions }) {
                                 const isPlaying = playingId === track.id;
                                 return (
                                     <div key={track.id} className="flex items-center gap-3 px-3 py-2.5">
-                                        <ArtworkButton
+                                        <ArtworkThumb
                                             src={track.artwork}
                                             alt={track.album}
                                             isPlaying={isPlaying}
                                             hasPreview={!!track.preview_url}
                                             onClick={() => togglePreview(track.id, track.preview_url)}
                                         />
+
+                                        {/* Info */}
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-medium text-[#3d3530]">{track.title}</p>
                                             <p className="truncate text-xs text-[#a89584]">{track.artist}</p>
                                         </div>
+
+                                        {/* Add button */}
                                         <button
                                             onClick={() => suggest(track)}
                                             disabled={already || isSubmitting || isAtMax}
@@ -269,17 +314,14 @@ export default function SongSearch({ suggestions }) {
                                     exit={{ opacity: 0, x: 10 }}
                                     className="flex items-center gap-3 rounded-xl border border-[#e2dbd3] bg-[#faf8f5] px-3 py-2.5"
                                 >
-                                    {s.artwork_url ? (
-                                        <img
-                                            src={s.artwork_url}
-                                            alt={s.album_name}
-                                            className="h-9 w-9 flex-shrink-0 rounded-md object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[#e8e0d8]">
-                                            <MusicIcon className="h-4 w-4 text-[#c4b5a4]" />
-                                        </div>
-                                    )}
+                                    <ArtworkThumb
+                                        src={s.artwork_url}
+                                        alt={s.album_name}
+                                        isPlaying={playingId === `s${s.id}`}
+                                        hasPreview={!!s.preview_url}
+                                        onClick={() => togglePreview(`s${s.id}`, s.preview_url)}
+                                        size="sm"
+                                    />
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate text-sm font-medium text-[#3d3530]">{s.track_title}</p>
                                         <p className="truncate text-xs text-[#a89584]">{s.artist_name}</p>

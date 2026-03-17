@@ -13,6 +13,8 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
     const [hasStarted, setHasStarted] = useState(false);
     const soundRef = useRef(null);
     const volumeRef = useRef(volume);
+    const isPlayingRef = useRef(false);
+    const pausedByExternalRef = useRef(false);
 
     // Mantener el ref sincronizado con el state
     useEffect(() => {
@@ -21,6 +23,35 @@ export default function MusicPlayer({ playlist = [], autoplay = false }) {
             soundRef.current.volume(volume);
         }
     }, [volume]);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
+
+    // Pausa/reanuda cuando SongSearch reproduce un preview
+    useEffect(() => {
+        const handleExternalPause = () => {
+            if (isPlayingRef.current && soundRef.current) {
+                soundRef.current.fade(volumeRef.current, 0, 300);
+                setTimeout(() => soundRef.current?.pause(), 300);
+                pausedByExternalRef.current = true;
+            }
+        };
+        const handleExternalResume = () => {
+            if (pausedByExternalRef.current && soundRef.current) {
+                soundRef.current.play();
+                soundRef.current.fade(0, volumeRef.current, 500);
+                pausedByExternalRef.current = false;
+            }
+        };
+
+        document.addEventListener('pauseBackgroundMusic', handleExternalPause);
+        document.addEventListener('resumeBackgroundMusic', handleExternalResume);
+        return () => {
+            document.removeEventListener('pauseBackgroundMusic', handleExternalPause);
+            document.removeEventListener('resumeBackgroundMusic', handleExternalResume);
+        };
+    }, []);
 
     // Función para cargar y reproducir una canción
     const loadAndPlayTrack = (index, shouldPlay = false) => {

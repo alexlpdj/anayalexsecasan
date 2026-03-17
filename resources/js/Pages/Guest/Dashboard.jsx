@@ -21,7 +21,6 @@ import {CardDescription, CardHeader, CardTitle} from "@/components/ui/card.jsx";
 import Lottie from "lottie-react";
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '@/components/LanguageSelector';
-import InstallPrompt, { InstallButton } from '@/components/InstallPrompt';
 import NotificationPrompt, { NotificationButton } from '@/components/NotificationPrompt';
 import SongSearch from '@/components/SongSearch';
 import SectionNav from '@/components/SectionNav';
@@ -212,8 +211,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
 
     return (
         <>
-            <InstallPrompt />
-
             {/* Scroll Progress Bar */}
             <ScrollProgress />
 
@@ -256,7 +253,6 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
             {/* ── Idioma + utilidades: estáticos, se van con el scroll ── */}
             <div className="flex items-center justify-end gap-1.5 px-4 pt-3 pb-1">
                 <NotificationButton />
-                <InstallButton />
                 <LanguageSelector />
             </div>
 

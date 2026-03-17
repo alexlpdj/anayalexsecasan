@@ -40,7 +40,7 @@ export default function SectionNav() {
     };
 
     return (
-        <div className="sticky top-0 z-30 w-full border-b border-[#e2dbd3]/60 bg-white/90 shadow-sm backdrop-blur-md">
+        <div className="sticky top-0 z-30 w-full border-b border-[#c9bfb3]/30 bg-[#faf8f5]/80 shadow-[0_1px_12px_rgba(139,115,85,0.08)] backdrop-blur-md">
             <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-2.5">
                 {SECTIONS.map(({ id, Icon, key }) => (
                     <button
