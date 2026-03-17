@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CalendarDays, Clock, CheckCircle, Music, MessageCircle } from 'lucide-react';
 
 const SECTIONS = [
-    { id: 'sec-evento',    icon: '📅', key: 'nav.evento' },
-    { id: 'sec-programa',  icon: '🗓', key: 'nav.programa' },
-    { id: 'sec-rsvp',      icon: '✓',  key: 'nav.rsvp' },
-    { id: 'sec-canciones', icon: '🎵', key: 'nav.canciones' },
-    { id: 'sec-dudas',     icon: '❓', key: 'nav.dudas' },
+    { id: 'sec-evento',    Icon: CalendarDays,   key: 'nav.evento' },
+    { id: 'sec-programa',  Icon: Clock,          key: 'nav.programa' },
+    { id: 'sec-rsvp',      Icon: CheckCircle,    key: 'nav.rsvp' },
+    { id: 'sec-canciones', Icon: Music,          key: 'nav.canciones' },
+    { id: 'sec-dudas',     Icon: MessageCircle,  key: 'nav.dudas' },
 ];
 
 export const NAV_HEIGHT = 48; // px
@@ -41,17 +42,18 @@ export default function SectionNav() {
     return (
         <div className="sticky top-0 z-30 w-full border-b border-[#e2dbd3]/60 bg-white/90 shadow-sm backdrop-blur-md">
             <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-2.5">
-                {SECTIONS.map(({ id, icon, key }) => (
+                {SECTIONS.map(({ id, Icon, key }) => (
                     <button
                         key={id}
                         onClick={() => scrollTo(id)}
-                        className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
+                        className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
                             activeId === id
                                 ? 'bg-[#8b7355] text-white shadow-sm'
                                 : 'bg-[#f0ebe5] text-[#8b7355] hover:bg-[#e4dbd1]'
                         }`}
                     >
-                        {icon} {t(key)}
+                        <Icon size={13} strokeWidth={2} />
+                        {t(key)}
                     </button>
                 ))}
             </div>
