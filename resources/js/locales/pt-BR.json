@@ -75,7 +75,7 @@
     "your_suggestions": "Suas sugestões",
     "max_reached": "Você já atingiu o máximo de 5 músicas",
     "empty_hint": "Procure uma música e clique em + para adicioná-la",
-    "preview_hint": "Toque na capa ou no botão para ouvir um trecho",
+    "preview_hint": "Toque em ▶ para ouvir um trecho antes de adicionar",
     "play_preview": "Ouvir trecho",
     "pause_preview": "Pausar trecho"
   },

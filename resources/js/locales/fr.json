@@ -75,7 +75,7 @@
     "your_suggestions": "Vos suggestions",
     "max_reached": "Vous avez atteint le maximum de 5 chansons",
     "empty_hint": "Cherchez une chanson et appuyez sur + pour l'ajouter",
-    "preview_hint": "Touchez la pochette ou le bouton pour écouter un extrait",
+    "preview_hint": "Appuyez sur ▶ pour écouter un extrait avant d'ajouter",
     "play_preview": "Écouter l'extrait",
     "pause_preview": "Mettre en pause"
   },
