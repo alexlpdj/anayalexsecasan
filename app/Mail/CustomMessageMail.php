@@ -16,7 +16,7 @@ class CustomMessageMail extends Mailable
     public function __construct(
         public InvitationGroup $group,
         public string $emailSubject,
-        public string $message,
+        public string $body,
     ) {}
 
     public function envelope(): Envelope
