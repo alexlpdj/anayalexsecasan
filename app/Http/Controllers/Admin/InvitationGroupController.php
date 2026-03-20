@@ -23,11 +23,16 @@ class InvitationGroupController extends Controller
      */
     public function index()
     {
-        $groups = InvitationGroup::with('guests')
-            ->withCount('guests')
+        $groups = InvitationGroup::with([
+                'guests',
+                'visits' => fn($q) => $q->orderByDesc('created_at'),
+            ])
+            ->withCount(['guests', 'visits'])
             ->orderBy('name')
             ->get()
             ->map(function ($group) {
+                $lastVisit  = $group->visits->first(); // desc order → most recent
+                $firstVisit = $group->visits->last();  // desc order → oldest
                 return [
                     'id' => $group->id,
                     'name' => $group->name,
@@ -42,8 +47,14 @@ class InvitationGroupController extends Controller
                     'reminder_sent_at' => $group->reminder_sent_at,
                     'printed_at' => $group->printed_at,
                     'delivered_at' => $group->delivered_at,
+                    'visits_count'     => $group->visits_count,
+                    'first_visited_at' => $firstVisit?->created_at,
+                    'last_visited_at'  => $lastVisit?->created_at,
+                    'last_device'      => $lastVisit?->device,
                 ];
             });
+
+        $accessedGroupsCount = InvitationGroup::has('visits')->count();
 
         $stats = [
             'total_groups' => InvitationGroup::count(),
@@ -53,6 +64,8 @@ class InvitationGroupController extends Controller
             'attending_guests' => Guest::attending()->count(),
             'confirmed_groups' => InvitationGroup::submitted()->count(),
             'pending_with_email' => InvitationGroup::pending()->whereNotNull('contact_email')->count(),
+            'accessed_groups' => $accessedGroupsCount,
+            'not_accessed_groups' => InvitationGroup::count() - $accessedGroupsCount,
         ];
 
         $chartData = [
@@ -129,7 +142,7 @@ class InvitationGroupController extends Controller
      */
     public function show(InvitationGroup $group)
     {
-        $group->load('guests');
+        $group->load(['guests', 'visits' => fn($q) => $q->orderByDesc('created_at')]);
 
         return Inertia::render('admin/groups/show', [
             'group' => [
@@ -157,6 +170,13 @@ class InvitationGroupController extends Controller
                         'allergies' => $guest->allergies,
                     ];
                 }),
+                'visits' => $group->visits->map(fn($v) => [
+                    'id'         => $v->id,
+                    'device'     => $v->device,
+                    'browser'    => $v->browser,
+                    'os'         => $v->os,
+                    'created_at' => $v->created_at,
+                ]),
             ],
         ]);
     }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
-import { Pencil, Check, X, Mail, Info, Bus, Car, HelpCircle, AlertTriangle, Phone, Home, Users } from 'lucide-react';
+import { Pencil, Check, X, Mail, Info, Bus, Car, HelpCircle, AlertTriangle, Phone, Home, Users, Monitor, Smartphone, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -435,6 +435,53 @@ export default function ShowGroup({ group }) {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Historial de Accesos */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Activity className="h-5 w-5" /> Historial de Accesos
+                        </CardTitle>
+                        <CardDescription>
+                            {group.visits.length > 0
+                                ? `${group.visits.length} acceso${group.visits.length !== 1 ? 's' : ''} registrado${group.visits.length !== 1 ? 's' : ''}`
+                                : 'Aún no han accedido a la web'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {group.visits.length === 0 ? (
+                            <p className="py-4 text-center text-sm text-gray-400">Sin accesos registrados</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {group.visits.map((visit) => (
+                                    <div key={visit.id} className="flex items-center gap-3 rounded-lg border bg-gray-50 px-3 py-2.5">
+                                        <div className="flex-shrink-0 text-gray-400">
+                                            {visit.device === 'mobile'
+                                                ? <Smartphone className="h-4 w-4 text-violet-500" />
+                                                : <Monitor className="h-4 w-4 text-blue-500" />}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {visit.browser} · {visit.os}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {visit.device === 'mobile' ? 'Móvil' : 'Escritorio'}
+                                            </p>
+                                        </div>
+                                        <p className="flex-shrink-0 text-xs text-gray-400">
+                                            {new Date(visit.created_at).toLocaleDateString('es-ES', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Notas (si existen) */}
                 {group.notes && (

@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download, Monitor, Smartphone, Activity } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -240,11 +240,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 sm:gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6 sm:gap-4">
                     {[
                         { label: 'Total Grupos', value: stats.total_groups, color: 'text-[#8b7355]' },
                         { label: 'Confirmados', value: stats.confirmed_groups, color: 'text-green-600' },
                         { label: 'Pendientes', value: stats.pending_groups, color: 'text-gray-600' },
+                        { label: 'Han accedido', value: stats.accessed_groups, color: 'text-blue-600' },
                         { label: 'Total Personas', value: stats.total_guests, color: 'text-[#8b7355]' },
                         { label: 'Asistirán', value: stats.attending_guests, color: 'text-green-600' }
                     ].map((stat, index) => (
@@ -485,6 +486,18 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                     >
                                                         {group.invitation_sent_at ? '✓ Inv.' : '— Inv.'}
                                                     </button>
+                                                    {group.visits_count > 0 ? (
+                                                        <span className="flex items-center gap-0.5 rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
+                                                            {group.last_device === 'mobile'
+                                                                ? <Smartphone className="h-3 w-3" />
+                                                                : <Monitor className="h-3 w-3" />}
+                                                            {group.visits_count}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                                                            Sin acceso
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="flex gap-1" onClick={(e) => e.preventDefault()}>
                                                     <Button
@@ -533,6 +546,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                 <TableHead className="text-center">Preparada</TableHead>
                                                 <TableHead className="text-center">Entregada</TableHead>
                                                 <TableHead className="text-center">Email</TableHead>
+                                                <TableHead className="text-center">Accedido</TableHead>
                                                 <TableHead className="text-right">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -651,6 +665,29 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 </TooltipContent>
                                                             </UiTooltip>
                                                         </TooltipProvider>
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        {group.visits_count > 0 ? (
+                                                            <TooltipProvider delayDuration={200}>
+                                                                <UiTooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span className="inline-flex cursor-default items-center gap-1 rounded-full bg-violet-100 px-2 py-1 text-xs font-medium text-violet-700">
+                                                                            {group.last_device === 'mobile'
+                                                                                ? <Smartphone className="h-3 w-3" />
+                                                                                : <Monitor className="h-3 w-3" />}
+                                                                            {group.visits_count}x
+                                                                        </span>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Primer acceso: {group.first_visited_at ? new Date(group.first_visited_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</p>
+                                                                        <p>Último acceso: {group.last_visited_at ? new Date(group.last_visited_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</p>
+                                                                        <p>Dispositivo: {group.last_device}</p>
+                                                                    </TooltipContent>
+                                                                </UiTooltip>
+                                                            </TooltipProvider>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">—</span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <TooltipProvider delayDuration={200}>

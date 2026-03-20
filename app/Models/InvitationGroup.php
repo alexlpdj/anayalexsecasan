@@ -62,6 +62,11 @@ class InvitationGroup extends Model
         return $this->hasMany(SongSuggestion::class);
     }
 
+    public function visits(): HasMany
+    {
+        return $this->hasMany(GuestVisit::class, 'group_id');
+    }
+
     /**
      * Generar código único alfanumérico
      * Formato: 4 caracteres mayúsculas y números

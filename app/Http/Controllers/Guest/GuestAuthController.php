@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Models\GuestVisit;
 use App\Models\InvitationGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -47,6 +48,16 @@ class GuestAuthController extends Controller
 
         // Guardar en sesión
         Session::put('invitation_group_id', $group->id);
+
+        // Registrar visita (single INSERT, no bloquea la respuesta)
+        $parsed = GuestVisit::parseUserAgent($request->userAgent() ?? '');
+        GuestVisit::create([
+            'group_id'   => $group->id,
+            'device'     => $parsed['device'],
+            'browser'    => $parsed['browser'],
+            'os'         => $parsed['os'],
+            'created_at' => now(),
+        ]);
 
         return redirect()->route('guest.dashboard');
     }
