@@ -252,8 +252,8 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
 
             <SidebarInset className="min-w-0 overflow-x-hidden">
                 {/* Top header bar */}
-                <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e2dbd3]/40 px-4">
-                    <SidebarTrigger className="-ml-1 hidden text-[#a89584] lg:flex" />
+                <header className="hidden h-14 shrink-0 items-center gap-2 border-b border-[#e2dbd3]/40 px-4 lg:flex">
+                    <SidebarTrigger className="-ml-1 text-[#a89584]" />
                     {breadcrumbs.length > 0 && (
                         <>
                             <Separator orientation="vertical" className="mx-2 h-4" />
