@@ -4,6 +4,7 @@ import WeddingLayout from '@/Layouts/wedding-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Download, Printer, AlertTriangle, Bus, Car, Mail, Phone } from 'lucide-react';
 
 export default function AdminDashboard({
     stats,
@@ -122,14 +123,14 @@ export default function AdminDashboard({
                         onClick={exportData}
                         className="bg-gradient-to-r from-[#8b7355] to-[#a89584] hover:shadow-md"
                     >
-                        📥 Exportar CSV
+                        <Download className="mr-1.5 h-4 w-4" /> Exportar CSV
                     </Button>
                     <Button
                         onClick={printCodes}
                         variant="outline"
                         className="border-2 border-[#8b7355] text-[#8b7355] hover:bg-[#8b7355] hover:text-white"
                     >
-                        🖨️ Imprimir Códigos
+                        <Printer className="mr-1.5 h-4 w-4" /> Imprimir Códigos
                     </Button>
                     <Button
                         onClick={logout}
@@ -179,8 +180,8 @@ export default function AdminDashboard({
             {/* Allergies List */}
             {allergies.length > 0 && (
                 <div className="mb-8 rounded-lg border border-orange-200 bg-white/70 p-6 shadow-lg backdrop-blur-sm">
-                    <h3 className="mb-4 font-serif text-xl italic text-[#8b7355]">
-                        ⚠️ Alergias y Restricciones
+                    <h3 className="mb-4 flex items-center gap-2 font-serif text-xl italic text-[#8b7355]">
+                        <AlertTriangle className="h-5 w-5" /> Alergias y Restricciones
                     </h3>
                     <div className="space-y-2">
                         {allergies.map((guest, index) => (
@@ -289,8 +290,8 @@ export default function AdminDashboard({
                                                 {guest.name}
                                             </div>
                                             {guest.allergies && (
-                                                <div className="mt-1 text-xs text-orange-600">
-                                                    ⚠️ {guest.allergies}
+                                                <div className="mt-1 flex items-center gap-1 text-xs text-orange-600">
+                                                    <AlertTriangle className="h-3 w-3 shrink-0" /> {guest.allergies}
                                                 </div>
                                             )}
                                         </div>
@@ -302,7 +303,7 @@ export default function AdminDashboard({
                                     <td className="px-4 py-3 text-sm text-[#a89584]">
                                         {guest.transport === 'AUTOBUS' && (
                                             <div className="space-y-1">
-                                                <div>🚌 Autobús</div>
+                                                <div className="flex items-center gap-1"><Bus className="h-3.5 w-3.5" /> Autobús</div>
                                                 {guest.bus_onda_ida && (
                                                     <div className="text-xs">• Onda (ida)</div>
                                                 )}
@@ -316,7 +317,7 @@ export default function AdminDashboard({
                                                 )}
                                             </div>
                                         )}
-                                        {guest.transport === 'COCHE' && '🚗 Coche'}
+                                        {guest.transport === 'COCHE' && <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" /> Coche</span>}
                                         {guest.transport === 'NO_CONFIRMADO' && '-'}
                                     </td>
                                     <td className="px-4 py-3">
@@ -325,8 +326,8 @@ export default function AdminDashboard({
                                         </code>
                                     </td>
                                     <td className="px-4 py-3 text-xs text-[#a89584]">
-                                        {guest.email && <div>📧 {guest.email}</div>}
-                                        {guest.phone && <div>📱 {guest.phone}</div>}
+                                        {guest.email && <div className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {guest.email}</div>}
+                                        {guest.phone && <div className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {guest.phone}</div>}
                                         {!guest.email && !guest.phone && '-'}
                                     </td>
                                 </tr>

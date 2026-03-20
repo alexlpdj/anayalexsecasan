@@ -1,5 +1,6 @@
 import { Head, useForm, Link, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
+import { Home, Users, RefreshCw, AlertTriangle, Plus, Trash2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -114,11 +115,11 @@ export default function EditGroup({ group }) {
                                         size="sm"
                                         className="border-orange-500 text-orange-600 hover:bg-orange-50"
                                     >
-                                        🔄 Regenerar Código
+                                        <RefreshCw className="mr-1.5 h-4 w-4" /> Regenerar Código
                                     </Button>
                                 </div>
-                                <p className="mt-2 text-xs text-gray-600">
-                                    ⚠️ Al regenerar el código, el código anterior dejará de funcionar
+                                <p className="mt-2 flex items-center gap-1 text-xs text-gray-600">
+                                    <AlertTriangle className="h-3.5 w-3.5 text-orange-500" /> Al regenerar el código, el código anterior dejará de funcionar
                                 </p>
                             </div>
 
@@ -150,14 +151,14 @@ export default function EditGroup({ group }) {
                                 >
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="FAMILIAR" id="familiar" />
-                                        <Label htmlFor="familiar" className="cursor-pointer">
-                                            👨‍👩‍👧‍👦 Familiar
+                                        <Label htmlFor="familiar" className="flex cursor-pointer items-center gap-1.5">
+                                            <Home className="h-4 w-4" /> Familiar
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="AMIGO" id="amigo" />
-                                        <Label htmlFor="amigo" className="cursor-pointer">
-                                            👥 Amigos
+                                        <Label htmlFor="amigo" className="flex cursor-pointer items-center gap-1.5">
+                                            <Users className="h-4 w-4" /> Amigos
                                         </Label>
                                     </div>
                                 </RadioGroup>
@@ -177,9 +178,9 @@ export default function EditGroup({ group }) {
                                         <SelectValue placeholder="Sin preferencia (Español)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="es">🇪🇸 Español</SelectItem>
-                                        <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
-                                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                                        <SelectItem value="es">ES — Español</SelectItem>
+                                        <SelectItem value="pt-BR">PT — Português (Brasil)</SelectItem>
+                                        <SelectItem value="fr">FR — Français</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p className="mt-1 text-sm text-gray-500">
@@ -224,7 +225,7 @@ export default function EditGroup({ group }) {
                                     size="sm"
                                     className="text-[#8b7355]"
                                 >
-                                    ➕ Agregar Persona
+                                    <Plus className="mr-1 h-4 w-4" /> Agregar Persona
                                 </Button>
                             </div>
                         </CardHeader>
@@ -310,7 +311,7 @@ export default function EditGroup({ group }) {
                                             disabled={data.guests.length === 1}
                                             className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                         >
-                                            🗑️
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -331,7 +332,7 @@ export default function EditGroup({ group }) {
                                     variant="destructive"
                                     className="w-full gap-2 sm:w-auto"
                                 >
-                                    🗑️ Eliminar Grupo
+                                    <Trash2 className="mr-1.5 h-4 w-4" /> Eliminar Grupo
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -365,7 +366,7 @@ export default function EditGroup({ group }) {
                                 disabled={processing}
                                 className="flex-1 bg-gradient-to-r from-[#8b7355] to-[#a89584] sm:flex-none"
                             >
-                                {processing ? 'Guardando...' : '💾 Guardar Cambios'}
+                                {processing ? 'Guardando...' : <><Save className="mr-1.5 h-4 w-4 inline" /> Guardar Cambios</>}
                             </Button>
                         </div>
                     </div>

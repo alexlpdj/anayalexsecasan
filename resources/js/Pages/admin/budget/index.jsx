@@ -382,21 +382,46 @@ export default function BudgetIndex({ items, target: serverTarget }) {
                     </Dialog>
                 </div>
 
-                {/* ── Resumen MOBILE: donut + stats + barra (oculto en lg) ─ */}
+                {/* ── Resumen MOBILE: stats + donut full-width + barra (oculto en lg) ─ */}
                 <Card className="lg:hidden">
                     <CardContent className="p-4">
-                        {/* Fila: donut + stats */}
-                        <div className="flex items-center gap-4">
-                            {/* Mini donut */}
-                            {pieData.length > 0 ? (
-                                <div className="shrink-0">
-                                    <PieChart width={96} height={96}>
+                        {/* Stats en fila */}
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Total</p>
+                                <p className="text-2xl font-bold leading-tight" style={{ color: overBudget ? '#dc2626' : '#8b7355' }}>
+                                    {fmt(total)}
+                                </p>
+                                <p className={cn('mt-0.5 text-xs', overBudget ? 'font-semibold text-red-600' : 'text-gray-500')}>
+                                    {overBudget
+                                        ? `+${fmt(Math.abs(remaining))} sobre el objetivo`
+                                        : `${fmt(remaining)} disponibles`}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Objetivo</p>
+                                <div className="mt-0.5">
+                                    <TargetEditor compact />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Barra de progreso */}
+                        <div className="mt-3">
+                            <ProgressBar />
+                        </div>
+
+                        {/* Donut full-width */}
+                        {pieData.length > 0 ? (
+                            <div className="mt-3 border-t pt-3">
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <PieChart>
                                         <Pie
                                             data={pieData}
-                                            cx={48}
-                                            cy={48}
-                                            innerRadius={30}
-                                            outerRadius={46}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={54}
+                                            outerRadius={88}
                                             paddingAngle={2}
                                             dataKey="value"
                                             startAngle={90}
@@ -408,52 +433,28 @@ export default function BudgetIndex({ items, target: serverTarget }) {
                                         </Pie>
                                         <Tooltip
                                             formatter={(val) => [fmt(val), '']}
-                                            contentStyle={{ fontSize: '11px', borderRadius: '6px', border: '1px solid #e5e7eb' }}
+                                            contentStyle={{ fontSize: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}
                                         />
                                     </PieChart>
-                                </div>
-                            ) : (
-                                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gray-50">
-                                    <Calculator className="h-8 w-8 text-gray-300" />
-                                </div>
-                            )}
+                                </ResponsiveContainer>
 
-                            {/* Stats */}
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Total</p>
-                                <p className="text-2xl font-bold leading-tight" style={{ color: overBudget ? '#dc2626' : '#8b7355' }}>
-                                    {fmt(total)}
-                                </p>
-                                <p className={cn('mt-0.5 text-xs', overBudget ? 'font-semibold text-red-600' : 'text-gray-500')}>
-                                    {overBudget
-                                        ? `+${fmt(Math.abs(remaining))} sobre el objetivo`
-                                        : `${fmt(remaining)} disponibles`}
-                                </p>
-                                <div className="mt-1.5 flex items-center gap-1 text-[11px] text-gray-400">
-                                    <span>Objetivo:</span>
-                                    <TargetEditor compact />
+                                {/* Leyenda 2 columnas */}
+                                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                                    {pieData.map((entry) => {
+                                        const catPct = Math.round((entry.value / total) * 100);
+                                        return (
+                                            <div key={entry.name} className="flex items-center gap-1.5 text-xs">
+                                                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                <span className="flex-1 truncate text-gray-600">{entry.name}</span>
+                                                <span className="shrink-0 tabular-nums text-gray-400">{catPct}%</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Barra de progreso */}
-                        <div className="mt-3">
-                            <ProgressBar />
-                        </div>
-
-                        {/* Leyenda compacta de categorías (2 columnas) */}
-                        {pieData.length > 0 && (
-                            <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 border-t pt-3">
-                                {pieData.map((entry) => {
-                                    const catPct = Math.round((entry.value / total) * 100);
-                                    return (
-                                        <div key={entry.name} className="flex items-center gap-1.5 text-xs">
-                                            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
-                                            <span className="flex-1 truncate text-gray-600">{entry.name}</span>
-                                            <span className="shrink-0 tabular-nums text-gray-400">{catPct}%</span>
-                                        </div>
-                                    );
-                                })}
+                        ) : (
+                            <div className="mt-3 flex items-center justify-center border-t pt-6 pb-2">
+                                <Calculator className="h-10 w-10 text-gray-200" />
                             </div>
                         )}
                     </CardContent>

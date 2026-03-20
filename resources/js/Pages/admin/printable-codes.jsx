@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
+import { Printer, Check } from 'lucide-react';
 
 function fmt(dateStr) {
     if (!dateStr) return null;
@@ -42,7 +43,7 @@ export default function PrintableCodes({ groups }) {
                     onClick={() => window.print()}
                     className="bg-gradient-to-r from-[#8b7355] to-[#a89584] hover:shadow-lg"
                 >
-                    🖨️ Imprimir
+                    <Printer className="mr-1.5 h-4 w-4" /> Imprimir
                 </Button>
             </div>
 
@@ -101,7 +102,7 @@ export default function PrintableCodes({ groups }) {
                                                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                         }`}
                                     >
-                                        {isPrinted ? `✓ Preparada ${fmt(group.printed_at)}` : '○ Preparar'}
+                                        {isPrinted ? <><Check className="inline mr-0.5 h-3 w-3" />Preparada {fmt(group.printed_at)}</> : '○ Preparar'}
                                     </button>
                                     <button
                                         onClick={() => toggle(group.id, 'delivered')}
@@ -111,7 +112,7 @@ export default function PrintableCodes({ groups }) {
                                                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                         }`}
                                     >
-                                        {isDelivered ? `✓ Entregada ${fmt(group.delivered_at)}` : '○ Entregar'}
+                                        {isDelivered ? <><Check className="inline mr-0.5 h-3 w-3" />Entregada {fmt(group.delivered_at)}</> : '○ Entregar'}
                                     </button>
                                 </div>
 

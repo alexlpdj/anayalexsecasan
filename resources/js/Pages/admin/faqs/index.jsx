@@ -1,5 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useCallback } from 'react';
+import { AlertTriangle, Loader2, Globe, Plus, Save, X, Eye, EyeOff, Pencil, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -132,7 +133,7 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                         className="flex flex-col gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div className="flex items-start gap-3">
-                            <span className="text-2xl">⚠️</span>
+                            <AlertTriangle className="h-6 w-6 text-amber-500 shrink-0" />
                             <div>
                                 <p className="font-semibold text-amber-800">
                                     {pendingCount} {pendingCount === 1 ? 'FAQ pendiente' : 'FAQs pendientes'} de traducción
@@ -150,16 +151,11 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                         >
                             {translating ? (
                                 <span className="flex items-center gap-2">
-                                    <motion.span
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                    >
-                                        ⏳
-                                    </motion.span>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Traduciendo...
                                 </span>
                             ) : (
-                                '🌐 Traducir ahora'
+                                <span className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> Traducir ahora</span>
                             )}
                         </Button>
                     </motion.div>
@@ -274,16 +270,11 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                             >
                                 {createProcessing ? (
                                     <span className="flex items-center gap-2">
-                                        <motion.span
-                                            animate={{ rotate: 360 }}
-                                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                        >
-                                            ⏳
-                                        </motion.span>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
                                         Añadiendo...
                                     </span>
                                 ) : (
-                                    '➕ Añadir FAQ'
+                                    <span className="flex items-center gap-1.5"><Plus className="h-4 w-4" /> Añadir FAQ</span>
                                 )}
                             </Button>
                         </form>
@@ -336,7 +327,7 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                             disabled={index === 0}
                                                             className="h-6 px-2"
                                                         >
-                                                            ↑
+                                                            <ChevronUp className="h-4 w-4" />
                                                         </Button>
                                                         <Button
                                                             type="button"
@@ -346,7 +337,7 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                             disabled={index === faqs.length - 1}
                                                             className="h-6 px-2"
                                                         >
-                                                            ↓
+                                                            <ChevronDown className="h-4 w-4" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -387,14 +378,9 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                                     className="transition-transform hover:scale-110"
                                                                 >
                                                                     {editProcessing ? (
-                                                                        <motion.span
-                                                                            animate={{ rotate: 360 }}
-                                                                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                                                        >
-                                                                            ⏳
-                                                                        </motion.span>
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
                                                                     ) : (
-                                                                        '💾'
+                                                                        <Save className="h-4 w-4" />
                                                                     )}
                                                                 </Button>
                                                                 <Button
@@ -402,7 +388,7 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                                     variant="outline"
                                                                     onClick={cancelEdit}
                                                                 >
-                                                                    ✖️
+                                                                    <X className="h-4 w-4" />
                                                                 </Button>
                                                             </div>
                                                         </TableCell>
@@ -413,8 +399,8 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                             <div className="flex flex-col gap-1">
                                                                 {faq.question}
                                                                 {faq.needs_translation && (
-                                                                    <Badge className="w-fit bg-amber-100 text-amber-800 text-[11px]">
-                                                                        ⚠️ Sin traducir
+                                                                    <Badge className="flex w-fit items-center gap-1 bg-amber-100 text-amber-800 text-[11px]">
+                                                                        <AlertTriangle className="h-3 w-3" /> Sin traducir
                                                                     </Badge>
                                                                 )}
                                                             </div>
@@ -446,21 +432,21 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                                                                     onClick={() => handleToggle(faq.id)}
                                                                     title="Activar/Desactivar"
                                                                 >
-                                                                    {faq.is_active ? '👁️' : '👁️‍🗨️'}
+                                                                    {faq.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => startEdit(faq)}
                                                                 >
-                                                                    ✏️
+                                                                    <Pencil className="h-4 w-4" />
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => setDeleteId(faq.id)}
                                                                 >
-                                                                    🗑️
+                                                                    <Trash2 className="h-4 w-4" />
                                                                 </Button>
                                                             </div>
                                                         </TableCell>

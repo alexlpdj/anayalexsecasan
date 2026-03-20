@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -178,26 +178,26 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                     {stats.pending_with_email > 0 && (
                                         <>
                                             <DropdownMenuItem onClick={() => setShowReminderModal(true)}>
-                                                📨 Recordatorio pendientes
+                                                <Send className="mr-2 h-4 w-4" /> Recordatorio pendientes
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                         </>
                                     )}
                                     <DropdownMenuItem onClick={() => setShowCustomModal(true)}>
-                                        ✉️ Mensaje personalizado
+                                        <Mail className="mr-2 h-4 w-4" /> Mensaje personalizado
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setShowPushModal(true)}>
-                                        🔔 Notificación push
+                                        <Bell className="mr-2 h-4 w-4" /> Notificación push
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
                                         <a href={route('admin.print.codes')} target="_blank">
-                                            🖨️ Imprimir códigos
+                                            <Printer className="mr-2 h-4 w-4" /> Imprimir códigos
                                         </a>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <a href={route('admin.export.codes')}>
-                                            📥 Exportar CSV
+                                            <Download className="mr-2 h-4 w-4" /> Exportar CSV
                                         </a>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -212,20 +212,20 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                     className="border-[#8b7355] text-[#8b7355] hover:bg-[#8b7355]/10"
                                     onClick={() => setShowReminderModal(true)}
                                 >
-                                    📨 Enviar recordatorio a pendientes
+                                    <Send className="mr-1.5 h-4 w-4" /> Enviar recordatorio a pendientes
                                 </Button>
                             )}
                             <Button variant="outline" onClick={() => setShowCustomModal(true)}>
-                                ✉️ Mensaje personalizado
+                                <Mail className="mr-1.5 h-4 w-4" /> Mensaje personalizado
                             </Button>
                             <Button variant="outline" onClick={() => setShowPushModal(true)}>
-                                🔔 Notificación push
+                                <Bell className="mr-1.5 h-4 w-4" /> Notificación push
                             </Button>
                             <a href={route('admin.print.codes')} target="_blank">
-                                <Button variant="outline">🖨️ Imprimir códigos</Button>
+                                <Button variant="outline"><Printer className="mr-1.5 h-4 w-4" /> Imprimir códigos</Button>
                             </a>
                             <a href={route('admin.export.codes')}>
-                                <Button variant="outline">📥 Exportar CSV</Button>
+                                <Button variant="outline"><Download className="mr-1.5 h-4 w-4" /> Exportar CSV</Button>
                             </a>
                         </div>
 
@@ -714,7 +714,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
             <Dialog open={showCustomModal} onOpenChange={(open) => { if (!open) closeCustomModal(); }}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>✉️ Mensaje personalizado</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4" /> Mensaje personalizado</DialogTitle>
                         <DialogDescription>
                             Selecciona los destinatarios y escribe el mensaje.
                         </DialogDescription>
@@ -837,7 +837,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             onClick={handleSendCustom}
                             disabled={selectedIds.size === 0 || !customSubject.trim() || !customMessage.trim() || sendingCustom}
                         >
-                            {sendingCustom ? 'Enviando…' : `Enviar a ${selectedIds.size} grupo${selectedIds.size !== 1 ? 's' : ''} ✉️`}
+                            {sendingCustom ? 'Enviando…' : <><Mail className="mr-1.5 h-4 w-4 inline" /> Enviar a {selectedIds.size} grupo{selectedIds.size !== 1 ? 's' : ''}</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -847,7 +847,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
             <Dialog open={showPushModal} onOpenChange={(open) => { if (!open) closePushModal(); }}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>🔔 Notificación push</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2"><Bell className="h-4 w-4" /> Notificación push</DialogTitle>
                         <DialogDescription>
                             Selecciona los grupos y escribe el mensaje de notificación.
                         </DialogDescription>
@@ -966,7 +966,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             onClick={handleSendPush}
                             disabled={pushSelectedIds.size === 0 || !pushTitle.trim() || !pushBody.trim() || sendingPush}
                         >
-                            {sendingPush ? 'Enviando…' : `Enviar push a ${pushSelectedIds.size} grupo${pushSelectedIds.size !== 1 ? 's' : ''} 🔔`}
+                            {sendingPush ? 'Enviando…' : <><Bell className="mr-1.5 h-4 w-4 inline" /> Enviar push a {pushSelectedIds.size} grupo{pushSelectedIds.size !== 1 ? 's' : ''}</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -976,7 +976,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
             <Dialog open={showReminderModal} onOpenChange={setShowReminderModal}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>📨 Enviar recordatorio</DialogTitle>
+                        <DialogTitle className="flex items-center gap-2"><Send className="h-4 w-4" /> Enviar recordatorio</DialogTitle>
                         <DialogDescription asChild>
                             <div className="space-y-2 pt-1">
                                 <p className="text-sm text-gray-600">
@@ -1002,7 +1002,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             onClick={handleSendReminders}
                             disabled={sendingReminders}
                         >
-                            {sendingReminders ? 'Enviando…' : 'Enviar ✉️'}
+                            {sendingReminders ? 'Enviando…' : <><Mail className="mr-1.5 h-4 w-4 inline" /> Enviar</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

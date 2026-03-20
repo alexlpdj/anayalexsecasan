@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
+import { Pencil, Check, X, Mail, Info, Bus, Car, HelpCircle, AlertTriangle, Phone, Home, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -41,8 +42,8 @@ function EmailRow({ label, sentAt, onSend, isSending, emailType }) {
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-800">{label}</p>
                     {sentAt ? (
-                        <p className="text-xs text-green-600 mt-0.5">
-                            ✓ Enviado el {formatDate(sentAt)}
+                        <p className="flex items-center gap-1 text-xs text-green-600 mt-0.5">
+                            <Check className="h-3 w-3" /> Enviado el {formatDate(sentAt)}
                         </p>
                     ) : (
                         <p className="text-xs text-gray-400 mt-0.5">— Aún no enviado</p>
@@ -73,7 +74,7 @@ function EmailRow({ label, sentAt, onSend, isSending, emailType }) {
                                 </p>
                                 {sentAt && (
                                     <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-sm text-yellow-800">
-                                        ⚠ Ya enviado el {formatDate(sentAt)} — ¿reenviar?
+                                        <AlertTriangle className="inline mr-1 h-3.5 w-3.5" /> Ya enviado el {formatDate(sentAt)} — ¿reenviar?
                                     </div>
                                 )}
                             </div>
@@ -92,7 +93,7 @@ function EmailRow({ label, sentAt, onSend, isSending, emailType }) {
                             onClick={handleConfirm}
                             disabled={isSending}
                         >
-                            {isSending ? 'Enviando…' : 'Enviar ✉️'}
+                            {isSending ? 'Enviando…' : <><Mail className="mr-1.5 h-4 w-4 inline" /> Enviar</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -140,7 +141,7 @@ export default function ShowGroup({ group }) {
                             <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
                         </Link>
                         <Link href={route('admin.groups.edit', group.id)} className="flex-1 sm:flex-none">
-                            <Button variant="outline" className="w-full sm:w-auto">✏️ Editar</Button>
+                            <Button variant="outline" className="flex items-center gap-1.5 w-full sm:w-auto"><Pencil className="h-4 w-4" /> Editar</Button>
                         </Link>
                     </div>
                 </div>
@@ -179,7 +180,10 @@ export default function ShowGroup({ group }) {
                                         }
                                         className="text-base"
                                     >
-                                        {group.type === 'FAMILIAR' ? '👨‍👩‍👧‍👦 Familiar' : '👥 Amigos'}
+                                        {group.type === 'FAMILIAR'
+                                            ? <span className="flex items-center gap-1.5"><Home className="h-4 w-4" /> Familiar</span>
+                                            : <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> Amigos</span>
+                                        }
                                     </Badge>
                                 </div>
                             </div>
@@ -190,8 +194,8 @@ export default function ShowGroup({ group }) {
                                 </label>
                                 <div className="mt-1">
                                     {group.submitted_at ? (
-                                        <Badge className="bg-green-100 text-green-700">
-                                            ✓ Confirmado
+                                        <Badge className="flex items-center gap-1 bg-green-100 text-green-700">
+                                            <Check className="h-3 w-3" /> Confirmado
                                         </Badge>
                                     ) : (
                                         <Badge variant="outline">
@@ -222,7 +226,7 @@ export default function ShowGroup({ group }) {
                 {/* Comunicaciones por email */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>📧 Comunicaciones por email</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" /> Comunicaciones por email</CardTitle>
                         {group.contact_email ? (
                             <CardDescription>
                                 Contacto: <span className="font-medium text-gray-700">{group.contact_email}</span>
@@ -231,8 +235,8 @@ export default function ShowGroup({ group }) {
                                 )}
                             </CardDescription>
                         ) : (
-                            <CardDescription>
-                                ℹ Sin email — el invitado lo facilita al confirmar
+                            <CardDescription className="flex items-center gap-1">
+                                <Info className="h-3.5 w-3.5" /> Sin email — el invitado lo facilita al confirmar
                             </CardDescription>
                         )}
                     </CardHeader>
@@ -250,8 +254,8 @@ export default function ShowGroup({ group }) {
                                 <div>
                                     <p className="text-sm font-medium text-gray-800">Recordatorio RSVP</p>
                                     {group.reminder_sent_at ? (
-                                        <p className="text-xs text-green-600 mt-0.5">
-                                            ✓ Enviado el {formatDate(group.reminder_sent_at)}
+                                        <p className="flex items-center gap-1 text-xs text-green-600 mt-0.5">
+                                            <Check className="h-3 w-3" /> Enviado el {formatDate(group.reminder_sent_at)}
                                         </p>
                                     ) : (
                                         <p className="text-xs text-gray-400 mt-0.5">— Aún no enviado</p>
@@ -298,7 +302,7 @@ export default function ShowGroup({ group }) {
                                                 </h3>
                                                 {guest.gender && (
                                                     <p className="mt-1 text-sm text-gray-500">
-                                                        {guest.gender === 'HOMBRE' ? '👨 Hombre' : '👩 Mujer'}
+                                                        {guest.gender === 'HOMBRE' ? 'Hombre' : 'Mujer'}
                                                     </p>
                                                 )}
                                             </div>
@@ -310,12 +314,12 @@ export default function ShowGroup({ group }) {
                                                     Sin responder
                                                 </Badge>
                                             ) : guest.attending ? (
-                                                <Badge className="bg-green-100 text-green-700">
-                                                    ✓ Asistirá
+                                                <Badge className="flex items-center gap-1 bg-green-100 text-green-700">
+                                                    <Check className="h-3 w-3" /> Asistirá
                                                 </Badge>
                                             ) : (
-                                                <Badge className="bg-red-100 text-red-700">
-                                                    ✗ No asistirá
+                                                <Badge className="flex items-center gap-1 bg-red-100 text-red-700">
+                                                    <X className="h-3 w-3" /> No asistirá
                                                 </Badge>
                                             )}
                                         </div>
@@ -323,8 +327,8 @@ export default function ShowGroup({ group }) {
 
                                     {guest.attending && guest.allergies && (
                                         <div className="mt-3 rounded bg-orange-50 p-3">
-                                            <p className="text-sm font-medium text-orange-700">
-                                                ⚠️ Alergias/Restricciones:
+                                            <p className="flex items-center gap-1 text-sm font-medium text-orange-700">
+                                                <AlertTriangle className="h-4 w-4" /> Alergias/Restricciones:
                                             </p>
                                             <p className="mt-1 text-sm text-orange-600">
                                                 {guest.allergies}
@@ -352,10 +356,10 @@ export default function ShowGroup({ group }) {
                                     <span className="font-medium text-gray-700">
                                         Medio de Transporte
                                     </span>
-                                    <Badge variant="outline" className="text-base">
-                                        {group.transport === 'AUTOBUS' && '🚌 Autobús'}
-                                        {group.transport === 'COCHE' && '🚗 Coche propio'}
-                                        {group.transport === 'NO_CONFIRMADO' && '❓ No confirmado'}
+                                    <Badge variant="outline" className="flex items-center gap-1.5 text-base">
+                                        {group.transport === 'AUTOBUS' && <><Bus className="h-4 w-4" /> Autobús</>}
+                                        {group.transport === 'COCHE' && <><Car className="h-4 w-4" /> Coche propio</>}
+                                        {group.transport === 'NO_CONFIRMADO' && <><HelpCircle className="h-4 w-4" /> No confirmado</>}
                                     </Badge>
                                 </div>
 
@@ -367,17 +371,17 @@ export default function ShowGroup({ group }) {
                                         <div className="space-y-1">
                                             {group.bus_onda_ida && (
                                                 <p className="text-sm text-blue-600">
-                                                    ✓ Bus desde Onda (ida)
+                                                    <Check className="inline mr-1 h-3.5 w-3.5" /> Bus desde Onda (ida)
                                                 </p>
                                             )}
                                             {group.bus_onda_vuelta && (
                                                 <p className="text-sm text-blue-600">
-                                                    ✓ Bus desde Onda (vuelta)
+                                                    <Check className="inline mr-1 h-3.5 w-3.5" /> Bus desde Onda (vuelta)
                                                 </p>
                                             )}
                                             {group.bus_cs && (
                                                 <p className="text-sm text-blue-600">
-                                                    ✓ Bus desde Castellón
+                                                    <Check className="inline mr-1 h-3.5 w-3.5" /> Bus desde Castellón
                                                 </p>
                                             )}
                                             {!group.bus_onda_ida && !group.bus_onda_vuelta && !group.bus_cs && (
@@ -403,8 +407,8 @@ export default function ShowGroup({ group }) {
                             <div className="space-y-2">
                                 {group.contact_email && (
                                     <div className="flex items-center gap-2 text-sm">
-                                        <span className="font-medium text-gray-600">
-                                            📧 Email:
+                                        <span className="flex items-center gap-1 font-medium text-gray-600">
+                                            <Mail className="h-4 w-4" /> Email:
                                         </span>
                                         <a
                                             href={`mailto:${group.contact_email}`}
@@ -416,8 +420,8 @@ export default function ShowGroup({ group }) {
                                 )}
                                 {group.contact_phone && (
                                     <div className="flex items-center gap-2 text-sm">
-                                        <span className="font-medium text-gray-600">
-                                            📱 Teléfono:
+                                        <span className="flex items-center gap-1 font-medium text-gray-600">
+                                            <Phone className="h-4 w-4" /> Teléfono:
                                         </span>
                                         <a
                                             href={`tel:${group.contact_phone}`}

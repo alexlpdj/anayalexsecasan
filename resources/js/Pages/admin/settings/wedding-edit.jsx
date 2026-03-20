@@ -1,5 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useCallback } from 'react';
+import { AlertTriangle, Loader2, Globe, Plus, Trash2, X, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -109,7 +110,7 @@ export default function WeddingEdit({ settings }) {
                         className="flex flex-col gap-3 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div className="flex items-start gap-3">
-                            <span className="text-2xl">⚠️</span>
+                            <AlertTriangle className="h-6 w-6 text-amber-500 shrink-0" />
                             <div>
                                 <p className="font-semibold text-amber-800">Programa pendiente de traducción</p>
                                 <p className="mt-0.5 text-sm text-amber-700">
@@ -125,16 +126,11 @@ export default function WeddingEdit({ settings }) {
                         >
                             {translating ? (
                                 <span className="flex items-center gap-2">
-                                    <motion.span
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                    >
-                                        ⏳
-                                    </motion.span>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Traduciendo...
                                 </span>
                             ) : (
-                                '🌐 Traducir programa'
+                                <span className="flex items-center gap-1.5"><Globe className="h-4 w-4" /> Traducir programa</span>
                             )}
                         </Button>
                     </motion.div>
@@ -323,8 +319,8 @@ export default function WeddingEdit({ settings }) {
                                         Eventos y horarios de la celebración
                                     </CardDescription>
                                 </div>
-                                <Button type="button" onClick={addScheduleItem} size="sm">
-                                    ➕ Añadir Evento
+                                <Button type="button" onClick={addScheduleItem} size="sm" className="flex items-center gap-1">
+                                    <Plus className="h-4 w-4" /> Añadir Evento
                                 </Button>
                             </div>
                         </CardHeader>
@@ -348,7 +344,7 @@ export default function WeddingEdit({ settings }) {
                                                 size="sm"
                                                 onClick={() => removeScheduleItem(index)}
                                             >
-                                                🗑️ Eliminar
+                                                <Trash2 className="mr-1 h-4 w-4" /> Eliminar
                                             </Button>
                                         </div>
                                     </CardHeader>
@@ -411,8 +407,9 @@ export default function WeddingEdit({ settings }) {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => addDetail(index)}
+                                                    className="flex items-center gap-1"
                                                 >
-                                                    ➕ Añadir Detalle
+                                                    <Plus className="h-4 w-4" /> Añadir Detalle
                                                 </Button>
                                             </div>
 
@@ -442,7 +439,7 @@ export default function WeddingEdit({ settings }) {
                                                                     removeDetail(index, detailIndex)
                                                                 }
                                                             >
-                                                                ✖️
+                                                                <X className="h-4 w-4" />
                                                             </Button>
                                                         </div>
                                                     ))}
@@ -536,16 +533,11 @@ export default function WeddingEdit({ settings }) {
                         >
                             {processing ? (
                                 <span className="flex items-center gap-2">
-                                    <motion.span
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                    >
-                                        ⏳
-                                    </motion.span>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
                                     Guardando...
                                 </span>
                             ) : (
-                                '💾 Guardar Cambios'
+                                <span className="flex items-center gap-1.5"><Save className="h-4 w-4" /> Guardar Cambios</span>
                             )}
                         </Button>
                     </motion.div>

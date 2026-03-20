@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Home, Users, Key, Plus, Trash2, Save } from 'lucide-react';
 
 export default function CreateGroup() {
     const { data, setData, post, processing, errors } = useForm({
@@ -103,14 +104,14 @@ export default function CreateGroup() {
                                 >
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="FAMILIAR" id="familiar" />
-                                        <Label htmlFor="familiar" className="cursor-pointer">
-                                            👨‍👩‍👧‍👦 Familiar
+                                        <Label htmlFor="familiar" className="flex cursor-pointer items-center gap-1.5">
+                                            <Home className="h-4 w-4" /> Familiar
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="AMIGO" id="amigo" />
-                                        <Label htmlFor="amigo" className="cursor-pointer">
-                                            👥 Amigos
+                                        <Label htmlFor="amigo" className="flex cursor-pointer items-center gap-1.5">
+                                            <Users className="h-4 w-4" /> Amigos
                                         </Label>
                                     </div>
                                 </RadioGroup>
@@ -130,9 +131,9 @@ export default function CreateGroup() {
                                         <SelectValue placeholder="Sin preferencia (Español)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="es">🇪🇸 Español</SelectItem>
-                                        <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
-                                        <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                                        <SelectItem value="es">ES — Español</SelectItem>
+                                        <SelectItem value="pt-BR">PT — Português (Brasil)</SelectItem>
+                                        <SelectItem value="fr">FR — Français</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p className="mt-1 text-sm text-gray-500">
@@ -143,7 +144,7 @@ export default function CreateGroup() {
                             {/* Info: Código */}
                             <div className="rounded-lg border-2 border-dashed border-[#8b7355]/30 bg-[#faf8f5] p-4">
                                 <div className="flex items-start gap-3">
-                                    <span className="text-2xl">🔑</span>
+                                    <Key className="h-5 w-5 text-[#8b7355]" />
                                     <div>
                                         <p className="font-medium text-[#8b7355]">
                                             Código único
@@ -171,7 +172,7 @@ export default function CreateGroup() {
                                     size="sm"
                                     className="text-[#8b7355]"
                                 >
-                                    ➕ Agregar Persona
+                                    <Plus className="mr-1 h-4 w-4" /> Agregar Persona
                                 </Button>
                             </div>
                         </CardHeader>
@@ -257,7 +258,7 @@ export default function CreateGroup() {
                                             disabled={data.guests.length === 1}
                                             className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                         >
-                                            🗑️
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -281,7 +282,7 @@ export default function CreateGroup() {
                             disabled={processing}
                             className="order-1 w-full bg-gradient-to-r from-[#8b7355] to-[#a89584] sm:order-2 sm:w-auto"
                         >
-                            {processing ? 'Guardando...' : '💾 Guardar Grupo'}
+                            {processing ? 'Guardando...' : <><Save className="mr-1.5 h-4 w-4 inline" /> Guardar Grupo</>}
                         </Button>
                     </div>
                 </form>

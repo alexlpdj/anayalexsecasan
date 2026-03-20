@@ -253,7 +253,7 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
             <SidebarInset className="min-w-0 overflow-x-hidden">
                 {/* Top header bar */}
                 <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[#e2dbd3]/40 px-4">
-                    <SidebarTrigger className="-ml-1 text-[#a89584]" />
+                    <SidebarTrigger className="-ml-1 hidden text-[#a89584] lg:flex" />
                     {breadcrumbs.length > 0 && (
                         <>
                             <Separator orientation="vertical" className="mx-2 h-4" />
@@ -278,9 +278,53 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
                 </header>
 
                 {/* Main content */}
-                <main className="flex-1 bg-[#faf8f5]">
+                <main className="flex-1 bg-[#faf8f5] pb-16 lg:pb-0">
                     {children}
                 </main>
+
+                {/* ── Bottom nav — solo mobile ────────────────────────── */}
+                <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e2dbd3]/60 bg-white/95 backdrop-blur-sm lg:hidden"
+                    style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+                >
+                    <div className="flex items-stretch">
+                        {[
+                            { label: 'Grupos',      href: 'admin.groups.index',        match: 'admin.groups.*',   icon: Users,       badge: null },
+                            { label: 'Canciones',   href: 'admin.songs.index',         match: 'admin.songs.*',    icon: Music,       badge: 'songsCount' },
+                            { label: 'Preguntas',   href: 'admin.questions',           match: 'admin.questions',  icon: MessageCircle, badge: 'questionsCount' },
+                            { label: 'Presupuesto', href: 'admin.budget.index',        match: 'admin.budget.*',   icon: Calculator,  badge: null },
+                            { label: 'Ajustes',     href: 'admin.settings.wedding.edit', match: 'admin.settings.*', icon: Settings,  badge: null },
+                        ].map((item) => {
+                            const active = isActive(item.match);
+                            const Icon   = item.icon;
+                            const count  = item.badge ? (adminNav?.[item.badge] ?? 0) : 0;
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={route(item.href)}
+                                    className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
+                                        active ? 'text-[#8b7355]' : 'text-gray-400 hover:text-gray-600'
+                                    }`}
+                                >
+                                    {active && (
+                                        <span
+                                            className="absolute inset-x-3 top-0 h-0.5 rounded-b-full"
+                                            style={{ backgroundColor: '#8b7355' }}
+                                        />
+                                    )}
+                                    <div className="relative">
+                                        <Icon className="h-5 w-5" />
+                                        {count > 0 && (
+                                            <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#8b7355] text-[9px] font-bold text-white">
+                                                {count > 9 ? '9+' : count}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span>{item.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </nav>
             </SidebarInset>
         </SidebarProvider>
     );
