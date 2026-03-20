@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminRsvpNotificationMail;
+use App\Mail\AdminSongNotificationMail;
 use App\Mail\GuestQuestionMail;
 use App\Mail\RsvpConfirmationMail;
 use App\Models\Faq;
@@ -111,6 +113,7 @@ class GuestDashboardController extends Controller
         ]);
 
         $attending = $validated['attending'];
+        $isUpdate = $group->submitted_at !== null;
 
         DB::transaction(function () use ($group, $validated, $attending) {
             if ($attending) {
@@ -161,6 +164,12 @@ class GuestDashboardController extends Controller
             Mail::to($group->contact_email)->queue(new RsvpConfirmationMail($group));
         }
 
+        // Notify all admins
+        $admins = User::all();
+        foreach ($admins as $admin) {
+            Mail::to($admin->email)->queue(new AdminRsvpNotificationMail($group, $attending, $isUpdate));
+        }
+
         $message = $attending
             ? '¡Gracias por confirmar! Nos vemos el 20 de junio.'
             : 'Lamentamos que no podáis acompañarnos. ¡Gracias por responder!';
@@ -184,7 +193,7 @@ class GuestDashboardController extends Controller
         // Send email to all admin users
         $admins = User::all();
         foreach ($admins as $admin) {
-            Mail::to($admin->email)->send(new GuestQuestionMail($group->name, $validated['message']));
+            Mail::to($admin->email)->queue(new GuestQuestionMail($group->name, $validated['message']));
         }
 
         return back()->with('success', '¡Pregunta enviada! Os responderemos lo antes posible.');
@@ -244,6 +253,17 @@ class GuestDashboardController extends Controller
         }
 
         $group->songSuggestions()->create($validated);
+
+        // Notify all admins
+        $admins = User::all();
+        foreach ($admins as $admin) {
+            Mail::to($admin->email)->queue(new AdminSongNotificationMail(
+                $group,
+                $validated['track_title'],
+                $validated['artist_name'],
+                $validated['artwork_url'] ?? null,
+            ));
+        }
 
         return back()->with('success', '¡Canción añadida!');
     }

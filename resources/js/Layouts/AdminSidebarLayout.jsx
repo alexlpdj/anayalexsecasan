@@ -34,7 +34,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer, Music } from 'lucide-react';
+import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer, Music, Calculator } from 'lucide-react';
 
 const navItems = [
     {
@@ -62,6 +62,12 @@ const navItems = [
         href: 'admin.faqs.index',
         match: 'admin.faqs.*',
         icon: HelpCircle,
+    },
+    {
+        label: 'Presupuesto',
+        href: 'admin.budget.index',
+        match: 'admin.budget.*',
+        icon: Calculator,
     },
     {
         label: 'Ajustes',

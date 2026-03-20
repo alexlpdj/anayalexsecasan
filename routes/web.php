@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BudgetController;
 use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
@@ -130,6 +131,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::post('/faqs/update-order', [FaqController::class, 'updateOrder'])->name('faqs.update-order');
     Route::resource('faqs', FaqController::class)->except(['show', 'create', 'edit']);
     Route::post('/faqs/{faq}/toggle', [FaqController::class, 'toggleActive'])->name('faqs.toggle');
+
+    // Presupuesto de la Boda
+    Route::get('/presupuesto', [BudgetController::class, 'index'])->name('budget.index');
+    Route::post('/presupuesto/items', [BudgetController::class, 'storeItem'])->name('budget.items.store');
+    Route::patch('/presupuesto/items/{item}', [BudgetController::class, 'updateItem'])->name('budget.items.update');
+    Route::delete('/presupuesto/items/{item}', [BudgetController::class, 'destroyItem'])->name('budget.items.destroy');
+    Route::patch('/presupuesto/target', [BudgetController::class, 'updateTarget'])->name('budget.target.update');
 
     // Wedding Settings - Configuración de la Boda
     Route::get('/settings/wedding', [WeddingSettingsController::class, 'edit'])->name('settings.wedding.edit');
