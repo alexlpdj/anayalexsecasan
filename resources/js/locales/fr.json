@@ -27,6 +27,7 @@
     "sending": "Envoi...",
     "deadline": "Vous pouvez modifier votre réponse jusqu'au 1er mai",
     "allergies_title": "Allergies alimentaires",
+    "allergies_hint": "⚠️ Merci d'indiquer uniquement les allergies ou intolérances alimentaires réelles (fruits à coque, gluten, lactose…). Cette information est importante pour l'organisation du menu. Il n'est pas nécessaire de mentionner les préférences ou les aliments que vous n'aimez simplement pas.",
     "allergies_placeholder": "Aucune",
     "transport_title": "Transport",
     "transport_bus": "Bus gratuit",

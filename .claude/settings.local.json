@@ -24,7 +24,9 @@
       "Bash(git -C /Users/grabatutalentosl/Documents/GitHub/boda-alex-ana push origin idiomas)",
       "Bash(test:*)",
       "Bash(identify:*)",
-      "Bash(sips:*)"
+      "Bash(sips:*)",
+      "Bash(grep -rn [📨✉️🔔🖨️📥📧👨👥🚌🚗❓⚠️📱✏️🗑️💾➕🔄🔑🌐⏳↑↓✖️👁️ℹ🇪🇸🇧🇷🇫🇷] /Users/grabatutalentosl/Documents/GitHub/boda-alex-ana/resources/js/Pages/admin/)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

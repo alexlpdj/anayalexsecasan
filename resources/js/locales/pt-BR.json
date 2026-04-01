@@ -27,6 +27,7 @@
     "sending": "Enviando...",
     "deadline": "Você pode modificar sua resposta até 1º de maio",
     "allergies_title": "Alergias alimentares",
+    "allergies_hint": "⚠️ Por favor, indique apenas alergias ou intolerâncias alimentares reais (frutos secos, glúten, lactose…). Esta informação é importante para a organização do menu. Não é necessário mencionar preferências ou alimentos que simplesmente não gosta.",
     "allergies_placeholder": "Nenhuma",
     "transport_title": "Transporte",
     "transport_bus": "Ônibus gratuito",

@@ -478,6 +478,7 @@ export default function GuestDashboard({ group, questions, faqs, weddingInfo, so
                         <form onSubmit={submitAttending} className="space-y-5">
                             <Section>
                                 <SectionTitle>{t('dashboard.allergies_title')}</SectionTitle>
+                                <p className="text-xs text-[#8b7355] bg-[#f5f0ea] border border-[#e2dbd3] rounded-md px-3 py-2 -mt-1 mb-3">{t('dashboard.allergies_hint')}</p>
                                 <div className="space-y-4">
                                     {group.guests.map((guest, index) => (
                                         <div key={guest.id}>

@@ -13,7 +13,7 @@
         <!-- Apple PWA -->
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="apple-mobile-web-app-title" content="Ana &amp; Alex">
+        <meta name="apple-mobile-web-app-title" content="Ana & Alex">
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
         <!-- VAPID public key (push notifications) -->
         <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">

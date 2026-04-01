@@ -29,11 +29,11 @@
                         style="background:linear-gradient(135deg,#8b7355,#a89584); padding:36px 40px; text-align:center;">
                         <h1 style="margin:0; color:#ffffff; font-family:'Playfair Display',Georgia,serif; font-style:italic;
                                    font-size:42px; font-weight:400; letter-spacing:4px; line-height:1.1;">
-                            A &amp; A
+                            A & A
                         </h1>
                         <p style="margin:10px 0 0; color:#d4c5b9; font-family:Georgia,serif; font-size:14px;
                                   letter-spacing:2px; text-transform:uppercase; font-style:normal;">
-                            @yield('header_subtitle', 'Ana &amp; Alex · 20 de junio de 2026')
+                            @yield('header_subtitle', 'Ana & Alex · 20 de junio de 2026')
                         </p>
                     </td>
                 </tr>
@@ -68,7 +68,7 @@
                         </p>
                         <p style="margin:6px 0 0; color:#8b7355; font-family:'Playfair Display',Georgia,serif;
                                   font-style:italic; font-size:20px; font-weight:700; letter-spacing:2px;">
-                            Ana &amp; Alex
+                            Ana & Alex
                         </p>
                         <p style="margin:16px 0 0; color:#c4b5a6; font-family:Arial,sans-serif; font-size:11px;
                                   line-height:1.6;">

@@ -2,7 +2,7 @@
 
 @section('title', $attending ? __('emails.subject_confirmation') : __('emails.subject_confirmation_decline'))
 
-@section('header_subtitle', $attending ? '¡Nos vemos el 20 de junio!' : 'Ana &amp; Alex · 20 de junio de 2026')
+@section('header_subtitle', $attending ? '¡Nos vemos el 20 de junio!' : 'Ana & Alex · 20 de junio de 2026')
 
 @section('content')
     @if($attending)
