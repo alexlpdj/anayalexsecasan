@@ -522,6 +522,96 @@ class InvitationGroupController extends Controller
     }
 
     /**
+     * Vista de grupos confirmados con sus invitados
+     */
+    public function confirmedGuests()
+    {
+        $groups = InvitationGroup::submitted()
+            ->with('guests')
+            ->orderByDesc('submitted_at')
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'id'             => $group->id,
+                    'name'           => $group->name,
+                    'type'           => $group->type,
+                    'submitted_at'   => $group->submitted_at,
+                    'transport'      => $group->transport,
+                    'bus_onda_ida'   => $group->bus_onda_ida,
+                    'bus_onda_vuelta'=> $group->bus_onda_vuelta,
+                    'bus_cs'         => $group->bus_cs,
+                    'contact_email'  => $group->contact_email,
+                    'contact_phone'  => $group->contact_phone,
+                    'attending_count'=> $group->attendingCount(),
+                    'total_count'    => $group->guests->count(),
+                    'guests'         => $group->guests->map(fn($g) => [
+                        'id'        => $g->id,
+                        'name'      => $g->name,
+                        'attending' => $g->attending,
+                        'allergies' => $g->allergies,
+                    ]),
+                ];
+            });
+
+        $stats = [
+            'total_confirmed_groups' => InvitationGroup::submitted()->count(),
+            'total_attending'        => Guest::attending()->count(),
+            'total_not_attending'    => Guest::where('attending', false)->count(),
+            'with_allergies'         => Guest::attending()->whereNotNull('allergies')->where('allergies', '!=', '')->count(),
+            'bus_onda_ida'           => InvitationGroup::submitted()->where('bus_onda_ida', true)->count(),
+            'bus_onda_vuelta'        => InvitationGroup::submitted()->where('bus_onda_vuelta', true)->count(),
+            'bus_cs'                 => InvitationGroup::submitted()->where('bus_cs', true)->count(),
+        ];
+
+        return Inertia::render('admin/confirmed', [
+            'groups' => $groups,
+            'stats'  => $stats,
+        ]);
+    }
+
+    /**
+     * Exportar confirmados como CSV
+     */
+    public function exportConfirmed()
+    {
+        $groups = InvitationGroup::submitted()->with('guests')->orderByDesc('submitted_at')->get();
+
+        $rows = ['Grupo,Tipo,Confirmado el,Asisten,Total,Transporte,Bus Onda Ida,Bus Onda Vuelta,Bus Castellón,Email,Teléfono,Invitado,Asiste,Alergias'];
+        foreach ($groups as $group) {
+            foreach ($group->guests as $guest) {
+                $attending = match($guest->attending) {
+                    true    => 'Sí',
+                    false   => 'No',
+                    default => 'Sin responder',
+                };
+                $rows[] = implode(',', [
+                    "\"{$group->name}\"",
+                    $group->type,
+                    $group->submitted_at?->format('d/m/Y H:i'),
+                    $group->attendingCount(),
+                    $group->guests->count(),
+                    $group->transport ?? '',
+                    $group->bus_onda_ida   ? 'Sí' : 'No',
+                    $group->bus_onda_vuelta ? 'Sí' : 'No',
+                    $group->bus_cs          ? 'Sí' : 'No',
+                    "\"{$group->contact_email}\"",
+                    "\"{$group->contact_phone}\"",
+                    "\"{$guest->name}\"",
+                    $attending,
+                    "\"{$guest->allergies}\"",
+                ]);
+            }
+        }
+
+        $filename = 'confirmados-boda-' . now()->format('Y-m-d') . '.csv';
+
+        return response(implode("\n", $rows), 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
      * Exportar códigos como CSV
      */
     public function exportCodes()

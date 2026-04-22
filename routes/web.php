@@ -104,6 +104,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::post('/groups/send-custom-message', [InvitationGroupController::class, 'sendCustomMessage'])
         ->name('groups.send-custom-message');
 
+    // Vista de confirmados
+    Route::get('/confirmed', [InvitationGroupController::class, 'confirmedGuests'])
+        ->name('confirmed');
+
     // Exportaciones y reportes
     Route::get('/export/all', [InvitationGroupController::class, 'exportAll'])
         ->name('export.all');
