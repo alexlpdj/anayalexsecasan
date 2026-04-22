@@ -454,14 +454,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                     </div>
                                                 </div>
                                                 <div className="ml-2 flex items-center gap-2">
-                                                    {group.has_submitted ? (
-                                                        <Badge className="bg-green-100 text-green-700">
-                                                            Confirmado
-                                                        </Badge>
+                                                    {!group.has_submitted ? (
+                                                        <Badge variant="outline">Pendiente</Badge>
+                                                    ) : group.attending_count > 0 ? (
+                                                        <Badge className="bg-green-100 text-green-700">Confirmado</Badge>
                                                     ) : (
-                                                        <Badge variant="outline">
-                                                            Pendiente
-                                                        </Badge>
+                                                        <Badge className="bg-red-100 text-red-700">No viene</Badge>
                                                     )}
                                                     <ChevronRight className="h-4 w-4 text-gray-400" />
                                                 </div>
@@ -583,14 +581,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                         </span>
                                                     </TableCell>
                                                     <TableCell className="text-center">
-                                                        {group.has_submitted ? (
-                                                            <Badge className="bg-green-100 text-green-700">
-                                                                ✓ Confirmado
-                                                            </Badge>
+                                                        {!group.has_submitted ? (
+                                                            <Badge variant="outline">Pendiente</Badge>
+                                                        ) : group.attending_count > 0 ? (
+                                                            <Badge className="bg-green-100 text-green-700">✓ Confirmado</Badge>
                                                         ) : (
-                                                            <Badge variant="outline">
-                                                                Pendiente
-                                                            </Badge>
+                                                            <Badge className="bg-red-100 text-red-700">✗ No viene</Badge>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-center">
@@ -823,10 +819,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                             className="h-4 w-4 rounded border-gray-300 accent-[#8b7355]"
                                         />
                                         <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
-                                        {group.has_submitted ? (
+                                        {!group.has_submitted ? (
+                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                        ) : group.attending_count > 0 ? (
                                             <Badge className="bg-green-100 text-green-700 text-xs">Confirmado</Badge>
                                         ) : (
-                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                            <Badge className="bg-red-100 text-red-700 text-xs">No viene</Badge>
                                         )}
                                         {!group.contact_email && (
                                             <span className="text-xs text-gray-400">sin email</span>
@@ -955,10 +953,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                             className="h-4 w-4 rounded border-gray-300 accent-[#8b7355]"
                                         />
                                         <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
-                                        {group.has_submitted ? (
+                                        {!group.has_submitted ? (
+                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                        ) : group.attending_count > 0 ? (
                                             <Badge className="bg-green-100 text-green-700 text-xs">Confirmado</Badge>
                                         ) : (
-                                            <Badge variant="outline" className="text-xs">Pendiente</Badge>
+                                            <Badge className="bg-red-100 text-red-700 text-xs">No viene</Badge>
                                         )}
                                     </label>
                                 ))}

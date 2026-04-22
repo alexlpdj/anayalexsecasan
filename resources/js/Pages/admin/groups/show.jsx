@@ -104,6 +104,7 @@ function EmailRow({ label, sentAt, onSend, isSending, emailType }) {
 
 export default function ShowGroup({ group }) {
     const [sendingInvitation, setSendingInvitation] = useState(false);
+    const attendingCount = group.guests.filter(g => g.attending === true).length;
 
     const handleSendInvitation = (onDone) => {
         setSendingInvitation(true);
@@ -193,13 +194,15 @@ export default function ShowGroup({ group }) {
                                     Estado
                                 </label>
                                 <div className="mt-1">
-                                    {group.submitted_at ? (
+                                    {!group.submitted_at ? (
+                                        <Badge variant="outline">Pendiente de confirmación</Badge>
+                                    ) : attendingCount > 0 ? (
                                         <Badge className="flex items-center gap-1 bg-green-100 text-green-700">
                                             <Check className="h-3 w-3" /> Confirmado
                                         </Badge>
                                     ) : (
-                                        <Badge variant="outline">
-                                            Pendiente de confirmación
+                                        <Badge className="flex items-center gap-1 bg-red-100 text-red-700">
+                                            <X className="h-3 w-3" /> No viene
                                         </Badge>
                                     )}
                                 </div>
