@@ -257,14 +257,16 @@ export default function Confirmed({ groups, stats }) {
         return matchSearch && matchType && matchAllergies;
     });
 
+    const filteredAttending = filtered.reduce((sum, g) => sum + g.attending_count, 0);
+
     const statCards = [
-        { label: 'Grupos confirmados', value: stats.total_confirmed_groups, color: 'text-[#8b7355]', icon: UserCheck },
-        { label: 'Asistirán',          value: stats.total_attending,         color: 'text-green-600', icon: Users },
-        { label: 'No asistirán',       value: stats.total_not_attending,     color: 'text-red-500',   icon: UserX },
-        { label: 'Con alergias',       value: stats.with_allergies,          color: 'text-amber-600', icon: AlertCircle },
-        { label: 'Bus Onda ida',       value: stats.bus_onda_ida,            color: 'text-blue-600',  icon: Bus },
-        { label: 'Bus Onda vuelta',    value: stats.bus_onda_vuelta,         color: 'text-blue-600',  icon: Bus },
-        { label: 'Bus Castellón',      value: stats.bus_cs,                  color: 'text-blue-600',  icon: Bus },
+        { label: 'Grupos confirmados', value: stats.total_confirmed_groups, color: 'text-[#8b7355]', icon: UserCheck, unit: 'grupos' },
+        { label: 'Asistirán',          value: stats.total_attending,         color: 'text-green-600', icon: Users,       unit: 'personas' },
+        { label: 'No asistirán',       value: stats.total_not_attending,     color: 'text-red-500',   icon: UserX,       unit: 'personas' },
+        { label: 'Con alergias',       value: stats.with_allergies,          color: 'text-amber-600', icon: AlertCircle, unit: 'personas' },
+        { label: 'Bus Onda ida',       value: stats.bus_onda_ida,            color: 'text-blue-600',  icon: Bus,         unit: 'personas' },
+        { label: 'Bus Onda vuelta',    value: stats.bus_onda_vuelta,         color: 'text-blue-600',  icon: Bus,         unit: 'personas' },
+        { label: 'Bus Castellón',      value: stats.bus_cs,                  color: 'text-blue-600',  icon: Bus,         unit: 'personas' },
     ];
 
     return (
@@ -316,6 +318,7 @@ export default function Confirmed({ groups, stats }) {
                                         <div className={`text-2xl font-bold ${stat.color}`}>
                                             {stat.value}
                                         </div>
+                                        <p className="mt-0.5 text-[10px] text-gray-400">{stat.unit}</p>
                                     </CardContent>
                                 </Card>
                             </motion.div>
@@ -380,7 +383,7 @@ export default function Confirmed({ groups, stats }) {
                         <CardHeader className="p-3 sm:p-6">
                             <CardTitle>Grupos confirmados</CardTitle>
                             <CardDescription>
-                                {filtered.length} de {groups.length} grupos · Clic en una fila para ver los invitados
+                                {filtered.length} de {groups.length} grupos · {filteredAttending} personas asistirán · Clic para ver invitados
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">

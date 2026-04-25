@@ -75,10 +75,10 @@ class InvitationGroupController extends Controller
                 ['name' => 'Pendientes', 'value' => Guest::whereNull('attending')->count(), 'color' => '#d1d5db'],
             ],
             'transport' => [
-                ['name' => 'Bus Onda (ida)', 'value' => InvitationGroup::submitted()->where('bus_onda_ida', true)->count()],
-                ['name' => 'Bus Onda (vuelta)', 'value' => InvitationGroup::submitted()->where('bus_onda_vuelta', true)->count()],
-                ['name' => 'Bus Castellón', 'value' => InvitationGroup::submitted()->where('bus_cs', true)->count()],
-                ['name' => 'Coche', 'value' => InvitationGroup::submitted()->where('transport', 'COCHE')->count()],
+                ['name' => 'Bus Onda (ida)', 'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_ida', true))->count()],
+                ['name' => 'Bus Onda (vuelta)', 'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_vuelta', true))->count()],
+                ['name' => 'Bus Castellón', 'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_cs', true))->count()],
+                ['name' => 'Coche', 'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('transport', 'COCHE'))->count()],
             ],
             'group_types' => [
                 ['name' => 'Familiar', 'value' => InvitationGroup::where('type', 'FAMILIAR')->count(), 'color' => '#8b7355'],
@@ -558,9 +558,9 @@ class InvitationGroupController extends Controller
             'total_attending'        => Guest::attending()->count(),
             'total_not_attending'    => Guest::where('attending', false)->count(),
             'with_allergies'         => Guest::attending()->whereNotNull('allergies')->where('allergies', '!=', '')->count(),
-            'bus_onda_ida'           => InvitationGroup::submitted()->where('bus_onda_ida', true)->count(),
-            'bus_onda_vuelta'        => InvitationGroup::submitted()->where('bus_onda_vuelta', true)->count(),
-            'bus_cs'                 => InvitationGroup::submitted()->where('bus_cs', true)->count(),
+            'bus_onda_ida'           => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_ida', true))->count(),
+            'bus_onda_vuelta'        => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_vuelta', true))->count(),
+            'bus_cs'                 => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_cs', true))->count(),
         ];
 
         return Inertia::render('admin/confirmed', [
