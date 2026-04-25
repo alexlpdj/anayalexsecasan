@@ -47,6 +47,7 @@ const navItems = [
         label: 'Confirmados',
         href: 'admin.confirmed',
         match: 'admin.confirmed',
+        badge: 'attendingCount',
         icon: UserCheck,
     },
     {
@@ -295,7 +296,7 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
                     <div className="flex items-stretch">
                         {[
                             { label: 'Grupos',       href: 'admin.groups.index',          match: 'admin.groups.*',   icon: Users,        badge: null },
-                            { label: 'Confirmados',  href: 'admin.confirmed',              match: 'admin.confirmed',  icon: UserCheck,    badge: null },
+                            { label: 'Confirmados',  href: 'admin.confirmed',              match: 'admin.confirmed',  icon: UserCheck,    badge: 'attendingCount' },
                             { label: 'Canciones',    href: 'admin.songs.index',            match: 'admin.songs.*',    icon: Music,        badge: 'songsCount' },
                             { label: 'Preguntas',    href: 'admin.questions',              match: 'admin.questions',  icon: MessageCircle, badge: 'questionsCount' },
                             { label: 'Ajustes',      href: 'admin.settings.wedding.edit',  match: 'admin.settings.*', icon: Settings,     badge: null },
