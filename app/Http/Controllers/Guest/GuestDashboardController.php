@@ -243,8 +243,8 @@ class GuestDashboardController extends Controller
             'preview_url'     => 'nullable|url|max:500',
         ]);
 
-        if ($group->songSuggestions()->count() >= 5) {
-            return back()->with('error', 'Máximo 5 canciones por grupo.');
+        if ($group->songSuggestions()->count() >= 20) {
+            return back()->with('error', 'Máximo 20 canciones por grupo.');
         }
 
         // Avoid duplicates

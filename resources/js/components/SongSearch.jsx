@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MAX_SONGS = 5;
+const MAX_SONGS = 20;
 
 function MusicIcon({ className }) {
     return (

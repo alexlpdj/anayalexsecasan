@@ -74,7 +74,7 @@
     "search_placeholder": "Busca una canción o artista...",
     "search_error": "Error al buscar. Inténtalo de nuevo.",
     "your_suggestions": "Tus sugerencias",
-    "max_reached": "Ya has llegado al máximo de 5 canciones",
+    "max_reached": "Ya has llegado al máximo de 20 canciones",
     "empty_hint": "Busca una canción y pulsa + para añadirla",
     "preview_hint": "Pulsa ▶ para escuchar un fragmento antes de añadirla",
     "play_preview": "Escuchar fragmento",
