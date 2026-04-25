@@ -339,7 +339,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                             width={100}
                                             tick={{ fontSize: 11 }}
                                         />
-                                        <Tooltip formatter={(value) => [`${value} grupos`]} />
+                                        <Tooltip formatter={(value) => [`${value} personas`]} />
                                         <Bar dataKey="value" fill="#8b7355" radius={[0, 4, 4, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
