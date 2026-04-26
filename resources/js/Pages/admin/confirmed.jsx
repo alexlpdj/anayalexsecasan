@@ -32,6 +32,9 @@ import {
     Car,
     AlertCircle,
     Eye,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown,
 } from 'lucide-react';
 
 const TRANSPORT_LABEL = {
@@ -77,6 +80,21 @@ function GuestRow({ guest }) {
                 </span>
             )}
         </div>
+    );
+}
+
+function SortHeader({ label, column, sortBy, sortDir, onSort, className = '' }) {
+    const active = sortBy === column;
+    const Icon = !active ? ArrowUpDown : sortDir === 'asc' ? ArrowUp : ArrowDown;
+    return (
+        <button
+            type="button"
+            onClick={() => onSort(column)}
+            className={`inline-flex items-center gap-1 transition-colors hover:text-[#8b7355] ${active ? 'text-[#8b7355]' : 'text-gray-600'} ${className}`}
+        >
+            {label}
+            <Icon className="h-3 w-3" />
+        </button>
     );
 }
 
@@ -247,15 +265,54 @@ export default function Confirmed({ groups, stats }) {
     const [search, setSearch]         = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
     const [onlyAllergies, setOnlyAllergies] = useState(false);
+    const [transportFilter, setTransportFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('submitted_at');
+    const [sortDir, setSortDir] = useState('desc');
 
-    const filtered = groups.filter(group => {
-        const matchSearch = search === '' ||
-            group.name.toLowerCase().includes(search.toLowerCase()) ||
-            group.guests.some(g => g.name.toLowerCase().includes(search.toLowerCase()));
-        const matchType = typeFilter === 'all' || group.type === typeFilter;
-        const matchAllergies = !onlyAllergies || group.guests.some(g => g.attending && g.allergies);
-        return matchSearch && matchType && matchAllergies;
-    });
+    const handleSort = (column) => {
+        if (sortBy === column) {
+            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortBy(column);
+            setSortDir('asc');
+        }
+    };
+
+    const matchTransport = (group) => {
+        if (transportFilter === 'all') return true;
+        if (transportFilter === 'bus') return group.bus_onda_ida || group.bus_onda_vuelta || group.bus_cs;
+        if (transportFilter === 'coche') return group.transport === 'COCHE';
+        if (transportFilter === 'sin') return !group.transport || group.transport === 'NO_CONFIRMADO';
+        return true;
+    };
+
+    const filtered = groups
+        .filter(group => {
+            const matchSearch = search === '' ||
+                group.name.toLowerCase().includes(search.toLowerCase()) ||
+                group.guests.some(g => g.name.toLowerCase().includes(search.toLowerCase()));
+            const matchType = typeFilter === 'all' || group.type === typeFilter;
+            const matchAllergies = !onlyAllergies || group.guests.some(g => g.attending && g.allergies);
+            return matchSearch && matchType && matchAllergies && matchTransport(group);
+        })
+        .sort((a, b) => {
+            const dir = sortDir === 'asc' ? 1 : -1;
+            const get = (g) => {
+                switch (sortBy) {
+                    case 'name': return g.name?.toLowerCase() ?? '';
+                    case 'type': return g.type ?? '';
+                    case 'submitted_at': return g.submitted_at ? new Date(g.submitted_at).getTime() : 0;
+                    case 'attending_count': return g.attending_count ?? 0;
+                    case 'allergies': return g.guests.some(x => x.attending && x.allergies) ? 1 : 0;
+                    default: return 0;
+                }
+            };
+            const va = get(a);
+            const vb = get(b);
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+        });
 
     const filteredAttending = filtered.reduce((sum, g) => sum + g.attending_count, 0);
 
@@ -343,7 +400,7 @@ export default function Confirmed({ groups, stats }) {
                                     className="pl-9"
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {['all', 'FAMILIAR', 'AMIGO'].map(type => (
                                     <button
                                         key={type}
@@ -357,6 +414,27 @@ export default function Confirmed({ groups, stats }) {
                                         {type === 'all' ? 'Todos' : type === 'FAMILIAR' ? 'Familiar' : 'Amigo'}
                                     </button>
                                 ))}
+                                <span className="mx-1 h-5 w-px bg-gray-200" />
+                                {[
+                                    { v: 'all', label: 'Todo transporte' },
+                                    { v: 'bus', label: 'Bus', icon: Bus },
+                                    { v: 'coche', label: 'Coche', icon: Car },
+                                    { v: 'sin', label: 'Sin confirmar' },
+                                ].map(({ v, label, icon: Icon }) => (
+                                    <button
+                                        key={v}
+                                        onClick={() => setTransportFilter(v)}
+                                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                                            transportFilter === v
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {Icon && <Icon className="h-3 w-3" />}
+                                        {label}
+                                    </button>
+                                ))}
+                                <span className="mx-1 h-5 w-px bg-gray-200" />
                                 <button
                                     onClick={() => setOnlyAllergies(p => !p)}
                                     className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -408,12 +486,12 @@ export default function Confirmed({ groups, stats }) {
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead className="w-6" />
-                                                    <TableHead>Grupo</TableHead>
-                                                    <TableHead>Tipo</TableHead>
-                                                    <TableHead>Confirmado el</TableHead>
-                                                    <TableHead className="text-center">Asisten / Total</TableHead>
+                                                    <TableHead><SortHeader label="Grupo" column="name" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                    <TableHead><SortHeader label="Tipo" column="type" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                    <TableHead><SortHeader label="Confirmado el" column="submitted_at" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                    <TableHead className="text-center"><SortHeader label="Asisten / Total" column="attending_count" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
                                                     <TableHead>Transporte</TableHead>
-                                                    <TableHead className="text-center">Alergias</TableHead>
+                                                    <TableHead className="text-center"><SortHeader label="Alergias" column="allergies" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
                                                     <TableHead className="text-right">Ver</TableHead>
                                                 </TableRow>
                                             </TableHeader>

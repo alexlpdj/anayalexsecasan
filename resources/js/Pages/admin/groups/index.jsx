@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download, Monitor, Smartphone, Activity } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download, Monitor, Smartphone, Activity, ArrowUp, ArrowDown, ArrowUpDown, Filter, X } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -62,8 +62,63 @@ function CenterLabel({ viewBox, total, label }) {
     );
 }
 
+const INERTIA_TOGGLE_OPTS = {
+    preserveScroll: true,
+    preserveState: true,
+    only: ['groups', 'stats', 'chartData', 'flash'],
+};
+
+const STATUS_OPTIONS = [
+    { value: 'all', label: 'Todos los estados' },
+    { value: 'pending', label: 'Pendientes' },
+    { value: 'confirmed', label: 'Confirmados' },
+    { value: 'declined', label: 'No vienen' },
+];
+
+const TYPE_OPTIONS = [
+    { value: 'all', label: 'Todos los tipos' },
+    { value: 'FAMILIAR', label: 'Familiar' },
+    { value: 'AMIGO', label: 'Amigo' },
+];
+
+const TRISTATE_OPTIONS = (yesLabel, noLabel) => [
+    { value: 'all', label: 'Todos' },
+    { value: 'yes', label: yesLabel },
+    { value: 'no', label: noLabel },
+];
+
+function groupStatus(group) {
+    if (!group.has_submitted) return 'pending';
+    return group.attending_count > 0 ? 'confirmed' : 'declined';
+}
+
+function SortHeader({ label, column, sortBy, sortDir, onSort, className = '' }) {
+    const active = sortBy === column;
+    const Icon = !active ? ArrowUpDown : sortDir === 'asc' ? ArrowUp : ArrowDown;
+    return (
+        <button
+            type="button"
+            onClick={() => onSort(column)}
+            className={`inline-flex items-center gap-1 transition-colors hover:text-[#8b7355] ${active ? 'text-[#8b7355]' : 'text-gray-600'} ${className}`}
+        >
+            {label}
+            <Icon className="h-3 w-3" />
+        </button>
+    );
+}
+
 export default function GroupsIndex({ groups, stats, chartData }) {
     const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [printedFilter, setPrintedFilter] = useState('all');
+    const [deliveredFilter, setDeliveredFilter] = useState('all');
+    const [sentFilter, setSentFilter] = useState('all');
+    const [accessedFilter, setAccessedFilter] = useState('all');
+    const [showFilters, setShowFilters] = useState(false);
+    const [sortBy, setSortBy] = useState('name');
+    const [sortDir, setSortDir] = useState('asc');
+
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [sendingReminders, setSendingReminders] = useState(false);
     const [showCustomModal, setShowCustomModal] = useState(false);
@@ -78,10 +133,74 @@ export default function GroupsIndex({ groups, stats, chartData }) {
     const [pushBody, setPushBody] = useState('');
     const [sendingPush, setSendingPush] = useState(false);
 
-    const filteredGroups = groups.filter((group) =>
-        group.name.toLowerCase().includes(search.toLowerCase()) ||
-        group.code.toLowerCase().includes(search.toLowerCase())
-    );
+    const handleSort = (column) => {
+        if (sortBy === column) {
+            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            setSortBy(column);
+            setSortDir('asc');
+        }
+    };
+
+    const matchesTristate = (filter, hasFlag) => {
+        if (filter === 'all') return true;
+        if (filter === 'yes') return hasFlag;
+        return !hasFlag;
+    };
+
+    const filteredGroups = groups
+        .filter((group) => {
+            const q = search.trim().toLowerCase();
+            const matchSearch = !q ||
+                group.name.toLowerCase().includes(q) ||
+                group.code.toLowerCase().includes(q);
+            const matchStatus = statusFilter === 'all' || groupStatus(group) === statusFilter;
+            const matchType = typeFilter === 'all' || group.type === typeFilter;
+            const matchPrinted = matchesTristate(printedFilter, !!group.printed_at);
+            const matchDelivered = matchesTristate(deliveredFilter, !!group.delivered_at);
+            const matchSent = matchesTristate(sentFilter, !!group.invitation_sent_at);
+            const matchAccessed = matchesTristate(accessedFilter, group.visits_count > 0);
+            return matchSearch && matchStatus && matchType && matchPrinted && matchDelivered && matchSent && matchAccessed;
+        })
+        .sort((a, b) => {
+            const dir = sortDir === 'asc' ? 1 : -1;
+            const get = (g) => {
+                switch (sortBy) {
+                    case 'name': return g.name?.toLowerCase() ?? '';
+                    case 'code': return g.code?.toLowerCase() ?? '';
+                    case 'type': return g.type ?? '';
+                    case 'guests': return g.guests_count ?? 0;
+                    case 'attending': return g.attending_count ?? 0;
+                    case 'status': return groupStatus(g);
+                    case 'printed': return g.printed_at ? new Date(g.printed_at).getTime() : 0;
+                    case 'delivered': return g.delivered_at ? new Date(g.delivered_at).getTime() : 0;
+                    case 'sent': return g.invitation_sent_at ? new Date(g.invitation_sent_at).getTime() : 0;
+                    case 'accessed': return g.visits_count ?? 0;
+                    default: return 0;
+                }
+            };
+            const va = get(a);
+            const vb = get(b);
+            if (va < vb) return -1 * dir;
+            if (va > vb) return 1 * dir;
+            return 0;
+        });
+
+    const activeFilterCount = [statusFilter, typeFilter, printedFilter, deliveredFilter, sentFilter, accessedFilter]
+        .filter((v) => v !== 'all').length;
+
+    const clearFilters = () => {
+        setStatusFilter('all');
+        setTypeFilter('all');
+        setPrintedFilter('all');
+        setDeliveredFilter('all');
+        setSentFilter('all');
+        setAccessedFilter('all');
+    };
+
+    const togglePrinted = (group) => router.post(route('admin.groups.toggle-printed', group.id), {}, INERTIA_TOGGLE_OPTS);
+    const toggleDelivered = (group) => router.post(route('admin.groups.toggle-delivered', group.id), {}, INERTIA_TOGGLE_OPTS);
+    const toggleInvitationSent = (group) => router.post(route('admin.groups.toggle-invitation-sent', group.id), {}, INERTIA_TOGGLE_OPTS);
 
     const deleteGroup = (group) => {
         if (
@@ -384,24 +503,75 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                     </motion.div>
                 )}
 
-                {/* Search */}
+                {/* Search + Filters */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.35 }}
                 >
                     <Card className="transition-shadow hover:shadow-lg">
-                        <CardContent className="p-3 sm:pt-6">
-                            <div className="relative w-full sm:max-w-md">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar por nombre o código..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-9 transition-all focus:ring-2 focus:ring-[#8b7355]"
-                                />
+                        <CardContent className="space-y-3 p-3 sm:p-6">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Buscar por nombre o código..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="w-full pl-9 transition-all focus:ring-2 focus:ring-[#8b7355]"
+                                    />
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowFilters((v) => !v)}
+                                    className={activeFilterCount > 0 ? 'border-[#8b7355] text-[#8b7355]' : ''}
+                                >
+                                    <Filter className="mr-1.5 h-4 w-4" />
+                                    Filtros
+                                    {activeFilterCount > 0 && (
+                                        <Badge className="ml-1.5 bg-[#8b7355] text-white">{activeFilterCount}</Badge>
+                                    )}
+                                </Button>
+                                {activeFilterCount > 0 && (
+                                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500">
+                                        <X className="mr-1 h-3.5 w-3.5" /> Limpiar
+                                    </Button>
+                                )}
                             </div>
+
+                            {showFilters && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="grid grid-cols-2 gap-3 border-t pt-3 md:grid-cols-3 lg:grid-cols-6"
+                                >
+                                    {[
+                                        { label: 'Estado', value: statusFilter, set: setStatusFilter, opts: STATUS_OPTIONS },
+                                        { label: 'Tipo', value: typeFilter, set: setTypeFilter, opts: TYPE_OPTIONS },
+                                        { label: 'Preparada', value: printedFilter, set: setPrintedFilter, opts: TRISTATE_OPTIONS('Preparadas', 'Sin preparar') },
+                                        { label: 'Entregada', value: deliveredFilter, set: setDeliveredFilter, opts: TRISTATE_OPTIONS('Entregadas', 'Sin entregar') },
+                                        { label: 'Email', value: sentFilter, set: setSentFilter, opts: TRISTATE_OPTIONS('Enviado', 'Sin enviar') },
+                                        { label: 'Acceso', value: accessedFilter, set: setAccessedFilter, opts: TRISTATE_OPTIONS('Han accedido', 'Sin accesos') },
+                                    ].map((f) => (
+                                        <div key={f.label}>
+                                            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                                                {f.label}
+                                            </label>
+                                            <select
+                                                value={f.value}
+                                                onChange={(e) => f.set(e.target.value)}
+                                                className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-[#8b7355] focus:outline-none focus:ring-1 focus:ring-[#8b7355]"
+                                            >
+                                                {f.opts.map((o) => (
+                                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ))}
+                                </motion.div>
+                            )}
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -422,8 +592,8 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                     <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
                         {filteredGroups.length === 0 ? (
                             <p className="py-8 text-center text-gray-500">
-                                {search
-                                    ? 'No se encontraron grupos'
+                                {search || activeFilterCount > 0
+                                    ? 'No hay grupos que coincidan con los filtros'
                                     : 'No hay grupos creados. ¡Crea el primero!'}
                             </p>
                         ) : (
@@ -475,7 +645,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                         <span className="font-semibold text-green-600">{group.attending_count}</span>
                                                     </span>
                                                     <button
-                                                        onClick={(e) => { e.preventDefault(); router.post(route('admin.groups.toggle-invitation-sent', group.id)); }}
+                                                        onClick={(e) => { e.preventDefault(); toggleInvitationSent(group); }}
                                                         className={`rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
                                                             group.invitation_sent_at
                                                                 ? 'bg-blue-100 text-blue-700'
@@ -531,20 +701,16 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Nombre del Grupo</TableHead>
-                                                <TableHead>Código</TableHead>
-                                                <TableHead>Tipo</TableHead>
-                                                <TableHead className="text-center">
-                                                    Personas
-                                                </TableHead>
-                                                <TableHead className="text-center">
-                                                    Asistirán
-                                                </TableHead>
-                                                <TableHead className="text-center">Estado</TableHead>
-                                                <TableHead className="text-center">Preparada</TableHead>
-                                                <TableHead className="text-center">Entregada</TableHead>
-                                                <TableHead className="text-center">Email</TableHead>
-                                                <TableHead className="text-center">Accedido</TableHead>
+                                                <TableHead><SortHeader label="Nombre del Grupo" column="name" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead><SortHeader label="Código" column="code" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead><SortHeader label="Tipo" column="type" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Personas" column="guests" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Asistirán" column="attending" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Estado" column="status" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Preparada" column="printed" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Entregada" column="delivered" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Email" column="sent" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
+                                                <TableHead className="text-center"><SortHeader label="Accedido" column="accessed" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} /></TableHead>
                                                 <TableHead className="text-right">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -594,7 +760,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                             <UiTooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <button
-                                                                        onClick={() => router.post(route('admin.groups.toggle-printed', group.id))}
+                                                                        onClick={() => togglePrinted(group)}
                                                                         className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
                                                                             group.printed_at
                                                                                 ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
@@ -619,7 +785,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                             <UiTooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <button
-                                                                        onClick={() => router.post(route('admin.groups.toggle-delivered', group.id))}
+                                                                        onClick={() => toggleDelivered(group)}
                                                                         className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
                                                                             group.delivered_at
                                                                                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
@@ -644,7 +810,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                             <UiTooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <button
-                                                                        onClick={() => router.post(route('admin.groups.toggle-invitation-sent', group.id))}
+                                                                        onClick={() => toggleInvitationSent(group)}
                                                                         className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
                                                                             group.invitation_sent_at
                                                                                 ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'

@@ -296,7 +296,12 @@ class InvitationGroupController extends Controller
     public function togglePrinted(InvitationGroup $group)
     {
         $group->update(['printed_at' => $group->printed_at ? null : now()]);
-        return back();
+
+        $msg = $group->printed_at
+            ? "'{$group->name}' marcado como preparado"
+            : "'{$group->name}' desmarcado como preparado";
+
+        return back()->with('success', $msg);
     }
 
     /**
@@ -305,7 +310,12 @@ class InvitationGroupController extends Controller
     public function toggleDelivered(InvitationGroup $group)
     {
         $group->update(['delivered_at' => $group->delivered_at ? null : now()]);
-        return back();
+
+        $msg = $group->delivered_at
+            ? "'{$group->name}' marcado como entregado"
+            : "'{$group->name}' desmarcado como entregado";
+
+        return back()->with('success', $msg);
     }
 
     /**
