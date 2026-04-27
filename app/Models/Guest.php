@@ -15,9 +15,10 @@ class Guest extends Model
         'allergies',
     ];
 
-    protected $casts = [
-        'attending' => 'boolean',
-    ];
+    public function getAttendingAttribute($value)
+    {
+        return $value === null ? null : (bool) $value;
+    }
 
     /**
      * Relación: Un invitado pertenece a un grupo

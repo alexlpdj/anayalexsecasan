@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download, Monitor, Smartphone, Activity, ArrowUp, ArrowDown, ArrowUpDown, Filter, X } from 'lucide-react';
+import { Eye, Pencil, Trash2, Plus, Search, Users, UserCheck, ChevronRight, MoreHorizontal, Send, Mail, Bell, Printer, Download, Monitor, Smartphone, Activity, ArrowUp, ArrowDown, ArrowUpDown, Filter, X, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -201,6 +201,22 @@ export default function GroupsIndex({ groups, stats, chartData }) {
     const togglePrinted = (group) => router.post(route('admin.groups.toggle-printed', group.id), {}, INERTIA_TOGGLE_OPTS);
     const toggleDelivered = (group) => router.post(route('admin.groups.toggle-delivered', group.id), {}, INERTIA_TOGGLE_OPTS);
     const toggleInvitationSent = (group) => router.post(route('admin.groups.toggle-invitation-sent', group.id), {}, INERTIA_TOGGLE_OPTS);
+
+    const adminConfirm = (group) => {
+        if (confirm(`¿Marcar "${group.name}" como confirmado (todos asisten)?`)) {
+            router.post(route('admin.groups.admin-confirm', group.id), {}, INERTIA_TOGGLE_OPTS);
+        }
+    };
+    const adminDecline = (group) => {
+        if (confirm(`¿Marcar "${group.name}" como rechazado (nadie asiste)?`)) {
+            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_TOGGLE_OPTS);
+        }
+    };
+    const adminResetRsvp = (group) => {
+        if (confirm(`¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta.`)) {
+            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_TOGGLE_OPTS);
+        }
+    };
 
     const deleteGroup = (group) => {
         if (
@@ -679,17 +695,51 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            deleteGroup(group);
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500 hover:bg-gray-100"
+                                                                onClick={(e) => e.preventDefault()}
+                                                            >
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-48">
+                                                            <DropdownMenuItem
+                                                                onClick={() => adminConfirm(group)}
+                                                                className="text-green-700 focus:bg-green-50 focus:text-green-700"
+                                                            >
+                                                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                                Confirmar asistencia
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => adminDecline(group)}
+                                                                className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                                                            >
+                                                                <XCircle className="mr-2 h-4 w-4" />
+                                                                Marcar como rechazado
+                                                            </DropdownMenuItem>
+                                                            {group.has_submitted && (
+                                                                <>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem
+                                                                        onClick={() => adminResetRsvp(group)}
+                                                                        className="text-gray-600 focus:bg-gray-50"
+                                                                    >
+                                                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                                                        Restablecer a pendiente
+                                                                    </DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                onClick={() => deleteGroup(group)}
+                                                                className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Eliminar grupo
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </div>
                                         </Link>
@@ -857,11 +907,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 <UiTooltip>
                                                                     <TooltipTrigger asChild>
                                                                         <Link href={route('admin.groups.show', group.id)}>
-                                                                            <Button
-                                                                                size="icon"
-                                                                                variant="ghost"
-                                                                                className="h-8 w-8 text-[#8b7355] hover:bg-[#8b7355]/10 hover:text-[#8b7355]"
-                                                                            >
+                                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-[#8b7355] hover:bg-[#8b7355]/10">
                                                                                 <Eye className="h-4 w-4" />
                                                                             </Button>
                                                                         </Link>
@@ -871,30 +917,61 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 <UiTooltip>
                                                                     <TooltipTrigger asChild>
                                                                         <Link href={route('admin.groups.edit', group.id)}>
-                                                                            <Button
-                                                                                size="icon"
-                                                                                variant="ghost"
-                                                                                className="h-8 w-8 text-[#a89584] hover:bg-[#8b7355]/10 hover:text-[#8b7355]"
-                                                                            >
+                                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-[#a89584] hover:bg-[#8b7355]/10 hover:text-[#8b7355]">
                                                                                 <Pencil className="h-4 w-4" />
                                                                             </Button>
                                                                         </Link>
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>Editar</TooltipContent>
                                                                 </UiTooltip>
-                                                                <UiTooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <Button
-                                                                            size="icon"
-                                                                            variant="ghost"
-                                                                            className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600"
-                                                                            onClick={() => deleteGroup(group)}
+                                                                <DropdownMenu>
+                                                                    <UiTooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500 hover:bg-gray-100">
+                                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                                </Button>
+                                                                            </DropdownMenuTrigger>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>Más acciones</TooltipContent>
+                                                                    </UiTooltip>
+                                                                    <DropdownMenuContent align="end" className="w-48">
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => adminConfirm(group)}
+                                                                            className="text-green-700 focus:bg-green-50 focus:text-green-700"
                                                                         >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent>Eliminar</TooltipContent>
-                                                                </UiTooltip>
+                                                                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                                            Confirmar asistencia
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => adminDecline(group)}
+                                                                            className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                                                                        >
+                                                                            <XCircle className="mr-2 h-4 w-4" />
+                                                                            Marcar como rechazado
+                                                                        </DropdownMenuItem>
+                                                                        {group.has_submitted && (
+                                                                            <>
+                                                                                <DropdownMenuSeparator />
+                                                                                <DropdownMenuItem
+                                                                                    onClick={() => adminResetRsvp(group)}
+                                                                                    className="text-gray-600 focus:bg-gray-50"
+                                                                                >
+                                                                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                                                                    Restablecer a pendiente
+                                                                                </DropdownMenuItem>
+                                                                            </>
+                                                                        )}
+                                                                        <DropdownMenuSeparator />
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => deleteGroup(group)}
+                                                                            className="text-red-600 focus:bg-red-50 focus:text-red-600"
+                                                                        >
+                                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                                            Eliminar grupo
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                             </div>
                                                         </TooltipProvider>
                                                     </TableCell>

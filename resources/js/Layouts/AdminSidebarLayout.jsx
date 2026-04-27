@@ -34,9 +34,15 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer, Music, Calculator, UserCheck } from 'lucide-react';
+import { Users, MessageCircle, Settings, HelpCircle, LogOut, ChevronsUpDown, UserCircle, FileDown, Printer, Music, Calculator, UserCheck, LayoutDashboard } from 'lucide-react';
 
 const navItems = [
+    {
+        label: 'Inicio',
+        href: 'admin.dashboard',
+        match: 'admin.dashboard',
+        icon: LayoutDashboard,
+    },
     {
         label: 'Grupos',
         href: 'admin.groups.index',
@@ -295,11 +301,11 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [] }) {
                 >
                     <div className="flex items-stretch">
                         {[
-                            { label: 'Grupos',       href: 'admin.groups.index',          match: 'admin.groups.*',   icon: Users,        badge: null },
-                            { label: 'Confirmados',  href: 'admin.confirmed',              match: 'admin.confirmed',  icon: UserCheck,    badge: 'attendingCount' },
-                            { label: 'Canciones',    href: 'admin.songs.index',            match: 'admin.songs.*',    icon: Music,        badge: 'songsCount' },
-                            { label: 'Preguntas',    href: 'admin.questions',              match: 'admin.questions',  icon: MessageCircle, badge: 'questionsCount' },
-                            { label: 'Ajustes',      href: 'admin.settings.wedding.edit',  match: 'admin.settings.*', icon: Settings,     badge: null },
+                            { label: 'Inicio',       href: 'admin.dashboard',              match: 'admin.dashboard',  icon: LayoutDashboard, badge: null },
+                            { label: 'Grupos',       href: 'admin.groups.index',           match: 'admin.groups.*',   icon: Users,           badge: null },
+                            { label: 'Confirmados',  href: 'admin.confirmed',              match: 'admin.confirmed',  icon: UserCheck,       badge: 'attendingCount' },
+                            { label: 'Preguntas',    href: 'admin.questions',              match: 'admin.questions',  icon: MessageCircle,   badge: 'questionsCount' },
+                            { label: 'Canciones',    href: 'admin.songs.index',            match: 'admin.songs.*',    icon: Music,           badge: 'songsCount' },
                         ].map((item) => {
                             const active = isActive(item.match);
                             const Icon   = item.icon;

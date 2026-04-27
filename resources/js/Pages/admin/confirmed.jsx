@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,17 @@ import {
     ArrowUp,
     ArrowDown,
     ArrowUpDown,
+    MoreHorizontal,
+    XCircle,
+    RotateCcw,
 } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const TRANSPORT_LABEL = {
     AUTOBUS:       'Autobús',
@@ -47,7 +57,14 @@ function TransportBadge({ group }) {
     const hasBus = group.bus_onda_ida || group.bus_onda_vuelta || group.bus_cs;
     const isCar  = group.transport === 'COCHE';
 
-    if (!group.transport || group.transport === 'NO_CONFIRMADO') return null;
+    if (!group.transport || group.transport === 'NO_CONFIRMADO') {
+        return (
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-600">
+                <AlertCircle className="h-3 w-3" />
+                Sin confirmar
+            </span>
+        );
+    }
 
     return (
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -98,9 +115,22 @@ function SortHeader({ label, column, sortBy, sortDir, onSort, className = '' }) 
     );
 }
 
+const INERTIA_OPTS = { preserveScroll: true, preserveState: true, only: ['groups', 'stats', 'flash'] };
+
 function GroupRow({ group }) {
     const [expanded, setExpanded] = useState(false);
     const hasAllergies = group.guests.some(g => g.attending && g.allergies);
+
+    const adminDecline = () => {
+        if (confirm(`¿Marcar "${group.name}" como rechazado? Se moverá fuera de confirmados.`)) {
+            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS);
+        }
+    };
+    const adminResetRsvp = () => {
+        if (confirm(`¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta.`)) {
+            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS);
+        }
+    };
 
     return (
         <>
@@ -144,14 +174,31 @@ function GroupRow({ group }) {
                     )}
                 </TableCell>
                 <TableCell className="text-right">
-                    <Link
-                        href={route('admin.groups.show', group.id)}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-[#8b7355] hover:bg-[#8b7355]/10">
-                            <Eye className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                    <div className="flex justify-end gap-1" onClick={e => e.stopPropagation()}>
+                        <Link href={route('admin.groups.show', group.id)}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-[#8b7355] hover:bg-[#8b7355]/10">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-500 hover:bg-gray-100">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={adminDecline} className="text-red-600 focus:bg-red-50 focus:text-red-600">
+                                    <XCircle className="mr-2 h-4 w-4" />
+                                    Marcar como rechazado
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={adminResetRsvp} className="text-gray-600 focus:bg-gray-50">
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Restablecer a pendiente
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </TableCell>
             </TableRow>
 
@@ -190,6 +237,17 @@ function GroupRow({ group }) {
 function MobileGroupCard({ group }) {
     const [expanded, setExpanded] = useState(false);
     const hasAllergies = group.guests.some(g => g.attending && g.allergies);
+
+    const adminDecline = () => {
+        if (confirm(`¿Marcar "${group.name}" como rechazado?`)) {
+            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS);
+        }
+    };
+    const adminResetRsvp = () => {
+        if (confirm(`¿Restablecer "${group.name}" a pendiente?`)) {
+            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS);
+        }
+    };
 
     return (
         <div className="rounded-lg border bg-white shadow-sm">
@@ -247,12 +305,30 @@ function MobileGroupCard({ group }) {
                                 </p>
                             )}
                         </div>
-                        <div className="border-t p-3">
-                            <Link href={route('admin.groups.show', group.id)}>
+                        <div className="flex gap-2 border-t p-3">
+                            <Link href={route('admin.groups.show', group.id)} className="flex-1">
                                 <Button variant="outline" size="sm" className="w-full text-xs">
-                                    <Eye className="mr-1.5 h-3.5 w-3.5" /> Ver detalle completo
+                                    <Eye className="mr-1.5 h-3.5 w-3.5" /> Ver detalle
                                 </Button>
                             </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="text-xs">
+                                        <MoreHorizontal className="h-3.5 w-3.5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem onClick={adminDecline} className="text-red-600 focus:bg-red-50 focus:text-red-600">
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Marcar como rechazado
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={adminResetRsvp} className="text-gray-600 focus:bg-gray-50">
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        Restablecer a pendiente
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </motion.div>
                 )}
@@ -343,7 +419,7 @@ export default function Confirmed({ groups, stats }) {
                             Personas Confirmadas
                         </h1>
                         <p className="mt-1 text-sm text-gray-600">
-                            Grupos que han respondido al RSVP, con el detalle de cada invitado
+                            Grupos con asistencia confirmada, con el detalle de cada invitado
                         </p>
                     </div>
                     <a href={route('admin.export.confirmed')}>
@@ -461,7 +537,7 @@ export default function Confirmed({ groups, stats }) {
                         <CardHeader className="p-3 sm:p-6">
                             <CardTitle>Grupos confirmados</CardTitle>
                             <CardDescription>
-                                {filtered.length} de {groups.length} grupos · {filteredAttending} personas asistirán · Clic para ver invitados
+                                {filtered.length} de {groups.length} grupos confirmados · {filteredAttending} personas asistirán · Clic para ver invitados
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">

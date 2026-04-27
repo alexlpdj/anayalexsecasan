@@ -67,9 +67,7 @@ Route::get('/admin', function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard principal
-    Route::get('/dashboard', function () {
-        return redirect()->route('admin.groups.index');
-    })->name('dashboard');
+    Route::get('/dashboard', [InvitationGroupController::class, 'dashboard'])->name('dashboard');
 
     // Gestión de Grupos
     Route::post('/groups/send-push', [InvitationGroupController::class, 'sendPushNotification'])
@@ -87,6 +85,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Marcar/desmarcar invitación como enviada (sin enviar email)
     Route::post('/groups/{group}/toggle-invitation-sent', [InvitationGroupController::class, 'toggleInvitationSent'])
         ->name('groups.toggle-invitation-sent');
+
+    // Acciones rápidas de RSVP desde el admin
+    Route::post('/groups/{group}/admin-confirm', [InvitationGroupController::class, 'adminConfirm'])
+        ->name('groups.admin-confirm');
+    Route::post('/groups/{group}/admin-decline', [InvitationGroupController::class, 'adminDecline'])
+        ->name('groups.admin-decline');
+    Route::post('/groups/{group}/admin-reset-rsvp', [InvitationGroupController::class, 'adminResetRsvp'])
+        ->name('groups.admin-reset-rsvp');
 
     // Marcar/desmarcar invitación como impresa
     Route::post('/groups/{group}/toggle-printed', [InvitationGroupController::class, 'togglePrinted'])

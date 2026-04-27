@@ -10,6 +10,8 @@ use App\Models\GuestQuestion;
 use App\Models\InvitationGroup;
 use App\Models\Guest;
 use App\Models\PushSubscription;
+use App\Models\SongSuggestion;
+use App\Models\WeddingSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -18,6 +20,89 @@ use Minishlink\WebPush\Subscription;
 
 class InvitationGroupController extends Controller
 {
+    /**
+     * Dashboard principal del admin
+     */
+    public function dashboard()
+    {
+        $wedding = WeddingSetting::current();
+        $daysUntil = $wedding?->wedding_date
+            ? (int) now()->startOfDay()->diffInDays($wedding->wedding_date->startOfDay(), false)
+            : null;
+
+        $totalGroups     = InvitationGroup::count();
+        $submittedGroups = InvitationGroup::submitted()->count();
+        $confirmedGroups = InvitationGroup::submitted()->whereHas('guests', fn($q) => $q->where('attending', true))->count();
+        $declinedGroups  = InvitationGroup::submitted()->whereDoesntHave('guests', fn($q) => $q->where('attending', true))->count();
+        $pendingGroups   = InvitationGroup::pending()->count();
+        $responseRate    = $totalGroups > 0 ? round(($submittedGroups / $totalGroups) * 100) : 0;
+
+        $recentActivity = InvitationGroup::submitted()
+            ->with('guests')
+            ->orderByDesc('submitted_at')
+            ->take(7)
+            ->get()
+            ->map(fn($g) => [
+                'id'             => $g->id,
+                'name'           => $g->name,
+                'submitted_at'   => $g->submitted_at,
+                'attending_count'=> $g->attendingCount(),
+                'total_count'    => $g->guests->count(),
+                'is_confirmed'   => $g->attendingCount() > 0,
+            ]);
+
+        $recentQuestions = GuestQuestion::with('invitationGroup')
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get()
+            ->map(fn($q) => [
+                'id'         => $q->id,
+                'group_name' => $q->invitationGroup->name,
+                'message'    => $q->message,
+                'created_at' => $q->created_at,
+            ]);
+
+        return Inertia::render('admin/dashboard', [
+            'wedding' => $wedding ? [
+                'bride'        => $wedding->bride,
+                'groom'        => $wedding->groom,
+                'wedding_date' => $wedding->wedding_date?->format('Y-m-d'),
+                'venue_name'   => $wedding->venue_name,
+            ] : null,
+            'days_until' => $daysUntil,
+            'stats' => [
+                'total_guests'        => Guest::count(),
+                'attending_guests'    => Guest::attending()->count(),
+                'not_attending_guests'=> Guest::where('attending', false)->count(),
+                'pending_guests'      => Guest::whereNull('attending')->count(),
+                'total_groups'        => $totalGroups,
+                'confirmed_groups'    => $confirmedGroups,
+                'declined_groups'     => $declinedGroups,
+                'pending_groups'      => $pendingGroups,
+                'submitted_groups'    => $submittedGroups,
+                'response_rate'       => $responseRate,
+            ],
+            'alerts' => [
+                'pending_with_email'  => InvitationGroup::pending()->whereNotNull('contact_email')->count(),
+                'without_transport'   => InvitationGroup::submitted()
+                    ->whereHas('guests', fn($q) => $q->where('attending', true))
+                    ->where(fn($q) => $q->whereNull('transport')->orWhere('transport', 'NO_CONFIRMADO'))
+                    ->count(),
+                'with_allergies'      => Guest::attending()->whereNotNull('allergies')->where('allergies', '!=', '')->count(),
+                'songs_count'         => SongSuggestion::count(),
+                'questions_count'     => GuestQuestion::count(),
+            ],
+            'transport' => [
+                ['name' => 'Bus Onda ida',    'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_ida', true))->count()],
+                ['name' => 'Bus Onda vuelta', 'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_onda_vuelta', true))->count()],
+                ['name' => 'Bus Castellón',   'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('bus_cs', true))->count()],
+                ['name' => 'Coche propio',    'value' => Guest::attending()->whereHas('invitationGroup', fn($q) => $q->where('transport', 'COCHE'))->count()],
+            ],
+            'recent_activity'  => $recentActivity,
+            'recent_questions' => $recentQuestions,
+        ]);
+    }
+
     /**
      * Listar todos los grupos
      */
@@ -62,7 +147,7 @@ class InvitationGroupController extends Controller
             'pending_groups' => InvitationGroup::pending()->count(),
             'total_guests' => Guest::count(),
             'attending_guests' => Guest::attending()->count(),
-            'confirmed_groups' => InvitationGroup::submitted()->count(),
+            'confirmed_groups' => InvitationGroup::submitted()->whereHas('guests', fn($q) => $q->where('attending', true))->count(),
             'pending_with_email' => InvitationGroup::pending()->whereNotNull('contact_email')->count(),
             'accessed_groups' => $accessedGroupsCount,
             'not_accessed_groups' => InvitationGroup::count() - $accessedGroupsCount,
@@ -532,11 +617,53 @@ class InvitationGroupController extends Controller
     }
 
     /**
+     * Confirmar RSVP de un grupo desde el admin (todos asisten)
+     */
+    public function adminConfirm(InvitationGroup $group)
+    {
+        $group->guests()->update(['attending' => true]);
+        if (!$group->submitted_at) {
+            $group->update(['submitted_at' => now()]);
+        }
+
+        return back()->with('success', "'{$group->name}' marcado como confirmado");
+    }
+
+    /**
+     * Rechazar RSVP de un grupo desde el admin (nadie asiste)
+     */
+    public function adminDecline(InvitationGroup $group)
+    {
+        $group->guests()->update(['attending' => false, 'allergies' => null]);
+        $group->update([
+            'submitted_at'   => $group->submitted_at ?? now(),
+            'transport'      => 'NO_CONFIRMADO',
+            'bus_onda_ida'   => false,
+            'bus_onda_vuelta'=> false,
+            'bus_cs'         => false,
+        ]);
+
+        return back()->with('success', "'{$group->name}' marcado como rechazado");
+    }
+
+    /**
+     * Resetear RSVP de un grupo a pendiente
+     */
+    public function adminResetRsvp(InvitationGroup $group)
+    {
+        $group->guests()->update(['attending' => null]);
+        $group->update(['submitted_at' => null]);
+
+        return back()->with('success', "'{$group->name}' restablecido a pendiente");
+    }
+
+    /**
      * Vista de grupos confirmados con sus invitados
      */
     public function confirmedGuests()
     {
         $groups = InvitationGroup::submitted()
+            ->whereHas('guests', fn($q) => $q->where('attending', true))
             ->with('guests')
             ->orderByDesc('submitted_at')
             ->get()
@@ -564,7 +691,7 @@ class InvitationGroupController extends Controller
             });
 
         $stats = [
-            'total_confirmed_groups' => InvitationGroup::submitted()->count(),
+            'total_confirmed_groups' => InvitationGroup::submitted()->whereHas('guests', fn($q) => $q->where('attending', true))->count(),
             'total_attending'        => Guest::attending()->count(),
             'total_not_attending'    => Guest::where('attending', false)->count(),
             'with_allergies'         => Guest::attending()->whereNotNull('allergies')->where('allergies', '!=', '')->count(),
