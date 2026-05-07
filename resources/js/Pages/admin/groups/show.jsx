@@ -161,7 +161,7 @@ export default function ShowGroup({ group }) {
         <AdminSidebarLayout>
             <Head title={`Grupo: ${group.name}`} />
 
-            <div className="mx-auto max-w-5xl space-y-4 p-3 sm:space-y-6 sm:p-6">
+            <div className="mx-auto max-w-5xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
 
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

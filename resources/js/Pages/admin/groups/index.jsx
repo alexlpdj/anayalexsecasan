@@ -306,7 +306,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6"
+                className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8"
             >
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -408,13 +408,13 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
                         >
-                            <Card className="transition-all hover:scale-105 hover:shadow-lg">
-                                <CardHeader className="p-3 pb-1 sm:p-6 sm:pb-2">
+                            <Card className="transition-all hover:-translate-y-0.5 hover:shadow-md">
+                                <CardHeader className="px-4 pb-1 pt-4 sm:px-5 sm:pt-5">
                                     <CardTitle className="text-xs font-medium text-gray-600 sm:text-sm">
                                         {stat.label}
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                                <CardContent className="px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
@@ -440,10 +440,10 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                     >
                         {/* Donut: Asistencia */}
                         <Card className="transition-shadow hover:shadow-lg">
-                            <CardHeader className="p-3 pb-0 sm:p-6 sm:pb-0">
+                            <CardHeader className="px-5 pb-0 pt-5">
                                 <CardTitle className="text-sm font-medium text-gray-600">Asistencia</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
+                            <CardContent className="px-5 py-4">
                                 <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
                                         <Pie
@@ -476,10 +476,10 @@ export default function GroupsIndex({ groups, stats, chartData }) {
 
                         {/* Barras: Transporte */}
                         <Card className="transition-shadow hover:shadow-lg">
-                            <CardHeader className="p-3 pb-0 sm:p-6 sm:pb-0">
+                            <CardHeader className="px-5 pb-0 pt-5">
                                 <CardTitle className="text-sm font-medium text-gray-600">Transporte</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
+                            <CardContent className="px-5 py-4">
                                 <ResponsiveContainer width="100%" height={200}>
                                     <BarChart
                                         data={chartData.transport}
@@ -502,10 +502,10 @@ export default function GroupsIndex({ groups, stats, chartData }) {
 
                         {/* Donut: Tipos */}
                         <Card className="transition-shadow hover:shadow-lg">
-                            <CardHeader className="p-3 pb-0 sm:p-6 sm:pb-0">
+                            <CardHeader className="px-5 pb-0 pt-5">
                                 <CardTitle className="text-sm font-medium text-gray-600">Tipos de Grupo</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-3 sm:p-6">
+                            <CardContent className="px-5 py-4">
                                 <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
                                         <Pie
@@ -545,7 +545,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                     transition={{ duration: 0.4, delay: 0.35 }}
                 >
                     <Card className="transition-shadow hover:shadow-lg">
-                        <CardContent className="space-y-3 p-3 sm:p-6">
+                        <CardContent className="space-y-3 px-5 py-4">
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -618,13 +618,13 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                     transition={{ duration: 0.4, delay: 0.4 }}
                 >
                     <Card className="transition-shadow hover:shadow-lg">
-                    <CardHeader className="p-3 sm:p-6">
+                    <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle>Grupos de Invitación</CardTitle>
                         <CardDescription>
                             {filteredGroups.length} de {groups.length} grupos
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                    <CardContent className="px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
                         {filteredGroups.length === 0 ? (
                             <p className="py-8 text-center text-gray-500">
                                 {search || activeFilterCount > 0

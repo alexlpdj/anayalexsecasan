@@ -427,7 +427,7 @@ export default function Confirmed({ groups, stats }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6"
+                className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8"
             >
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -466,13 +466,13 @@ export default function Confirmed({ groups, stats }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4, delay: 0.05 + index * 0.04 }}
                             >
-                                <Card className="transition-all hover:scale-105 hover:shadow-lg">
-                                    <CardHeader className="p-3 pb-1">
+                                <Card className="transition-all hover:-translate-y-0.5 hover:shadow-md">
+                                    <CardHeader className="px-4 pb-1 pt-4">
                                         <CardTitle className="text-[11px] font-medium leading-tight text-gray-600">
                                             {stat.label}
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="p-3 pt-0">
+                                    <CardContent className="px-4 pb-4 pt-0">
                                         <div className={`text-2xl font-bold ${stat.color}`}>
                                             {stat.value}
                                         </div>

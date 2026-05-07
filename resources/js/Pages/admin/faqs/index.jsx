@@ -122,7 +122,7 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6"
+                className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8"
             >
                 {/* Banner de traducciones pendientes */}
                 {pendingCount > 0 && (

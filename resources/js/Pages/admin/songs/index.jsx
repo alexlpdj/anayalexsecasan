@@ -109,7 +109,7 @@ export default function SongsIndex({ songs }) {
         <AdminSidebarLayout>
             <Head title="Canciones sugeridas" />
 
-            <div className="mx-auto max-w-7xl space-y-4 p-3 sm:space-y-6 sm:p-6">
+            <div className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
                         Canciones para la fiesta
@@ -120,13 +120,13 @@ export default function SongsIndex({ songs }) {
                 </div>
 
                 <Card>
-                    <CardHeader className="p-3 sm:p-6">
+                    <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle>Lista de canciones</CardTitle>
                         <CardDescription>
                             {songs.length} {songs.length === 1 ? 'canción sugerida' : 'canciones sugeridas'} en total
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                    <CardContent className="px-5 pb-5 pt-0">
                         {songs.length === 0 ? (
                             <p className="py-8 text-center text-gray-500">
                                 Ningún invitado ha sugerido canciones todavía

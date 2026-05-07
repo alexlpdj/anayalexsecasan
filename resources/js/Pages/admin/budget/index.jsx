@@ -238,7 +238,7 @@ export default function BudgetIndex({ items, target: serverTarget }) {
         <AdminSidebarLayout>
             <Head title="Presupuesto" />
 
-            <div className="mx-auto max-w-7xl space-y-3 p-3 sm:space-y-5 sm:p-6">
+            <div className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
 
                 {/* ── Cabecera ─────────────────────────────────────────── */}
                 <div className="flex items-center justify-between gap-3">
