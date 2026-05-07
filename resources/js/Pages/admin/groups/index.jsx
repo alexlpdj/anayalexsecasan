@@ -118,6 +118,8 @@ export default function GroupsIndex({ groups, stats, chartData }) {
     const [showFilters, setShowFilters] = useState(false);
     const [sortBy, setSortBy] = useState('name');
     const [sortDir, setSortDir] = useState('asc');
+    const [confirmDialog, setConfirmDialog] = useState(null);
+    const [pendingKeys, setPendingKeys] = useState(new Set());
 
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [sendingReminders, setSendingReminders] = useState(false);
@@ -198,35 +200,51 @@ export default function GroupsIndex({ groups, stats, chartData }) {
         setAccessedFilter('all');
     };
 
-    const togglePrinted = (group) => router.post(route('admin.groups.toggle-printed', group.id), {}, INERTIA_TOGGLE_OPTS);
-    const toggleDelivered = (group) => router.post(route('admin.groups.toggle-delivered', group.id), {}, INERTIA_TOGGLE_OPTS);
-    const toggleInvitationSent = (group) => router.post(route('admin.groups.toggle-invitation-sent', group.id), {}, INERTIA_TOGGLE_OPTS);
-
-    const adminConfirm = (group) => {
-        if (confirm(`¿Marcar "${group.name}" como confirmado (todos asisten)?`)) {
-            router.post(route('admin.groups.admin-confirm', group.id), {}, INERTIA_TOGGLE_OPTS);
-        }
-    };
-    const adminDecline = (group) => {
-        if (confirm(`¿Marcar "${group.name}" como rechazado (nadie asiste)?`)) {
-            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_TOGGLE_OPTS);
-        }
-    };
-    const adminResetRsvp = (group) => {
-        if (confirm(`¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta.`)) {
-            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_TOGGLE_OPTS);
-        }
+    const openConfirm = (title, description, onConfirm, variant = 'default') => {
+        setConfirmDialog({ title, description, onConfirm, variant });
     };
 
-    const deleteGroup = (group) => {
-        if (
-            confirm(
-                `¿Eliminar el grupo "${group.name}" y todos sus invitados (${group.guests_count})?`
-            )
-        ) {
-            router.delete(route('admin.groups.destroy', group.id));
-        }
+    const withPending = (key, callback) => {
+        setPendingKeys(prev => new Set([...prev, key]));
+        callback({
+            ...INERTIA_TOGGLE_OPTS,
+            onFinish: () => setPendingKeys(prev => { const next = new Set(prev); next.delete(key); return next; }),
+        });
     };
+
+    const isPending = (key) => pendingKeys.has(key);
+
+    const togglePrinted = (group) => withPending(`printed-${group.id}`, (opts) =>
+        router.post(route('admin.groups.toggle-printed', group.id), {}, opts));
+    const toggleDelivered = (group) => withPending(`delivered-${group.id}`, (opts) =>
+        router.post(route('admin.groups.toggle-delivered', group.id), {}, opts));
+    const toggleInvitationSent = (group) => withPending(`sent-${group.id}`, (opts) =>
+        router.post(route('admin.groups.toggle-invitation-sent', group.id), {}, opts));
+
+    const adminConfirm = (group) => openConfirm(
+        'Confirmar asistencia',
+        `¿Marcar "${group.name}" como confirmado? Todos los invitados quedarán marcados como asistentes.`,
+        () => router.post(route('admin.groups.admin-confirm', group.id), {}, INERTIA_TOGGLE_OPTS),
+        'success'
+    );
+    const adminDecline = (group) => openConfirm(
+        'Marcar como rechazado',
+        `¿Marcar "${group.name}" como rechazado? Ningún invitado asistirá y se borrarán alergias y transporte.`,
+        () => router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_TOGGLE_OPTS),
+        'danger'
+    );
+    const adminResetRsvp = (group) => openConfirm(
+        'Restablecer a pendiente',
+        `¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta de RSVP.`,
+        () => router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_TOGGLE_OPTS),
+        'danger'
+    );
+    const deleteGroup = (group) => openConfirm(
+        'Eliminar grupo',
+        `¿Eliminar el grupo "${group.name}" y todos sus invitados (${group.guests_count} personas)? Esta acción no se puede deshacer.`,
+        () => router.delete(route('admin.groups.destroy', group.id)),
+        'danger'
+    );
 
     const closeCustomModal = () => {
         setShowCustomModal(false);
@@ -377,12 +395,12 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6 sm:gap-4">
                     {[
-                        { label: 'Total Grupos', value: stats.total_groups, color: 'text-[#8b7355]' },
-                        { label: 'Confirmados', value: stats.confirmed_groups, color: 'text-green-600' },
-                        { label: 'Pendientes', value: stats.pending_groups, color: 'text-gray-600' },
-                        { label: 'Han accedido', value: stats.accessed_groups, color: 'text-blue-600' },
-                        { label: 'Total Personas', value: stats.total_guests, color: 'text-[#8b7355]' },
-                        { label: 'Asistirán', value: stats.attending_guests, color: 'text-green-600' }
+                        { label: 'Total Grupos',    value: stats.total_groups,     color: 'text-[#8b7355]', unit: 'grupos'   },
+                        { label: 'Confirmados',     value: stats.confirmed_groups, color: 'text-green-600', unit: 'grupos'   },
+                        { label: 'Pendientes',      value: stats.pending_groups,   color: 'text-gray-600',  unit: 'grupos'   },
+                        { label: 'Han accedido',    value: stats.accessed_groups,  color: 'text-blue-600',  unit: 'grupos'   },
+                        { label: 'Total Personas',  value: stats.total_guests,     color: 'text-[#8b7355]', unit: 'personas' },
+                        { label: 'Asistirán',       value: stats.attending_guests, color: 'text-green-600', unit: 'personas' },
                     ].map((stat, index) => (
                         <motion.div
                             key={stat.label}
@@ -405,6 +423,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                     >
                                         {stat.value}
                                     </motion.div>
+                                    <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-400">{stat.unit}</p>
                                 </CardContent>
                             </Card>
                         </motion.div>
@@ -471,7 +490,7 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                         <YAxis
                                             type="category"
                                             dataKey="name"
-                                            width={100}
+                                            width={120}
                                             tick={{ fontSize: 11 }}
                                         />
                                         <Tooltip formatter={(value) => [`${value} personas`]} />
@@ -811,13 +830,14 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 <TooltipTrigger asChild>
                                                                     <button
                                                                         onClick={() => togglePrinted(group)}
-                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                        disabled={isPending(`printed-${group.id}`)}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors disabled:cursor-wait disabled:opacity-60 ${
                                                                             group.printed_at
                                                                                 ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                                                                                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                                                                         }`}
                                                                     >
-                                                                        {group.printed_at
+                                                                        {isPending(`printed-${group.id}`) ? '…' : group.printed_at
                                                                             ? `✓ ${new Date(group.printed_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`
                                                                             : '—'}
                                                                     </button>
@@ -836,13 +856,14 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 <TooltipTrigger asChild>
                                                                     <button
                                                                         onClick={() => toggleDelivered(group)}
-                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                        disabled={isPending(`delivered-${group.id}`)}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors disabled:cursor-wait disabled:opacity-60 ${
                                                                             group.delivered_at
                                                                                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                                                                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                                                                         }`}
                                                                     >
-                                                                        {group.delivered_at
+                                                                        {isPending(`delivered-${group.id}`) ? '…' : group.delivered_at
                                                                             ? `✓ ${new Date(group.delivered_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`
                                                                             : '—'}
                                                                     </button>
@@ -861,13 +882,14 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                                                 <TooltipTrigger asChild>
                                                                     <button
                                                                         onClick={() => toggleInvitationSent(group)}
-                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors ${
+                                                                        disabled={isPending(`sent-${group.id}`)}
+                                                                        className={`rounded-full px-2 py-1 text-xs font-medium transition-colors disabled:cursor-wait disabled:opacity-60 ${
                                                                             group.invitation_sent_at
                                                                                 ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                                                                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
                                                                         }`}
                                                                     >
-                                                                        {group.invitation_sent_at ? '✓ Enviada' : '— Pendiente'}
+                                                                        {isPending(`sent-${group.id}`) ? '…' : group.invitation_sent_at ? '✓ Enviada' : '— Pendiente'}
                                                                     </button>
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
@@ -1247,6 +1269,29 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                             disabled={pushSelectedIds.size === 0 || !pushTitle.trim() || !pushBody.trim() || sendingPush}
                         >
                             {sendingPush ? 'Enviando…' : <><Bell className="mr-1.5 h-4 w-4 inline" /> Enviar push a {pushSelectedIds.size} grupo{pushSelectedIds.size !== 1 ? 's' : ''}</>}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Generic confirm dialog */}
+            <Dialog open={!!confirmDialog} onOpenChange={(open) => !open && setConfirmDialog(null)}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>{confirmDialog?.title}</DialogTitle>
+                        <DialogDescription>{confirmDialog?.description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setConfirmDialog(null)}>Cancelar</Button>
+                        <Button
+                            className={confirmDialog?.variant === 'danger'
+                                ? 'bg-red-600 text-white hover:bg-red-700'
+                                : confirmDialog?.variant === 'success'
+                                    ? 'bg-green-600 text-white hover:bg-green-700'
+                                    : 'bg-[#8b7355] text-white hover:bg-[#7a6449]'}
+                            onClick={() => { confirmDialog?.onConfirm(); setConfirmDialog(null); }}
+                        >
+                            Confirmar
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -50,7 +50,7 @@ function timeAgo(dateStr) {
 
 /* ─── sub-components ──────────────────────────────────────── */
 
-function StatCard({ icon: Icon, label, value, sub, colorText, colorBg, delay = 0 }) {
+function StatCard({ icon: Icon, label, value, sub, unit, colorText, colorBg, delay = 0 }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -63,6 +63,7 @@ function StatCard({ icon: Icon, label, value, sub, colorText, colorBg, delay = 0
                         <div>
                             <p className="text-xs font-medium text-gray-500 sm:text-sm">{label}</p>
                             <p className={`mt-1 text-3xl font-bold sm:text-4xl ${colorText}`}>{value}</p>
+                            {unit && <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-400">{unit}</p>}
                             {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
                         </div>
                         <div className={`rounded-xl p-2.5 ${colorBg}`}>
@@ -248,10 +249,10 @@ export default function Dashboard({ wedding, stats, alerts, transport, recent_ac
 
                 {/* ── STATS ─────────────────────────────────────────── */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                    <StatCard icon={Users}     label="Total invitados" value={stats.total_guests}          colorText="text-[#8b7355]" colorBg="bg-[#8b7355]/10" delay={s(0)} />
-                    <StatCard icon={UserCheck} label="Asistirán"       value={stats.attending_guests}      colorText="text-green-600" colorBg="bg-green-100"    delay={s(1)} sub={`${guestRate}% del total`} />
-                    <StatCard icon={UserX}     label="No asisten"      value={stats.not_attending_guests}  colorText="text-red-500"   colorBg="bg-red-100"      delay={s(2)} />
-                    <StatCard icon={Clock}     label="Sin responder"   value={stats.pending_guests}        colorText="text-amber-600" colorBg="bg-amber-100"    delay={s(3)} />
+                    <StatCard icon={Users}     label="Total invitados" value={stats.total_guests}          unit="personas" colorText="text-[#8b7355]" colorBg="bg-[#8b7355]/10" delay={s(0)} />
+                    <StatCard icon={UserCheck} label="Asistirán"       value={stats.attending_guests}      unit="personas" colorText="text-green-600" colorBg="bg-green-100"    delay={s(1)} sub={`${guestRate}% del total`} />
+                    <StatCard icon={UserX}     label="No asisten"      value={stats.not_attending_guests}  unit="personas" colorText="text-red-500"   colorBg="bg-red-100"      delay={s(2)} />
+                    <StatCard icon={Clock}     label="Sin responder"   value={stats.pending_guests}        unit="personas" colorText="text-amber-600" colorBg="bg-amber-100"    delay={s(3)} />
                 </div>
 
                 {/* ── GROUPS MINI ───────────────────────────────────── */}
@@ -270,6 +271,7 @@ export default function Dashboard({ wedding, stats, alerts, transport, recent_ac
                             <div className={`rounded-xl border ${item.border} ${item.bg} p-3 text-center sm:p-4`}>
                                 <p className={`text-2xl font-bold sm:text-3xl ${item.text}`}>{item.value}</p>
                                 <p className="mt-0.5 text-xs font-medium text-gray-500">{item.label}</p>
+                                <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">grupos</p>
                             </div>
                         </motion.div>
                     ))}
@@ -336,22 +338,31 @@ export default function Dashboard({ wedding, stats, alerts, transport, recent_ac
                                 </CardHeader>
                                 <CardContent className="space-y-3 px-4 pb-4">
                                     {transport.map((t) => {
-                                        const max = Math.max(...transport.map(x => x.value), 1);
+                                        const defined = transport.filter(x => x.name !== 'Sin definir');
+                                        const max = Math.max(...defined.map(x => x.value), 1);
                                         const pct = Math.round((t.value / max) * 100);
+                                        const isSinDefinir = t.name === 'Sin definir';
                                         return (
                                             <div key={t.name}>
                                                 <div className="mb-1 flex items-center justify-between text-xs">
-                                                    <span className="text-gray-600">{t.name}</span>
-                                                    <span className="font-semibold text-gray-800">{t.value}</span>
+                                                    <span className={isSinDefinir ? 'font-medium text-orange-600' : 'text-gray-600'}>
+                                                        {t.name}
+                                                        {isSinDefinir && ' ⚠'}
+                                                    </span>
+                                                    <span className={`font-semibold ${isSinDefinir ? 'text-orange-600' : 'text-gray-800'}`}>
+                                                        {t.value} personas
+                                                    </span>
                                                 </div>
-                                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${pct}%` }}
-                                                        transition={{ duration: 0.9, delay: 0.7, ease: 'easeOut' }}
-                                                        className="h-full rounded-full bg-blue-400"
-                                                    />
-                                                </div>
+                                                {!isSinDefinir && (
+                                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${pct}%` }}
+                                                            transition={{ duration: 0.9, delay: 0.7, ease: 'easeOut' }}
+                                                            className="h-full rounded-full bg-blue-400"
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}

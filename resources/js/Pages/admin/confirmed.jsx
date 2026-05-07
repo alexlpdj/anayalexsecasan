@@ -46,6 +46,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 const TRANSPORT_LABEL = {
     AUTOBUS:       'Autobús',
@@ -117,20 +125,22 @@ function SortHeader({ label, column, sortBy, sortDir, onSort, className = '' }) 
 
 const INERTIA_OPTS = { preserveScroll: true, preserveState: true, only: ['groups', 'stats', 'flash'] };
 
-function GroupRow({ group }) {
+function GroupRow({ group, openConfirm }) {
     const [expanded, setExpanded] = useState(false);
     const hasAllergies = group.guests.some(g => g.attending && g.allergies);
 
-    const adminDecline = () => {
-        if (confirm(`¿Marcar "${group.name}" como rechazado? Se moverá fuera de confirmados.`)) {
-            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS);
-        }
-    };
-    const adminResetRsvp = () => {
-        if (confirm(`¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta.`)) {
-            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS);
-        }
-    };
+    const adminDecline = () => openConfirm(
+        'Marcar como rechazado',
+        `¿Marcar "${group.name}" como rechazado? Se moverá fuera de confirmados y se borrarán alergias y transporte.`,
+        () => router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS),
+        'danger'
+    );
+    const adminResetRsvp = () => openConfirm(
+        'Restablecer a pendiente',
+        `¿Restablecer "${group.name}" a pendiente? Se borrará su respuesta de RSVP.`,
+        () => router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS),
+        'danger'
+    );
 
     return (
         <>
@@ -234,20 +244,22 @@ function GroupRow({ group }) {
     );
 }
 
-function MobileGroupCard({ group }) {
+function MobileGroupCard({ group, openConfirm }) {
     const [expanded, setExpanded] = useState(false);
     const hasAllergies = group.guests.some(g => g.attending && g.allergies);
 
-    const adminDecline = () => {
-        if (confirm(`¿Marcar "${group.name}" como rechazado?`)) {
-            router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS);
-        }
-    };
-    const adminResetRsvp = () => {
-        if (confirm(`¿Restablecer "${group.name}" a pendiente?`)) {
-            router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS);
-        }
-    };
+    const adminDecline = () => openConfirm(
+        'Marcar como rechazado',
+        `¿Marcar "${group.name}" como rechazado?`,
+        () => router.post(route('admin.groups.admin-decline', group.id), {}, INERTIA_OPTS),
+        'danger'
+    );
+    const adminResetRsvp = () => openConfirm(
+        'Restablecer a pendiente',
+        `¿Restablecer "${group.name}" a pendiente?`,
+        () => router.post(route('admin.groups.admin-reset-rsvp', group.id), {}, INERTIA_OPTS),
+        'danger'
+    );
 
     return (
         <div className="rounded-lg border bg-white shadow-sm">
@@ -344,6 +356,11 @@ export default function Confirmed({ groups, stats }) {
     const [transportFilter, setTransportFilter] = useState('all');
     const [sortBy, setSortBy] = useState('submitted_at');
     const [sortDir, setSortDir] = useState('desc');
+    const [confirmDialog, setConfirmDialog] = useState(null);
+
+    const openConfirm = (title, description, onConfirm, variant = 'default') => {
+        setConfirmDialog({ title, description, onConfirm, variant });
+    };
 
     const handleSort = (column) => {
         if (sortBy === column) {
@@ -422,12 +439,20 @@ export default function Confirmed({ groups, stats }) {
                             Grupos con asistencia confirmada, con el detalle de cada invitado
                         </p>
                     </div>
-                    <a href={route('admin.export.confirmed')}>
-                        <Button variant="outline">
-                            <Download className="mr-1.5 h-4 w-4" />
-                            Exportar CSV
-                        </Button>
-                    </a>
+                    <div className="flex gap-2">
+                        <a href={route('admin.export.allergies')}>
+                            <Button variant="outline" className="text-amber-700 border-amber-200 hover:bg-amber-50">
+                                <Download className="mr-1.5 h-4 w-4" />
+                                Alergias (catering)
+                            </Button>
+                        </a>
+                        <a href={route('admin.export.confirmed')}>
+                            <Button variant="outline">
+                                <Download className="mr-1.5 h-4 w-4" />
+                                Export completo
+                            </Button>
+                        </a>
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -552,7 +577,7 @@ export default function Confirmed({ groups, stats }) {
                                     {/* Mobile: cards */}
                                     <div className="space-y-3 md:hidden">
                                         {filtered.map(group => (
-                                            <MobileGroupCard key={group.id} group={group} />
+                                            <MobileGroupCard key={group.id} group={group} openConfirm={openConfirm} />
                                         ))}
                                     </div>
 
@@ -573,7 +598,7 @@ export default function Confirmed({ groups, stats }) {
                                             </TableHeader>
                                             <TableBody>
                                                 {filtered.map(group => (
-                                                    <GroupRow key={group.id} group={group} />
+                                                    <GroupRow key={group.id} group={group} openConfirm={openConfirm} />
                                                 ))}
                                             </TableBody>
                                         </Table>
@@ -584,6 +609,25 @@ export default function Confirmed({ groups, stats }) {
                     </Card>
                 </motion.div>
             </motion.div>
+
+            {/* Generic confirm dialog */}
+            <Dialog open={!!confirmDialog} onOpenChange={(open) => !open && setConfirmDialog(null)}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>{confirmDialog?.title}</DialogTitle>
+                        <DialogDescription>{confirmDialog?.description}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setConfirmDialog(null)}>Cancelar</Button>
+                        <Button
+                            className="bg-red-600 text-white hover:bg-red-700"
+                            onClick={() => { confirmDialog?.onConfirm(); setConfirmDialog(null); }}
+                        >
+                            Confirmar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminSidebarLayout>
     );
 }

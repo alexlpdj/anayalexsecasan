@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\BudgetController;
-use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\FaqController;
-use App\Http\Controllers\Admin\WeddingSettingsController;
+use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\SongSuggestionController;
+use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
 use App\Http\Controllers\Guest\GuestDashboardController;
 use App\Http\Controllers\Guest\PushController;
@@ -39,7 +39,7 @@ Route::prefix('invitacion')->name('guest.')->group(function () {
         Route::post('/confirmar', [GuestDashboardController::class, 'confirm'])->name('confirm');
         Route::post('/pregunta', [GuestDashboardController::class, 'askQuestion'])->name('question');
         Route::post('/logout', [GuestAuthController::class, 'logout'])->name('logout');
-        Route::post('/push/subscribe',   [PushController::class, 'subscribe'])->name('push.subscribe');
+        Route::post('/push/subscribe', [PushController::class, 'subscribe'])->name('push.subscribe');
         Route::post('/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('push.unsubscribe');
         Route::get('/canciones/buscar', [GuestDashboardController::class, 'searchSongs'])->name('songs.search');
         Route::post('/canciones', [GuestDashboardController::class, 'suggestSong'])->name('songs.suggest');
@@ -61,6 +61,7 @@ Route::get('/admin', function () {
     if (auth()->check()) {
         return redirect()->route('admin.dashboard');
     }
+
     return redirect()->route('login');
 });
 
@@ -87,6 +88,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         ->name('groups.toggle-invitation-sent');
 
     // Acciones rápidas de RSVP desde el admin
+    Route::patch('/groups/{group}/rsvp', [InvitationGroupController::class, 'adminUpdateRsvp'])
+        ->name('groups.rsvp');
     Route::post('/groups/{group}/admin-confirm', [InvitationGroupController::class, 'adminConfirm'])
         ->name('groups.admin-confirm');
     Route::post('/groups/{group}/admin-decline', [InvitationGroupController::class, 'adminDecline'])
@@ -124,6 +127,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::get('/export/codes', [InvitationGroupController::class, 'exportCodes'])
         ->name('export.codes');
 
+    Route::get('/export/allergies', [InvitationGroupController::class, 'exportAllergies'])
+        ->name('export.allergies');
+
     // Vista imprimible de códigos
     Route::get('/print/codes', [InvitationGroupController::class, 'printCodes'])
         ->name('print.codes');
@@ -131,10 +137,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Preguntas de invitados
     Route::get('/questions', [InvitationGroupController::class, 'questions'])
         ->name('questions');
+    Route::delete('/questions/{question}', [InvitationGroupController::class, 'destroyQuestion'])
+        ->name('questions.destroy');
 
     // Sugerencias de canciones
     Route::get('/songs', [SongSuggestionController::class, 'index'])
         ->name('songs.index');
+    Route::delete('/songs/{song}', [SongSuggestionController::class, 'destroy'])
+        ->name('songs.destroy');
 
     // FAQs - Preguntas Frecuentes
     Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');
@@ -161,5 +171,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
 |--------------------------------------------------------------------------
 */
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

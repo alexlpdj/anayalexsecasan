@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog, DialogContent, DialogHeader, DialogFooter,
+    DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
 import {
     Card,
     CardContent,
@@ -58,9 +64,21 @@ function ArtworkCell({ src, alt, previewUrl, isPlaying, onToggle }) {
     );
 }
 
+const OPTS = { preserveScroll: true, preserveState: true, only: ['songs', 'flash'] };
+
 export default function SongsIndex({ songs }) {
     const [playingId, setPlayingId] = useState(null);
     const audioRef = useRef(null);
+    const [confirmId, setConfirmId] = useState(null);
+
+    const doDelete = () => {
+        if (playingId === confirmId) {
+            audioRef.current?.pause();
+            setPlayingId(null);
+        }
+        router.delete(route('admin.songs.destroy', confirmId), OPTS);
+        setConfirmId(null);
+    };
 
     useEffect(() => {
         return () => {
@@ -139,6 +157,12 @@ export default function SongsIndex({ songs }) {
                                                     <span className="text-xs text-gray-400">{s.created_at}</span>
                                                 </div>
                                             </div>
+                                            <button
+                                                onClick={() => setConfirmId(s.id)}
+                                                className="shrink-0 rounded p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -153,6 +177,7 @@ export default function SongsIndex({ songs }) {
                                                 <TableHead>Artista</TableHead>
                                                 <TableHead className="w-48">Grupo</TableHead>
                                                 <TableHead className="w-40 text-right">Fecha</TableHead>
+                                                <TableHead className="w-12" />
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -185,6 +210,14 @@ export default function SongsIndex({ songs }) {
                                                     <TableCell className="text-right text-sm text-gray-500">
                                                         {s.created_at}
                                                     </TableCell>
+                                                    <TableCell>
+                                                        <button
+                                                            onClick={() => setConfirmId(s.id)}
+                                                            className="rounded p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -195,6 +228,21 @@ export default function SongsIndex({ songs }) {
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog open={!!confirmId} onOpenChange={(open) => !open && setConfirmId(null)}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Eliminar canción</DialogTitle>
+                        <DialogDescription>
+                            ¿Eliminar &quot;{songs.find(s => s.id === confirmId)?.track_title}&quot;? No se puede deshacer.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setConfirmId(null)}>Cancelar</Button>
+                        <Button className="bg-red-600 text-white hover:bg-red-700" onClick={doDelete}>Eliminar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminSidebarLayout>
     );
 }
