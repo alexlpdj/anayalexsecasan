@@ -158,35 +158,29 @@ export default function ShowGroup({ group }) {
     };
 
     return (
-        <AdminSidebarLayout>
+        <AdminSidebarLayout topbarSubtitle={group.name}>
             <Head title={`Grupo: ${group.name}`} />
 
             <div className="mx-auto max-w-5xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
 
-                {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{group.name}</h1>
-                        <p className="mt-1 text-sm text-gray-500">Detalle y edición del grupo</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        <Link href={route('admin.groups.index')}>
-                            <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
-                        </Link>
-                        <Link href={route('admin.groups.edit', group.id)}>
-                            <Button variant="outline" className="flex w-full items-center gap-1.5 sm:w-auto">
-                                <Pencil className="h-4 w-4" /> Editar nombre/invitados
-                            </Button>
-                        </Link>
-                    </div>
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2">
+                    <Link href={route('admin.groups.index')}>
+                        <Button variant="outline" className="w-full sm:w-auto">← Volver</Button>
+                    </Link>
+                    <Link href={route('admin.groups.edit', group.id)}>
+                        <Button variant="outline" className="flex w-full items-center gap-1.5 sm:w-auto">
+                            <Pencil className="h-4 w-4" /> Editar nombre/invitados
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Info del grupo (read-only) */}
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle>Información del Grupo</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-5 pb-5 pt-0">
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                             <div>
                                 <p className="text-xs font-medium text-gray-500">Código</p>
@@ -236,7 +230,7 @@ export default function ShowGroup({ group }) {
                 {/* ── PANEL RSVP EDITABLE ──────────────────────────── */}
                 <form onSubmit={submitRsvp}>
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="px-5 pb-3 pt-5">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <CardTitle>Gestión RSVP</CardTitle>
@@ -252,7 +246,7 @@ export default function ShowGroup({ group }) {
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 px-5 pb-5 pt-0">
 
                             {/* Invitados */}
                             <div>
@@ -402,7 +396,7 @@ export default function ShowGroup({ group }) {
 
                 {/* Comunicaciones por email */}
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle className="flex items-center gap-2">
                             <Mail className="h-5 w-5" /> Comunicaciones por email
                         </CardTitle>
@@ -421,7 +415,7 @@ export default function ShowGroup({ group }) {
                     </CardHeader>
 
                     {data.contact_email && (
-                        <CardContent className="pt-0">
+                        <CardContent className="px-5 pb-5 pt-0">
                             <EmailRow
                                 label="Código de invitación"
                                 sentAt={group.invitation_sent_at}
@@ -455,7 +449,7 @@ export default function ShowGroup({ group }) {
                 {/* Historial de accesos (colapsable) */}
                 <Card>
                     <CardHeader
-                        className="cursor-pointer select-none"
+                        className="cursor-pointer select-none px-5 pb-3 pt-5"
                         onClick={() => setVisitsExpanded(v => !v)}
                     >
                         <div className="flex items-center justify-between">
@@ -484,7 +478,7 @@ export default function ShowGroup({ group }) {
                     </CardHeader>
 
                     {visitsExpanded && (
-                        <CardContent>
+                        <CardContent className="px-5 pb-5 pt-0">
                             {group.visits.length === 0 ? (
                                 <p className="py-4 text-center text-sm text-gray-400">Sin accesos registrados</p>
                             ) : (

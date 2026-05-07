@@ -52,8 +52,8 @@ function timeAgo(dateStr) {
 
 function StatCard({ icon: Icon, label, value, sub, unit, colorText, colorBg, delay = 0 }) {
     return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }}>
-            <Card className="relative overflow-hidden border border-gray-100 shadow-none transition-all hover:-translate-y-0.5 hover:shadow-md">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay }} className="h-full">
+            <Card className="relative h-full overflow-hidden border border-gray-100 shadow-none transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardContent className="p-5">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">

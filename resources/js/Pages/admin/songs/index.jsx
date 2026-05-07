@@ -110,15 +110,6 @@ export default function SongsIndex({ songs }) {
             <Head title="Canciones sugeridas" />
 
             <div className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                        Canciones para la fiesta
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-600">
-                        Canciones sugeridas por los invitados · Pulsa la carátula para escuchar 30s
-                    </p>
-                </div>
-
                 <Card>
                     <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle>Lista de canciones</CardTitle>

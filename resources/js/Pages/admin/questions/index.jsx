@@ -30,11 +30,6 @@ export default function QuestionsIndex({ questions }) {
             <Head title="Preguntas de Invitados" />
 
             <div className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Preguntas de Invitados</h1>
-                    <p className="mt-1 text-sm text-gray-600">Dudas y consultas enviadas por los invitados</p>
-                </div>
-
                 <Card>
                     <CardHeader className="px-5 pb-3 pt-5">
                         <CardTitle>Preguntas recibidas</CardTitle>

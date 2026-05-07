@@ -161,14 +161,6 @@ export default function FaqsIndex({ faqs, pendingCount }) {
                     </motion.div>
                 )}
 
-                {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Preguntas Frecuentes</h1>
-                    <p className="mt-1 text-sm text-gray-600">
-                        Gestiona las FAQs que verán tus invitados
-                    </p>
-                </div>
-
                 {/* Stats */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {[

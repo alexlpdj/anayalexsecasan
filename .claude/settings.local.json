@@ -29,13 +29,16 @@
       "Bash(grep:*)",
       "Bash(git -C /Users/grabatutalentosl/Documents/GitHub/boda-alex-ana status)",
       "Bash(git -C /Users/grabatutalentosl/Documents/GitHub/boda-alex-ana diff --stat)",
-      "Read(//Users/grabatutalentosl/Documents/GitHub/backend_agenda_cultural/.claude/**)"
+      "Read(//Users/grabatutalentosl/Documents/GitHub/backend_agenda_cultural/.claude/**)",
+      "Bash(git checkout *)",
+      "Bash(vendor/bin/pint *)",
+      "Bash(git stash *)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "laravel-boost"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

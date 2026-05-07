@@ -308,17 +308,8 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                 transition={{ duration: 0.4 }}
                 className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8"
             >
-                {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                            Gestión de Grupos
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-600">
-                            Organiza a tus invitados por grupos o núcleos familiares
-                        </p>
-                    </div>
-                    <div className="flex w-full items-center gap-2 sm:w-auto">
+                {/* Header actions */}
+                <div className="flex w-full items-center gap-2 sm:w-auto sm:ml-auto">
                         {/* Mobile: dropdown with secondary actions */}
                         <div className="sm:hidden">
                             <DropdownMenu>
@@ -389,7 +380,6 @@ export default function GroupsIndex({ groups, stats, chartData }) {
                                 <span className="sm:hidden">Nuevo</span>
                             </Button>
                         </Link>
-                    </div>
                 </div>
 
                 {/* Stats Cards */}
