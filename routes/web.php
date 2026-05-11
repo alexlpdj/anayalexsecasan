@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BudgetController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\InvitationGroupController;
+use App\Http\Controllers\Admin\MusicMomentController;
 use App\Http\Controllers\Admin\SongSuggestionController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
@@ -145,6 +146,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         ->name('songs.index');
     Route::delete('/songs/{song}', [SongSuggestionController::class, 'destroy'])
         ->name('songs.destroy');
+
+    // Momentos musicales
+    Route::get('/musica', [MusicMomentController::class, 'index'])->name('music.index');
+    Route::post('/musica', [MusicMomentController::class, 'store'])->name('music.store');
+    Route::patch('/musica/{moment}', [MusicMomentController::class, 'update'])->name('music.update');
+    Route::delete('/musica/{moment}', [MusicMomentController::class, 'destroy'])->name('music.destroy');
+    Route::post('/musica/reorder', [MusicMomentController::class, 'reorder'])->name('music.reorder');
 
     // FAQs - Preguntas Frecuentes
     Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');
