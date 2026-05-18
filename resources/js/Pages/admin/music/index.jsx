@@ -18,7 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import {
     GripVertical, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp,
-    Music, X, Check, ListMusic,
+    Music, X, Check, ListMusic, Share2, Printer, Download, Copy, CheckCheck,
 } from 'lucide-react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 /* ── helpers ─────────────────────────────────────────────── */
 
@@ -320,9 +321,15 @@ function SongsSidebar({ songs }) {
                                 </p>
                                 <p className="truncate text-[11px] text-gray-400">{s.artist_name}</p>
                             </div>
-                            <span className="shrink-0 rounded bg-[#8b7355]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#8b7355]">
-                                {s.group_name}
-                            </span>
+                            {s.source === 'youtube' ? (
+                                <span className="shrink-0 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
+                                    YouTube
+                                </span>
+                            ) : (
+                                <span className="shrink-0 rounded bg-[#8b7355]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#8b7355]">
+                                    {s.group_name}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -338,10 +345,142 @@ const SECTIONS = [
     { key: 'fiesta', label: 'Fiesta', emoji: '🎉' },
 ];
 
+/* ── Import playlist dialog ──────────────────────────────── */
+
+function ImportPlaylistDialog({ open, onClose }) {
+    const { data, setData, post, processing, errors, reset } = useForm({ playlist_url: '' });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post(route('admin.music.import-playlist'), {
+            preserveScroll: true,
+            onSuccess: () => { reset(); onClose(); },
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Download className="h-4 w-4 text-red-500" /> Importar playlist de YouTube
+                    </DialogTitle>
+                    <DialogDescription>
+                        Pega el enlace de una playlist pública de YouTube Music para importar las canciones como sugeridas.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <Input
+                            placeholder="https://music.youtube.com/playlist?list=..."
+                            value={data.playlist_url}
+                            onChange={(e) => setData('playlist_url', e.target.value)}
+                            className="border-[#c4b5a4] focus:ring-[#8b7355]"
+                        />
+                        {errors.playlist_url && (
+                            <p className="mt-1 text-xs text-red-500">{errors.playlist_url}</p>
+                        )}
+                        <p className="mt-1.5 text-[11px] text-gray-400">
+                            Funciona con URLs de YouTube Music y YouTube estándar que contengan <code className="bg-gray-100 px-1 rounded">list=</code>
+                        </p>
+                    </div>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+                        <Button
+                            type="submit"
+                            disabled={processing || !data.playlist_url}
+                            className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                            {processing ? 'Importando…' : 'Importar canciones'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/* ── Share URL dialog ────────────────────────────────────── */
+
+function ShareDialog({ open, onClose }) {
+    const [shareUrl, setShareUrl] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        if (open && !shareUrl) {
+            setLoading(true);
+            fetch(route('admin.music.share-url'))
+                .then((r) => r.json())
+                .then((data) => { setShareUrl(data.url); setLoading(false); })
+                .catch(() => setLoading(false));
+        }
+    }, [open]);
+
+    const copyUrl = () => {
+        if (!shareUrl) return;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Share2 className="h-4 w-4 text-[#8b7355]" /> Compartir con la empresa de sonido
+                    </DialogTitle>
+                    <DialogDescription>
+                        Este enlace es público y no requiere contraseña. Cualquiera con el enlace puede ver los momentos y playlists.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                    {loading && <p className="text-sm text-gray-400 text-center py-4">Generando enlace…</p>}
+                    {shareUrl && (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    readOnly
+                                    value={shareUrl}
+                                    className="border-[#c4b5a4] text-sm font-mono bg-[#faf8f5]"
+                                    onClick={(e) => e.target.select()}
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={copyUrl}
+                                    className={copied ? 'bg-green-600 hover:bg-green-700' : 'bg-[#8b7355] hover:bg-[#7a6248]'}
+                                >
+                                    {copied ? <CheckCheck className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                            <a
+                                href={shareUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-xs text-[#8b7355] hover:underline"
+                            >
+                                <ExternalLink className="h-3 w-3" /> Abrir en nueva pestaña
+                            </a>
+                        </>
+                    )}
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cerrar</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function MusicIndex({ moments: initialMoments, songs }) {
     const [moments, setMoments] = useState(initialMoments);
     const [activeSection, setActiveSection] = useState('cena');
     const [confirmDelete, setConfirmDelete] = useState(null);
+    const [showShare, setShowShare] = useState(false);
+    const [showImport, setShowImport] = useState(false);
 
     const sectioned = (section) => moments.filter((m) => m.section === section);
 
@@ -397,13 +536,40 @@ export default function MusicIndex({ moments: initialMoments, songs }) {
 
             <div className="mx-auto max-w-7xl p-4 pb-24 sm:p-6 lg:pb-8">
                 {/* header */}
-                <div className="mb-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8b7355]/10">
-                        <ListMusic className="h-5 w-5 text-[#8b7355]" />
+                <div className="mb-6 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8b7355]/10">
+                            <ListMusic className="h-5 w-5 text-[#8b7355]" />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-bold text-gray-900">Organización musical</h1>
+                            <p className="text-sm text-gray-500">Planifica los momentos musicales de la boda</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-lg font-bold text-gray-900">Organización musical</h1>
-                        <p className="text-sm text-gray-500">Planifica los momentos musicales de la boda</p>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowImport(true)}
+                            className="border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                            <Download className="mr-1.5 h-3.5 w-3.5" /> Importar YouTube
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(route('admin.music.print'), '_blank')}
+                            className="border-[#c4b5a4] text-[#8b7355] hover:bg-[#faf8f5]"
+                        >
+                            <Printer className="mr-1.5 h-3.5 w-3.5" /> Imprimir
+                        </Button>
+                        <Button
+                            size="sm"
+                            onClick={() => setShowShare(true)}
+                            className="bg-[#8b7355] text-white hover:bg-[#7a6248]"
+                        >
+                            <Share2 className="mr-1.5 h-3.5 w-3.5" /> Compartir
+                        </Button>
                     </div>
                 </div>
 
@@ -482,6 +648,9 @@ export default function MusicIndex({ moments: initialMoments, songs }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ShareDialog open={showShare} onClose={() => setShowShare(false)} />
+            <ImportPlaylistDialog open={showImport} onClose={() => setShowImport(false)} />
         </AdminSidebarLayout>
     );
 }

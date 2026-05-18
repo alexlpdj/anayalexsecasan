@@ -22,6 +22,7 @@ class WeddingSetting extends Model
         'buses_info',
         'parking_available',
         'is_active',
+        'music_share_token',
     ];
 
     protected $casts = [

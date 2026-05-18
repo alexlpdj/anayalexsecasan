@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
 use App\Http\Controllers\Guest\GuestDashboardController;
 use App\Http\Controllers\Guest\PushController;
+use App\Http\Controllers\MusicShareController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect()->route('guest.login');
 });
+
+// Página compartible de música para la empresa de sonido (pública, sin login)
+Route::get('/musica/{token}', [MusicShareController::class, 'show'])->name('music.share');
 
 /*
 |--------------------------------------------------------------------------
@@ -153,6 +157,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::patch('/musica/{moment}', [MusicMomentController::class, 'update'])->name('music.update');
     Route::delete('/musica/{moment}', [MusicMomentController::class, 'destroy'])->name('music.destroy');
     Route::post('/musica/reorder', [MusicMomentController::class, 'reorder'])->name('music.reorder');
+    Route::get('/musica/share-url', [MusicMomentController::class, 'getShareUrl'])->name('music.share-url');
+    Route::get('/musica/imprimir', [MusicMomentController::class, 'print'])->name('music.print');
+    Route::post('/musica/importar-playlist', [MusicMomentController::class, 'importPlaylist'])->name('music.import-playlist');
 
     // FAQs - Preguntas Frecuentes
     Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');

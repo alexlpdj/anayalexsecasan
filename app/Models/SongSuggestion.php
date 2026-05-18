@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SongSuggestion extends Model
 {
     protected $fillable = [
+        'source',
         'invitation_group_id',
         'track_title',
         'artist_name',
@@ -15,6 +16,7 @@ class SongSuggestion extends Model
         'artwork_url',
         'itunes_track_id',
         'preview_url',
+        'youtube_video_id',
     ];
 
     public function invitationGroup(): BelongsTo
