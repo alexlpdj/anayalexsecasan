@@ -19,9 +19,10 @@ import { CSS } from '@dnd-kit/utilities';
 import {
     GripVertical, Plus, Trash2, ExternalLink, ChevronDown, ChevronUp,
     Music, X, Check, ListMusic, Share2, Printer, Copy, CheckCheck,
-    Youtube, Settings2, Pencil,
+    Settings2, Pencil, CalendarClock,
 } from 'lucide-react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
+import MusicTabs from '@/components/MusicTabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -384,156 +385,6 @@ function ShareDialog({ open, onClose }) {
     );
 }
 
-/* ── Assign YouTube playlist dialog ──────────────────────── */
-
-function AssignPlaylistDialog({ open, onClose, sections, moments, onMomentsChange }) {
-    const [url, setUrl] = useState('');
-    const [targetType, setTargetType] = useState('existing'); // 'existing' | 'new'
-    const [selectedMomentId, setSelectedMomentId] = useState('');
-    const [newName, setNewName] = useState('');
-    const [selectedSectionId, setSelectedSectionId] = useState('');
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (open) {
-            setUrl(''); setTargetType('existing'); setSelectedMomentId('');
-            setNewName(''); setSelectedSectionId(sections[0]?.id ?? ''); setError('');
-        }
-    }, [open, sections]);
-
-    const isValidUrl = (u) => {
-        try { new URL(u); return true; } catch { return false; }
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!isValidUrl(url)) { setError('URL no válida'); return; }
-
-        if (targetType === 'existing') {
-            if (!selectedMomentId) { setError('Selecciona un momento'); return; }
-            const snapshot = moments;
-            onMomentsChange((prev) => prev.map((m) => m.id === Number(selectedMomentId) ? { ...m, playlist_url: url } : m));
-            router.patch(route('admin.music.update', selectedMomentId), { playlist_url: url }, {
-                preserveScroll: true, preserveState: true, only: ['flash'],
-                onError: () => { onMomentsChange(snapshot); setError('No se pudo guardar'); },
-            });
-            onClose();
-        } else {
-            if (!newName.trim()) { setError('Introduce un nombre para el momento'); return; }
-            if (!selectedSectionId) { setError('Selecciona una sección'); return; }
-            router.post(route('admin.music.store'), {
-                section_id: selectedSectionId,
-                name: newName.trim(),
-                playlist_url: url,
-            }, {
-                preserveScroll: true,
-                onSuccess: (page) => { onMomentsChange(page.props.moments); onClose(); },
-                onError: () => setError('No se pudo crear el momento'),
-            });
-        }
-    };
-
-    const momentsBySectionId = (sid) => moments.filter((m) => m.section_id === sid);
-
-    return (
-        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Youtube className="h-4 w-4 text-red-500" /> Asignar playlist de YouTube Music
-                    </DialogTitle>
-                    <DialogDescription>
-                        Pega el enlace de la playlist y elige a qué momento asignarla.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-600">Enlace de la playlist</label>
-                        <Input
-                            placeholder="https://music.youtube.com/playlist?list=..."
-                            value={url}
-                            onChange={(e) => { setUrl(e.target.value); setError(''); }}
-                            className="border-[#c4b5a4]"
-                        />
-                    </div>
-
-                    {/* Target type toggle */}
-                    <div className="flex rounded-lg border border-[#e2dbd3] bg-[#faf8f5] p-1">
-                        {[
-                            { key: 'existing', label: 'Momento existente' },
-                            { key: 'new', label: 'Crear nuevo momento' },
-                        ].map((opt) => (
-                            <button
-                                key={opt.key}
-                                type="button"
-                                onClick={() => setTargetType(opt.key)}
-                                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                                    targetType === opt.key ? 'bg-white shadow-sm text-[#8b7355]' : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                {opt.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {targetType === 'existing' ? (
-                        <div>
-                            <label className="mb-1 block text-xs font-medium text-gray-600">Momento</label>
-                            <select
-                                value={selectedMomentId}
-                                onChange={(e) => setSelectedMomentId(e.target.value)}
-                                className="w-full rounded-lg border border-[#c4b5a4] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#8b7355]"
-                            >
-                                <option value="">— Selecciona un momento —</option>
-                                {sections.map((s) => (
-                                    <optgroup key={s.id} label={`${s.emoji} ${s.name}`}>
-                                        {momentsBySectionId(s.id).map((m) => (
-                                            <option key={m.id} value={m.id}>{m.name}</option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            <div>
-                                <label className="mb-1 block text-xs font-medium text-gray-600">Nombre del momento</label>
-                                <Input
-                                    placeholder="ej. Cocktail, Entrada, Primer baile…"
-                                    value={newName}
-                                    onChange={(e) => setNewName(e.target.value)}
-                                    className="border-[#c4b5a4]"
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-1 block text-xs font-medium text-gray-600">Sección</label>
-                                <select
-                                    value={selectedSectionId}
-                                    onChange={(e) => setSelectedSectionId(e.target.value)}
-                                    className="w-full rounded-lg border border-[#c4b5a4] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#8b7355]"
-                                >
-                                    {sections.map((s) => (
-                                        <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {error && <p className="text-xs text-red-500">{error}</p>}
-
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-                        <Button type="submit" className="bg-red-600 text-white hover:bg-red-700">
-                            Asignar playlist
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
 /* ── Manage sections dialog ──────────────────────────────── */
 
 function ManageSectionsDialog({ open, onClose, sections, onSectionsChange }) {
@@ -631,7 +482,6 @@ export default function MusicIndex({ sections: initialSections, moments: initial
     const [activeSection, setActiveSection] = useState(initialSections[0]?.id ?? null);
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [showShare, setShowShare] = useState(false);
-    const [showAssign, setShowAssign] = useState(false);
     const [showManageSections, setShowManageSections] = useState(false);
 
     // Keep activeSection valid if sections change
@@ -682,24 +532,23 @@ export default function MusicIndex({ sections: initialSections, moments: initial
 
     return (
         <AdminSidebarLayout>
-            <Head title="Organización musical" />
+            <Head title="Momentos musicales" />
 
             <div className="mx-auto max-w-7xl p-4 pb-24 sm:p-6 lg:pb-8">
+                <MusicTabs />
+
                 {/* header */}
                 <div className="mb-6 flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8b7355]/10">
-                            <ListMusic className="h-5 w-5 text-[#8b7355]" />
+                            <CalendarClock className="h-5 w-5 text-[#8b7355]" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold text-gray-900">Organización musical</h1>
+                            <h1 className="text-lg font-bold text-gray-900">Momentos musicales</h1>
                             <p className="text-sm text-gray-500">Planifica los momentos musicales de la boda</p>
                         </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setShowAssign(true)} className="border-red-200 text-red-600 hover:bg-red-50">
-                            <Youtube className="mr-1.5 h-3.5 w-3.5" /> Asignar YouTube
-                        </Button>
                         <Button variant="outline" size="sm" onClick={() => window.open(route('admin.music.print'), '_blank')} className="border-[#c4b5a4] text-[#8b7355] hover:bg-[#faf8f5]">
                             <Printer className="mr-1.5 h-3.5 w-3.5" /> Imprimir
                         </Button>
@@ -795,13 +644,6 @@ export default function MusicIndex({ sections: initialSections, moments: initial
             </Dialog>
 
             <ShareDialog open={showShare} onClose={() => setShowShare(false)} />
-            <AssignPlaylistDialog
-                open={showAssign}
-                onClose={() => setShowAssign(false)}
-                sections={sections}
-                moments={moments}
-                onMomentsChange={setMoments}
-            />
             <ManageSectionsDialog
                 open={showManageSections}
                 onClose={() => setShowManageSections(false)}

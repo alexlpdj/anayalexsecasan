@@ -20,7 +20,7 @@ class SongSuggestionController extends Controller
                 'album_name' => $s->album_name,
                 'artwork_url' => $s->artwork_url,
                 'preview_url' => $s->preview_url,
-                'group_name' => $s->invitationGroup->name,
+                'group_name' => $s->invitationGroup?->name ?? 'YouTube',
                 'created_at' => $s->created_at->format('d/m/Y H:i'),
             ]);
 

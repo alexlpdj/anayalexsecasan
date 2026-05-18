@@ -160,6 +160,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::patch('/playlists/{playlist}', [PlaylistController::class, 'update'])->name('playlists.update');
     Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
     Route::post('/playlists/{playlist}/import', [PlaylistController::class, 'importFromYoutube'])->name('playlists.import');
+    Route::get('/playlists/{playlist}/buscar', [PlaylistController::class, 'searchYoutube'])->name('playlists.search');
+    Route::post('/playlists/{playlist}/songs', [PlaylistController::class, 'addSong'])->name('playlists.songs.store');
     Route::delete('/playlists/{playlist}/songs/{song}', [PlaylistController::class, 'removeSong'])->name('playlists.songs.destroy');
 
     // Secciones musicales

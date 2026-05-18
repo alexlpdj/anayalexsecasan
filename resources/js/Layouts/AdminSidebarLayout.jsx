@@ -45,9 +45,8 @@ const navItems = [
     { label: 'Grupos',      pageTitle: 'Grupos de invitados',    href: 'admin.groups.index',           match: 'admin.groups.*',   icon: Users },
     { label: 'Confirmados', pageTitle: 'Invitados confirmados',  href: 'admin.confirmed',              match: 'admin.confirmed',  badge: 'attendingCount', icon: UserCheck },
     { label: 'Preguntas',   pageTitle: 'Preguntas recibidas',    href: 'admin.questions',              match: 'admin.questions',  badge: 'questionsCount', icon: MessageCircle },
-    { label: 'Canciones',   pageTitle: 'Canciones sugeridas',    href: 'admin.songs.index',            match: 'admin.songs.*',    badge: 'songsCount',     icon: Music },
-    { label: 'Playlists',   pageTitle: 'Playlists',              href: 'admin.playlists.index',        match: 'admin.playlists.*',                         icon: ListMusic },
-    { label: 'Música',      pageTitle: 'Organización musical',   href: 'admin.music.index',            match: 'admin.music.*',                             icon: Music },
+    { label: 'Sugerencias', pageTitle: 'Sugerencias de invitados', href: 'admin.songs.index',           match: 'admin.songs.*',    badge: 'songsCount',     icon: Music },
+    { label: 'Música',      pageTitle: 'Música de la boda',      href: 'admin.music.index',            match: ['admin.music.*', 'admin.playlists.*'],      icon: ListMusic },
     { label: 'FAQs',        pageTitle: 'Preguntas frecuentes',   href: 'admin.faqs.index',             match: 'admin.faqs.*',     icon: HelpCircle },
     { label: 'Presupuesto', pageTitle: 'Presupuesto de boda',    href: 'admin.budget.index',           match: 'admin.budget.*',   icon: Calculator },
     { label: 'Ajustes',     pageTitle: 'Configuración de boda',  href: 'admin.settings.wedding.edit',  match: 'admin.settings.*', icon: Settings },
@@ -85,7 +84,10 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [], topbarS
         return () => { offSuccess(); offError(); };
     }, []);
 
-    const isActive = (match) => route().current(match);
+    const isActive = (match) =>
+        Array.isArray(match)
+            ? match.some((m) => route().current(m))
+            : route().current(match);
 
     const activeItem = navItems.find(item => isActive(item.match));
     const DerivedIcon = activeItem?.icon;
@@ -282,7 +284,7 @@ export default function AdminSidebarLayout({ children, breadcrumbs = [], topbarS
                             { label: 'Grupos',      href: 'admin.groups.index', match: 'admin.groups.*',  icon: Users,           badge: null },
                             { label: 'Confirmados', href: 'admin.confirmed',    match: 'admin.confirmed', icon: UserCheck,       badge: 'attendingCount' },
                             { label: 'Preguntas',   href: 'admin.questions',    match: 'admin.questions', icon: MessageCircle,   badge: 'questionsCount' },
-                            { label: 'Canciones',   href: 'admin.songs.index',  match: 'admin.songs.*',   icon: Music,           badge: 'songsCount' },
+                            { label: 'Sugerencias', href: 'admin.songs.index',  match: 'admin.songs.*',   icon: Music,           badge: 'songsCount' },
                         ].map((item) => {
                             const active = isActive(item.match);
                             const Icon = item.icon;

@@ -107,7 +107,7 @@ export default function SongsIndex({ songs }) {
 
     return (
         <AdminSidebarLayout>
-            <Head title="Canciones sugeridas" />
+            <Head title="Sugerencias de invitados" />
 
             <div className="mx-auto max-w-7xl space-y-5 p-4 pb-24 sm:p-6 lg:pb-8">
                 <Card>

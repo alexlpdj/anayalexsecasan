@@ -136,6 +136,90 @@ class PlaylistController extends Controller
         return back()->with('success', $msg);
     }
 
+    public function searchYoutube(Request $request, Playlist $playlist)
+    {
+        $query = $request->validate(['q' => ['required', 'string', 'max:120']])['q'];
+
+        $apiKey = config('services.youtube.key');
+
+        if (! $apiKey) {
+            return response()->json(['error' => 'Añade YOUTUBE_API_KEY en el archivo .env para usar el buscador.'], 422);
+        }
+
+        try {
+            $response = Http::timeout(8)->get('https://www.googleapis.com/youtube/v3/search', [
+                'part' => 'snippet',
+                'q' => $query,
+                'type' => 'video',
+                'videoCategoryId' => '10',
+                'maxResults' => 12,
+                'key' => $apiKey,
+            ]);
+            $response->throw();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al conectar con YouTube. Inténtalo de nuevo.'], 502);
+        }
+
+        $items = collect($response->json('items', []));
+        $videoIds = $items->pluck('id.videoId')->filter()->values();
+
+        $durations = [];
+        if ($videoIds->isNotEmpty()) {
+            $detailsResp = Http::timeout(8)->get('https://www.googleapis.com/youtube/v3/videos', [
+                'part' => 'contentDetails',
+                'id' => $videoIds->join(','),
+                'key' => $apiKey,
+            ]);
+            foreach ($detailsResp->json('items', []) as $item) {
+                $durations[$item['id']] = $this->iso8601ToSeconds($item['contentDetails']['duration'] ?? '');
+            }
+        }
+
+        $existing = $playlist->songs()->pluck('youtube_video_id')->flip();
+
+        $results = $items->map(function ($item) use ($durations, $existing) {
+            $videoId = $item['id']['videoId'] ?? null;
+            if (! $videoId) {
+                return null;
+            }
+            $snippet = $item['snippet'];
+            [$artist, $cleanTitle] = $this->parseTitle($snippet['title'] ?? '');
+
+            return [
+                'youtube_video_id' => $videoId,
+                'title' => $cleanTitle,
+                'artist' => $artist ?? ($snippet['channelTitle'] ?? null),
+                'thumbnail_url' => $snippet['thumbnails']['medium']['url']
+                    ?? $snippet['thumbnails']['default']['url']
+                    ?? null,
+                'duration_seconds' => $durations[$videoId] ?? null,
+                'already_added' => $existing->has($videoId),
+            ];
+        })->filter()->values();
+
+        return response()->json(['results' => $results]);
+    }
+
+    public function addSong(Request $request, Playlist $playlist)
+    {
+        $validated = $request->validate([
+            'youtube_video_id' => ['required', 'string', 'max:20'],
+            'title' => ['required', 'string', 'max:255'],
+            'artist' => ['nullable', 'string', 'max:255'],
+            'thumbnail_url' => ['nullable', 'url', 'max:500'],
+            'duration_seconds' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        if ($playlist->songs()->where('youtube_video_id', $validated['youtube_video_id'])->exists()) {
+            return back()->with('error', 'Esa canción ya está en la playlist.');
+        }
+
+        $maxOrder = $playlist->songs()->max('sort_order') ?? -1;
+        $playlist->songs()->create([...$validated, 'sort_order' => $maxOrder + 1]);
+
+        return back()->with('success', "\"{$validated['title']}\" añadida a la playlist.");
+    }
+
     public function removeSong(Playlist $playlist, PlaylistSong $song)
     {
         abort_unless($song->playlist_id === $playlist->id, 403);

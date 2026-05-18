@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ListMusic, Plus, Trash2, Music, ChevronRight } from 'lucide-react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
+import MusicTabs from '@/components/MusicTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -62,6 +63,8 @@ export default function PlaylistsIndex({ playlists }) {
             <Head title="Playlists" />
 
             <div className="mx-auto max-w-3xl p-4 pb-24 sm:p-6 lg:pb-8">
+                <MusicTabs />
+
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">

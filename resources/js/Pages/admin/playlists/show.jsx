@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft, Music, Youtube, Trash2, Clock, Search,
-    Download, ListMusic, Pencil, Check, X,
+    Download, ListMusic, Pencil, Check, X, Plus, Loader2,
 } from 'lucide-react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,179 @@ function ImportDialog({ open, onClose, playlistId }) {
                         </Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/* ── helpers ─────────────────────────────────────────────── */
+
+function formatDuration(seconds) {
+    if (!seconds) {
+        return '';
+    }
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+
+    return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/* ── YouTube search dialog ───────────────────────────────── */
+
+function SearchDialog({ open, onClose, playlistId, onAdded }) {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [searched, setSearched] = useState(false);
+    const [addingId, setAddingId] = useState(null);
+    const [addedIds, setAddedIds] = useState([]);
+
+    useEffect(() => {
+        if (!open) {
+            setQuery(''); setResults([]); setError('');
+            setSearched(false); setAddedIds([]); setAddingId(null);
+        }
+    }, [open]);
+
+    const runSearch = (e) => {
+        e.preventDefault();
+        if (!query.trim()) {
+            return;
+        }
+        setLoading(true);
+        setError('');
+        fetch(`${route('admin.playlists.search', playlistId)}?q=${encodeURIComponent(query.trim())}`)
+            .then(async (r) => {
+                const data = await r.json();
+                if (!r.ok) {
+                    throw new Error(data.error || 'No se pudo completar la búsqueda.');
+                }
+                setResults(data.results || []);
+                setSearched(true);
+            })
+            .catch((err) => setError(err.message))
+            .finally(() => setLoading(false));
+    };
+
+    const addSong = (song) => {
+        setAddingId(song.youtube_video_id);
+        router.post(route('admin.playlists.songs.store', playlistId), {
+            youtube_video_id: song.youtube_video_id,
+            title: song.title,
+            artist: song.artist,
+            thumbnail_url: song.thumbnail_url,
+            duration_seconds: song.duration_seconds,
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['flash'],
+            onSuccess: () => {
+                setAddedIds((prev) => [...prev, song.youtube_video_id]);
+                onAdded();
+            },
+            onFinish: () => setAddingId(null),
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+            <DialogContent className="flex max-h-[85vh] max-w-lg flex-col">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Search className="h-4 w-4 text-[#8b7355]" /> Buscar canción en YouTube
+                    </DialogTitle>
+                    <DialogDescription>
+                        Escribe el título o el artista y añade canciones directamente a la playlist.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={runSearch} className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
+                        <Input
+                            autoFocus
+                            placeholder="ej. Coldplay - Yellow"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            className="border-[#c4b5a4] pl-9"
+                        />
+                    </div>
+                    <Button type="submit" disabled={loading || !query.trim()} className="bg-[#8b7355] text-white hover:bg-[#7a6248]">
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Buscar'}
+                    </Button>
+                </form>
+
+                {error && <p className="text-xs text-red-500">{error}</p>}
+
+                <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2">
+                    {loading && (
+                        <div className="space-y-2 py-2">
+                            {[0, 1, 2, 3].map((i) => (
+                                <div key={i} className="flex animate-pulse items-center gap-3 rounded-lg p-2">
+                                    <div className="h-12 w-12 shrink-0 rounded bg-[#f0ebe5]" />
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 w-3/4 rounded bg-[#f0ebe5]" />
+                                        <div className="h-2.5 w-1/2 rounded bg-[#f0ebe5]" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {!loading && searched && results.length === 0 && (
+                        <p className="py-8 text-center text-sm text-gray-400">Sin resultados para "{query}"</p>
+                    )}
+
+                    {!loading && results.map((song) => {
+                        const added = song.already_added || addedIds.includes(song.youtube_video_id);
+                        const adding = addingId === song.youtube_video_id;
+                        return (
+                            <div key={song.youtube_video_id} className="flex items-center gap-3 rounded-lg p-2 hover:bg-[#faf8f5]">
+                                {song.thumbnail_url ? (
+                                    <img src={song.thumbnail_url} alt={song.title} className="h-12 w-12 shrink-0 rounded object-cover" />
+                                ) : (
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#f0ebe5]">
+                                        <Music className="h-4 w-4 text-[#c4b5a4]" />
+                                    </div>
+                                )}
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-medium text-gray-900">{song.title}</p>
+                                    <p className="truncate text-xs text-gray-400">
+                                        {song.artist}
+                                        {song.duration_seconds ? ` · ${formatDuration(song.duration_seconds)}` : ''}
+                                    </p>
+                                </div>
+                                {added ? (
+                                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600">
+                                        <Check className="h-3.5 w-3.5" /> Añadida
+                                    </span>
+                                ) : (
+                                    <Button
+                                        size="sm"
+                                        disabled={adding}
+                                        onClick={() => addSong(song)}
+                                        className="shrink-0 bg-[#8b7355] text-white hover:bg-[#7a6248]"
+                                    >
+                                        {adding
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : <><Plus className="mr-1 h-4 w-4" /> Añadir</>}
+                                    </Button>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {!loading && !searched && (
+                        <p className="py-8 text-center text-sm text-gray-400">
+                            Busca una canción para empezar
+                        </p>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cerrar</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -151,9 +324,14 @@ export default function PlaylistShow({ playlist, songs: initialSongs }) {
     const [songs, setSongs] = useState(initialSongs);
     const [search, setSearch] = useState('');
     const [showImport, setShowImport] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
     const [editingName, setEditingName] = useState(false);
     const [draftName, setDraftName] = useState(playlist.name);
     const [confirmDeletePlaylist, setConfirmDeletePlaylist] = useState(false);
+
+    useEffect(() => {
+        setSongs(initialSongs);
+    }, [initialSongs]);
 
     const filtered = search
         ? songs.filter((s) =>
@@ -240,8 +418,11 @@ export default function PlaylistShow({ playlist, songs: initialSongs }) {
                                 <Button variant="outline" size="sm" onClick={() => setConfirmDeletePlaylist(true)} className="border-red-200 text-red-400 hover:bg-red-50">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" onClick={() => setShowImport(true)} className="bg-red-600 text-white hover:bg-red-700">
-                                    <Youtube className="mr-1.5 h-4 w-4" /> Importar de YouTube
+                                <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="border-red-200 text-red-600 hover:bg-red-50">
+                                    <Youtube className="mr-1.5 h-4 w-4" /> Importar
+                                </Button>
+                                <Button size="sm" onClick={() => setShowSearch(true)} className="bg-[#8b7355] text-white hover:bg-[#7a6248]">
+                                    <Plus className="mr-1.5 h-4 w-4" /> Añadir canción
                                 </Button>
                             </>
                         )}
@@ -268,10 +449,15 @@ export default function PlaylistShow({ playlist, songs: initialSongs }) {
                         <div className="py-16 text-center">
                             <Music className="mx-auto mb-3 h-10 w-10 text-[#c4b5a4]" />
                             <p className="text-sm font-medium text-gray-500">Esta playlist está vacía</p>
-                            <p className="mt-1 text-xs text-gray-400">Importa canciones desde YouTube Music</p>
-                            <Button onClick={() => setShowImport(true)} variant="outline" className="mt-4 border-[#c4b5a4] text-[#8b7355]">
-                                <Youtube className="mr-1.5 h-4 w-4" /> Importar de YouTube
-                            </Button>
+                            <p className="mt-1 text-xs text-gray-400">Busca canciones una a una o importa una playlist entera de YouTube</p>
+                            <div className="mt-4 flex items-center justify-center gap-2">
+                                <Button onClick={() => setShowSearch(true)} className="bg-[#8b7355] text-white hover:bg-[#7a6248]">
+                                    <Plus className="mr-1.5 h-4 w-4" /> Añadir canción
+                                </Button>
+                                <Button onClick={() => setShowImport(true)} variant="outline" className="border-red-200 text-red-600 hover:bg-red-50">
+                                    <Youtube className="mr-1.5 h-4 w-4" /> Importar de YouTube
+                                </Button>
+                            </div>
                         </div>
                     ) : filtered.length === 0 ? (
                         <p className="py-10 text-center text-sm text-gray-400">No hay canciones que coincidan con "{search}"</p>
@@ -291,6 +477,12 @@ export default function PlaylistShow({ playlist, songs: initialSongs }) {
             </div>
 
             <ImportDialog open={showImport} onClose={handleImportClose} playlistId={playlist.id} />
+            <SearchDialog
+                open={showSearch}
+                onClose={() => setShowSearch(false)}
+                playlistId={playlist.id}
+                onAdded={() => router.reload({ only: ['songs'] })}
+            />
         </AdminSidebarLayout>
     );
 }
