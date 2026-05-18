@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\MusicMomentController;
 use App\Http\Controllers\Admin\MusicSectionController;
+use App\Http\Controllers\Admin\PlaylistController;
 use App\Http\Controllers\Admin\SongSuggestionController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
@@ -151,6 +152,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         ->name('songs.index');
     Route::delete('/songs/{song}', [SongSuggestionController::class, 'destroy'])
         ->name('songs.destroy');
+
+    // Playlists
+    Route::get('/playlists', [PlaylistController::class, 'index'])->name('playlists.index');
+    Route::post('/playlists', [PlaylistController::class, 'store'])->name('playlists.store');
+    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show'])->name('playlists.show');
+    Route::patch('/playlists/{playlist}', [PlaylistController::class, 'update'])->name('playlists.update');
+    Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy'])->name('playlists.destroy');
+    Route::post('/playlists/{playlist}/import', [PlaylistController::class, 'importFromYoutube'])->name('playlists.import');
+    Route::delete('/playlists/{playlist}/songs/{song}', [PlaylistController::class, 'removeSong'])->name('playlists.songs.destroy');
 
     // Secciones musicales
     Route::post('/musica/secciones', [MusicSectionController::class, 'store'])->name('music.sections.store');
