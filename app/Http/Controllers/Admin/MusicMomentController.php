@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MusicMoment;
 use App\Models\MusicSection;
+use App\Models\Playlist;
+use App\Models\PlaylistSong;
 use App\Models\SongSuggestion;
 use App\Models\WeddingSetting;
 use Illuminate\Http\Request;
@@ -133,9 +135,23 @@ class MusicMomentController extends Controller
     {
         $setting = WeddingSetting::current();
 
+        $playlists = Playlist::with('songs')->orderBy('sort_order')->orderBy('id')->get()
+            ->map(fn (Playlist $p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'description' => $p->description,
+                'songs' => $p->songs->map(fn (PlaylistSong $s) => [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'artist' => $s->artist,
+                    'duration' => $s->duration,
+                ]),
+            ]);
+
         return Inertia::render('admin/music/print', [
             'sections' => $this->sectionsData(),
             'moments' => $this->momentsData(),
+            'playlists' => $playlists,
             'bride' => $setting?->bride,
             'groom' => $setting?->groom,
             'weddingDate' => $setting?->wedding_date?->format('d/m/Y'),
