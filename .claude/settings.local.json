@@ -32,7 +32,9 @@
       "Read(//Users/grabatutalentosl/Documents/GitHub/backend_agenda_cultural/.claude/**)",
       "Bash(git checkout *)",
       "Bash(vendor/bin/pint *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "mcp__laravel-boost__search-docs",
+      "mcp__laravel-boost__database-schema"
     ],
     "deny": [],
     "ask": []

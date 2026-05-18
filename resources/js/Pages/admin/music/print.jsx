@@ -1,11 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { Music, ExternalLink, Clock } from 'lucide-react';
 
-const SECTIONS = [
-    { key: 'cena', label: 'Cena', emoji: '🍽️' },
-    { key: 'fiesta', label: 'Fiesta', emoji: '🎉' },
-];
-
 function playlistHost(url) {
     try {
         const host = new URL(url).hostname.replace('www.', '');
@@ -18,7 +13,7 @@ function playlistHost(url) {
     }
 }
 
-export default function MusicPrint({ moments, bride, groom, weddingDate }) {
+export default function MusicPrint({ sections, moments, bride, groom, weddingDate }) {
     return (
         <>
             <Head title="Organización musical — Imprimir" />
@@ -31,13 +26,9 @@ export default function MusicPrint({ moments, bride, groom, weddingDate }) {
                         <span className="text-lg font-semibold tracking-wide uppercase">Organización Musical</span>
                     </div>
                     {bride && groom && (
-                        <h1 className="text-3xl font-bold text-gray-900 print:text-2xl">
-                            {bride} &amp; {groom}
-                        </h1>
+                        <h1 className="text-3xl font-bold text-gray-900 print:text-2xl">{bride} &amp; {groom}</h1>
                     )}
-                    {weddingDate && (
-                        <p className="mt-1 text-gray-500">{weddingDate}</p>
-                    )}
+                    {weddingDate && <p className="mt-1 text-gray-500">{weddingDate}</p>}
                     <div className="mt-4 flex justify-center gap-6 print:hidden">
                         <button
                             onClick={() => window.print()}
@@ -55,22 +46,18 @@ export default function MusicPrint({ moments, bride, groom, weddingDate }) {
                 </div>
 
                 {/* Sections */}
-                {SECTIONS.map((section) => {
-                    const sectionMoments = moments.filter((m) => m.section === section.key);
+                {sections.map((section) => {
+                    const sectionMoments = moments.filter((m) => m.section_id === section.id);
                     if (sectionMoments.length === 0) return null;
 
                     return (
-                        <div key={section.key} className="mb-8 print:mb-6 print:break-inside-avoid">
+                        <div key={section.id} className="mb-8 print:mb-6 print:break-inside-avoid">
                             <h2 className="mb-4 text-xl font-bold text-gray-800">
-                                {section.emoji} {section.label}
+                                {section.emoji} {section.name}
                             </h2>
-
                             <div className="space-y-3">
                                 {sectionMoments.map((moment, i) => (
-                                    <div
-                                        key={moment.id}
-                                        className="rounded-lg border border-gray-200 p-4 print:border-gray-300 print:p-3"
-                                    >
+                                    <div key={moment.id} className="rounded-lg border border-gray-200 p-4 print:border-gray-300 print:p-3">
                                         <div className="flex items-start gap-3">
                                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#8b7355]/10 text-xs font-bold text-[#8b7355]">
                                                 {i + 1}
@@ -85,7 +72,6 @@ export default function MusicPrint({ moments, bride, groom, weddingDate }) {
                                                         </span>
                                                     )}
                                                 </div>
-
                                                 {moment.playlist_url && (
                                                     <a
                                                         href={moment.playlist_url}
@@ -100,11 +86,8 @@ export default function MusicPrint({ moments, bride, groom, weddingDate }) {
                                                         </span>
                                                     </a>
                                                 )}
-
                                                 {moment.notes && (
-                                                    <p className="mt-2 text-sm text-gray-500 italic">
-                                                        💬 {moment.notes}
-                                                    </p>
+                                                    <p className="mt-2 text-sm italic text-gray-500">💬 {moment.notes}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -115,7 +98,6 @@ export default function MusicPrint({ moments, bride, groom, weddingDate }) {
                     );
                 })}
 
-                {/* Footer */}
                 <div className="mt-12 border-t border-gray-100 pt-4 text-center text-xs text-gray-400 print:mt-8">
                     Documento generado el {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </div>

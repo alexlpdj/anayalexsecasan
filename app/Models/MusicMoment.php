@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Enums\MusicSection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MusicMoment extends Model
 {
     protected $fillable = [
-        'section',
+        'section_id',
         'name',
         'playlist_url',
         'notes',
@@ -16,10 +16,8 @@ class MusicMoment extends Model
         'sort_order',
     ];
 
-    protected function casts(): array
+    public function section(): BelongsTo
     {
-        return [
-            'section' => MusicSection::class,
-        ];
+        return $this->belongsTo(MusicSection::class, 'section_id');
     }
 }

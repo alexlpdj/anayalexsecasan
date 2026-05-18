@@ -4,29 +4,42 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MusicMoment;
+use App\Models\MusicSection;
 use App\Models\SongSuggestion;
 use App\Models\WeddingSetting;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class MusicMomentController extends Controller
 {
-    public function index()
+    private function sectionsData(): array
     {
-        $moments = MusicMoment::orderBy('sort_order')->orderBy('id')->get()
+        return MusicSection::orderBy('sort_order')->orderBy('id')->get()
+            ->map(fn (MusicSection $s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'emoji' => $s->emoji,
+                'sort_order' => $s->sort_order,
+            ])->all();
+    }
+
+    private function momentsData(): array
+    {
+        return MusicMoment::orderBy('sort_order')->orderBy('id')->get()
             ->map(fn (MusicMoment $m) => [
                 'id' => $m->id,
-                'section' => $m->section->value,
+                'section_id' => $m->section_id,
                 'name' => $m->name,
                 'playlist_url' => $m->playlist_url,
                 'notes' => $m->notes,
                 'estimated_duration' => $m->estimated_duration,
                 'sort_order' => $m->sort_order,
-            ]);
+            ])->all();
+    }
 
+    public function index()
+    {
         $songs = SongSuggestion::with('invitationGroup')
             ->orderBy('created_at', 'desc')
             ->get()
@@ -41,7 +54,8 @@ class MusicMomentController extends Controller
             ]);
 
         return Inertia::render('admin/music/index', [
-            'moments' => $moments,
+            'sections' => $this->sectionsData(),
+            'moments' => $this->momentsData(),
             'songs' => $songs,
         ]);
     }
@@ -49,16 +63,14 @@ class MusicMomentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'section' => ['required', 'in:cena,fiesta'],
+            'section_id' => ['required', 'exists:music_sections,id'],
             'name' => ['required', 'string', 'max:255'],
+            'playlist_url' => ['nullable', 'url', 'max:500'],
         ]);
 
-        $maxOrder = MusicMoment::where('section', $validated['section'])->max('sort_order') ?? -1;
+        $maxOrder = MusicMoment::where('section_id', $validated['section_id'])->max('sort_order') ?? -1;
 
-        MusicMoment::create([
-            ...$validated,
-            'sort_order' => $maxOrder + 1,
-        ]);
+        MusicMoment::create([...$validated, 'sort_order' => $maxOrder + 1]);
 
         return back()->with('success', 'Momento creado');
     }
@@ -67,6 +79,7 @@ class MusicMomentController extends Controller
     {
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'section_id' => ['sometimes', 'required', 'exists:music_sections,id'],
             'playlist_url' => ['sometimes', 'nullable', 'url', 'max:500'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'estimated_duration' => ['sometimes', 'nullable', 'string', 'max:50'],
@@ -118,141 +131,14 @@ class MusicMomentController extends Controller
 
     public function print()
     {
-        $moments = MusicMoment::orderBy('sort_order')->orderBy('id')->get()
-            ->map(fn (MusicMoment $m) => [
-                'id' => $m->id,
-                'section' => $m->section->value,
-                'name' => $m->name,
-                'playlist_url' => $m->playlist_url,
-                'notes' => $m->notes,
-                'estimated_duration' => $m->estimated_duration,
-            ]);
-
         $setting = WeddingSetting::current();
 
         return Inertia::render('admin/music/print', [
-            'moments' => $moments,
+            'sections' => $this->sectionsData(),
+            'moments' => $this->momentsData(),
             'bride' => $setting?->bride,
             'groom' => $setting?->groom,
             'weddingDate' => $setting?->wedding_date?->format('d/m/Y'),
         ]);
-    }
-
-    public function importPlaylist(Request $request)
-    {
-        $request->validate([
-            'playlist_url' => ['required', 'url'],
-        ]);
-
-        $apiKey = config('services.youtube.key');
-
-        if (! $apiKey) {
-            return back()->withErrors(['playlist_url' => 'No hay clave de API de YouTube configurada. Añade YOUTUBE_API_KEY en el archivo .env.']);
-        }
-
-        $playlistId = $this->extractYouTubePlaylistId($request->playlist_url);
-
-        if (! $playlistId) {
-            return back()->withErrors(['playlist_url' => 'URL de playlist de YouTube no válida. Asegúrate de que contenga "list=PLAYLIST_ID".']);
-        }
-
-        try {
-            $songs = $this->fetchYouTubePlaylistSongs($apiKey, $playlistId);
-        } catch (RequestException $e) {
-            return back()->withErrors(['playlist_url' => 'Error al conectar con YouTube: '.$e->getMessage()]);
-        }
-
-        if (empty($songs)) {
-            return back()->withErrors(['playlist_url' => 'No se encontraron canciones en esta playlist o la playlist no es pública.']);
-        }
-
-        $imported = 0;
-        foreach ($songs as $song) {
-            $exists = SongSuggestion::where('youtube_video_id', $song['youtube_video_id'])->exists();
-            if (! $exists) {
-                SongSuggestion::create($song);
-                $imported++;
-            }
-        }
-
-        $skipped = count($songs) - $imported;
-        $message = "Se importaron {$imported} canción(es) de YouTube.";
-        if ($skipped > 0) {
-            $message .= " {$skipped} ya existían y fueron omitidas.";
-        }
-
-        return back()->with('success', $message);
-    }
-
-    private function extractYouTubePlaylistId(string $url): ?string
-    {
-        $parsed = parse_url($url);
-        if (isset($parsed['query'])) {
-            parse_str($parsed['query'], $params);
-
-            return $params['list'] ?? null;
-        }
-
-        return null;
-    }
-
-    private function fetchYouTubePlaylistSongs(string $apiKey, string $playlistId): array
-    {
-        $songs = [];
-        $nextPageToken = null;
-
-        do {
-            $response = Http::get('https://www.googleapis.com/youtube/v3/playlistItems', array_filter([
-                'part' => 'snippet',
-                'playlistId' => $playlistId,
-                'maxResults' => 50,
-                'pageToken' => $nextPageToken,
-                'key' => $apiKey,
-            ]));
-
-            $response->throw();
-
-            $data = $response->json();
-            $nextPageToken = $data['nextPageToken'] ?? null;
-
-            foreach ($data['items'] ?? [] as $item) {
-                $snippet = $item['snippet'];
-                $videoId = $snippet['resourceId']['videoId'] ?? null;
-                $title = $snippet['title'] ?? '';
-
-                if (! $videoId || $title === 'Deleted video' || $title === 'Private video') {
-                    continue;
-                }
-
-                [$artist, $trackTitle] = $this->parseYouTubeTitle($title);
-
-                $songs[] = [
-                    'source' => 'youtube',
-                    'invitation_group_id' => null,
-                    'track_title' => $trackTitle,
-                    'artist_name' => $artist,
-                    'artwork_url' => $snippet['thumbnails']['medium']['url'] ?? $snippet['thumbnails']['default']['url'] ?? null,
-                    'youtube_video_id' => $videoId,
-                ];
-            }
-        } while ($nextPageToken);
-
-        return $songs;
-    }
-
-    private function parseYouTubeTitle(string $title): array
-    {
-        // Strip common YouTube suffixes like "(Official Video)", "[Official Audio]", etc.
-        $clean = preg_replace('/[\(\[【].*?[\)\]】]/u', '', $title);
-        $clean = trim($clean);
-
-        // Try "Artist - Track" format
-        if (str_contains($clean, ' - ')) {
-            [$artist, $track] = explode(' - ', $clean, 2);
-
-            return [trim($artist), trim($track)];
-        }
-
-        return ['Desconocido', trim($clean) ?: $title];
     }
 }

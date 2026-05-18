@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BudgetController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\MusicMomentController;
+use App\Http\Controllers\Admin\MusicSectionController;
 use App\Http\Controllers\Admin\SongSuggestionController;
 use App\Http\Controllers\Admin\WeddingSettingsController;
 use App\Http\Controllers\Guest\GuestAuthController;
@@ -151,15 +152,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::delete('/songs/{song}', [SongSuggestionController::class, 'destroy'])
         ->name('songs.destroy');
 
+    // Secciones musicales
+    Route::post('/musica/secciones', [MusicSectionController::class, 'store'])->name('music.sections.store');
+    Route::patch('/musica/secciones/{section}', [MusicSectionController::class, 'update'])->name('music.sections.update');
+    Route::delete('/musica/secciones/{section}', [MusicSectionController::class, 'destroy'])->name('music.sections.destroy');
+    Route::post('/musica/secciones/reorder', [MusicSectionController::class, 'reorder'])->name('music.sections.reorder');
+
     // Momentos musicales
     Route::get('/musica', [MusicMomentController::class, 'index'])->name('music.index');
-    Route::post('/musica', [MusicMomentController::class, 'store'])->name('music.store');
-    Route::patch('/musica/{moment}', [MusicMomentController::class, 'update'])->name('music.update');
-    Route::delete('/musica/{moment}', [MusicMomentController::class, 'destroy'])->name('music.destroy');
-    Route::post('/musica/reorder', [MusicMomentController::class, 'reorder'])->name('music.reorder');
     Route::get('/musica/share-url', [MusicMomentController::class, 'getShareUrl'])->name('music.share-url');
     Route::get('/musica/imprimir', [MusicMomentController::class, 'print'])->name('music.print');
-    Route::post('/musica/importar-playlist', [MusicMomentController::class, 'importPlaylist'])->name('music.import-playlist');
+    Route::post('/musica', [MusicMomentController::class, 'store'])->name('music.store');
+    Route::post('/musica/reorder', [MusicMomentController::class, 'reorder'])->name('music.reorder');
+    Route::patch('/musica/{moment}', [MusicMomentController::class, 'update'])->name('music.update');
+    Route::delete('/musica/{moment}', [MusicMomentController::class, 'destroy'])->name('music.destroy');
 
     // FAQs - Preguntas Frecuentes
     Route::post('/faqs/translate', [FaqController::class, 'translateAll'])->name('faqs.translate');
