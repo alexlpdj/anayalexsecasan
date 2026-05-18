@@ -485,11 +485,13 @@ export default function MusicIndex({ moments: initialMoments, songs }) {
     const sectioned = (section) => moments.filter((m) => m.section === section);
 
     const handleUpdate = (id, patch) => {
+        const snapshot = moments;
         setMoments((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
         router.patch(route('admin.music.update', id), patch, {
             preserveScroll: true,
             preserveState: true,
             only: ['flash'],
+            onError: () => setMoments(snapshot),
         });
     };
 
@@ -518,6 +520,7 @@ export default function MusicIndex({ moments: initialMoments, songs }) {
     };
 
     const handleReorder = (section, reordered) => {
+        const snapshot = moments;
         const withOrder = reordered.map((m, i) => ({ ...m, sort_order: i }));
         setMoments((prev) => [
             ...prev.filter((m) => m.section !== section),
@@ -526,7 +529,7 @@ export default function MusicIndex({ moments: initialMoments, songs }) {
         router.post(
             route('admin.music.reorder'),
             { moments: withOrder.map((m) => ({ id: m.id, sort_order: m.sort_order })) },
-            { preserveScroll: true, preserveState: true, only: ['flash'] },
+            { preserveScroll: true, preserveState: true, only: ['flash'], onError: () => setMoments(snapshot) },
         );
     };
 
