@@ -66,10 +66,10 @@ class MusicMomentController extends Controller
     public function update(Request $request, MusicMoment $moment)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'playlist_url' => ['nullable', 'url', 'max:500'],
-            'notes' => ['nullable', 'string', 'max:2000'],
-            'estimated_duration' => ['nullable', 'string', 'max:50'],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'playlist_url' => ['sometimes', 'nullable', 'url', 'max:500'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'estimated_duration' => ['sometimes', 'nullable', 'string', 'max:50'],
         ]);
 
         $moment->update($validated);
