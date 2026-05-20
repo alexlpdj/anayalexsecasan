@@ -28,7 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import {
     Users, MessageCircle, Settings, HelpCircle, LogOut,
     ChevronsUpDown, UserCircle, Music, Calculator,
-    UserCheck, LayoutDashboard, ListMusic,
+    UserCheck, LayoutDashboard, ListMusic, Gift,
 } from 'lucide-react';
 
 function WeddingRingsIcon({ className }) {
@@ -49,6 +49,7 @@ const navItems = [
     { label: 'Música',      pageTitle: 'Música de la boda',      href: 'admin.music.index',            match: ['admin.music.*', 'admin.playlists.*'],      icon: ListMusic },
     { label: 'FAQs',        pageTitle: 'Preguntas frecuentes',   href: 'admin.faqs.index',             match: 'admin.faqs.*',     icon: HelpCircle },
     { label: 'Presupuesto', pageTitle: 'Presupuesto de boda',    href: 'admin.budget.index',           match: 'admin.budget.*',   icon: Calculator },
+    { label: 'Regalos',     pageTitle: 'Regalos de boda',        href: 'admin.gifts.index',            match: 'admin.gifts.*',    icon: Gift },
     { label: 'Ajustes',     pageTitle: 'Configuración de boda',  href: 'admin.settings.wedding.edit',  match: 'admin.settings.*', icon: Settings },
 ];
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BudgetController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\GiftsController;
 use App\Http\Controllers\Admin\InvitationGroupController;
 use App\Http\Controllers\Admin\MusicMomentController;
 use App\Http\Controllers\Admin\MusicSectionController;
@@ -191,6 +192,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::patch('/presupuesto/items/{item}', [BudgetController::class, 'updateItem'])->name('budget.items.update');
     Route::delete('/presupuesto/items/{item}', [BudgetController::class, 'destroyItem'])->name('budget.items.destroy');
     Route::patch('/presupuesto/target', [BudgetController::class, 'updateTarget'])->name('budget.target.update');
+
+    // Regalos de boda
+    Route::get('/regalos', [GiftsController::class, 'index'])->name('gifts.index');
+    Route::post('/regalos', [GiftsController::class, 'store'])->name('gifts.store');
+    Route::patch('/regalos/{gift}', [GiftsController::class, 'update'])->name('gifts.update');
+    Route::delete('/regalos/{gift}', [GiftsController::class, 'destroy'])->name('gifts.destroy');
 
     // Wedding Settings - Configuración de la Boda
     Route::get('/settings/wedding', [WeddingSettingsController::class, 'edit'])->name('settings.wedding.edit');

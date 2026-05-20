@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AdminSidebarLayout from '@/Layouts/AdminSidebarLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import {
     Plus, Trash2, Building2, UtensilsCrossed, Music2, Camera, Flower2,
     Sparkles, Mail, Plane, MoreHorizontal, Pencil, Check, X,
-    ChevronDown, ChevronUp, Calculator, Bus,
+    ChevronDown, ChevronUp, Calculator, Bus, Gift as GiftIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -64,7 +64,7 @@ const getCat = (id) => CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGOR
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
-export default function BudgetIndex({ items, target: serverTarget }) {
+export default function BudgetIndex({ items, target: serverTarget, giftsTotal = 0 }) {
     // ── UI optimista: valores de items ───────────────────────────────────────
     // Guarda overrides locales { [id]: number }.
     // getValue() usa el override si existe, si no el valor del servidor.
@@ -487,6 +487,42 @@ export default function BudgetIndex({ items, target: serverTarget }) {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* ── Regalos recibidos (cruce con presupuesto) ─────────── */}
+                <Link
+                    href={route('admin.gifts.index')}
+                    className="block transition-transform hover:scale-[1.005]"
+                >
+                    <Card>
+                        <CardContent className="flex items-center gap-4 p-4">
+                            <div
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                                style={{ backgroundColor: '#8b735522', color: '#8b7355' }}
+                            >
+                                <GiftIcon className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                                    Regalos recibidos
+                                </p>
+                                <p className="text-xl font-bold leading-tight" style={{ color: '#15803d' }}>
+                                    {fmt(giftsTotal)}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                                    Neto (regalos − gastado)
+                                </p>
+                                <p
+                                    className="text-xl font-bold leading-tight"
+                                    style={{ color: giftsTotal - total >= 0 ? '#15803d' : '#dc2626' }}
+                                >
+                                    {fmt(giftsTotal - total)}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
 
                 {/* ── Contenido principal ───────────────────────────────── */}
                 <div className="grid gap-3 lg:grid-cols-5 lg:gap-6">
